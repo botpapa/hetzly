@@ -1,0 +1,48 @@
+name: Hetzly
+
+options:
+  bundleIdPrefix: com.hetzly
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "26.5"
+  createIntermediateGroups: true
+
+packages:
+  HetznerKit:
+    path: Packages/HetznerKit
+
+targets:
+  Hetzly:
+    type: application
+    platform: iOS
+    sources:
+      - path: Hetzly
+    dependencies:
+      - package: HetznerKit
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_FILE: Hetzly/Resources/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Hetzly
+        INFOPLIST_KEY_NSFaceIDUsageDescription: "Unlock Hetzly and confirm destructive actions."
+        ITSAppUsesNonExemptEncryption: false
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: false
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_BUNDLE_IDENTIFIER: com.hetzly.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+schemes:
+  Hetzly:
+    build:
+      targets:
+        Hetzly: all
+    test:
+      targets: []
+    run:
+      config: Debug

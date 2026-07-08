@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    # Xcode 26 / iOS 26 SDK requires a macOS 26 runner image. If GitHub has
+    # not yet rolled out `macos-26` in your account/org, switch this to
+    # `macos-latest` and select an Xcode 26 image with a `select-xcode` step.
+    runs-on: macos-26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen
+
+      - name: Run HetznerKit tests
+        run: swift test --package-path Packages/HetznerKit
+
+      - name: Build Hetzly app
+        run: |
+          xcodebuild build \
+            -project Hetzly.xcodeproj \
+            -scheme Hetzly \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Guard against logging secrets
+        run: |
+          ! grep -rn --include='*.swift' -E '(print|os_log|Logger).*[Aa]uthorization' Hetzly Packages

@@ -85,6 +85,20 @@ actor SSHConnection {
         guard case .idle = state else { return }
         state = .connecting
 
+        // Hard deadline: TCP has its own 10s connect timeout below, but the
+        // SSH handshake + auth + shell-open can hang indefinitely if the
+        // server drops us mid-auth without failing the pending promise (a
+        // real case when a credential is rejected). This independent task
+        // guarantees the UI always leaves "connecting" — it tears the
+        // connection down after 25s, which also unblocks any hung `.get()`
+        // below (the channel closes → the await throws → the catch runs).
+        let deadline = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(25))
+            guard !Task.isCancelled else { return }
+            await self?.failIfStillConnecting()
+        }
+        defer { deadline.cancel() }
+
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         eventLoopGroup = group
 
@@ -185,11 +199,25 @@ actor SSHConnection {
         }
     }
 
+    /// Called by the connect deadline. If the handshake is still pending,
+    /// surface a timeout and tear down (which unblocks the hung await).
+    private func failIfStillConnecting() async {
+        guard case .connecting = state else { return }
+        state = .unreachable(
+            "Couldn't establish the SSH session in time. Check the server is reachable on port 22, "
+                + "and that your SSH key is installed on it (Hetzner servers usually don't accept password login)."
+        )
+        await teardown()
+    }
+
     private func fail(
         with error: Error,
         hostKeyDelegate: SSHTrustOnFirstUseHostKeyDelegate,
         didExhaustAuthentication: @Sendable () -> Bool
     ) async {
+        // The deadline may have already set a terminal state and torn down —
+        // don't overwrite its message with a generic one.
+        guard case .connecting = state else { return }
         if let mismatch = hostKeyDelegate.mismatch {
             state = .hostKeyMismatch(
                 host: hostKeyDelegate.host,

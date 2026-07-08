@@ -141,6 +141,104 @@ Sprite atlases: JSON frame data + 32×32 pixel data generated in Swift (or JSON 
 struct RootView: View                             // switches Onboarding vs MainTabView placeholder
 ```
 
+## Wave 2 contracts (M1: CloudAPI + app features)
+
+Wave 1 code is committed and real — READ the actual source when consuming it
+(Core in `Packages/HetznerKit/Sources/HetznerKit/Core/`, DesignSystem/Security/Mascot under `Hetzly/`).
+The APIs below are binding for wave-2 cross-worker touchpoints.
+
+### CloudAPI (`Packages/HetznerKit/Sources/HetznerKit/CloudAPI/`) — Worker A
+
+```swift
+public actor CloudClient {
+    public init(token: String, transport: HTTPTransport = URLSessionTransport())
+    public func validateToken() async throws                      // cheap authenticated GET; throws HetznerAPIError.unauthorized on bad token
+    public func listServers() async throws -> [Server]           // full pagination, sorted by name
+    public func server(id: Int) async throws -> Server
+    public func deleteServer(id: Int) async throws -> Action
+    public func powerOn(serverID: Int) async throws -> Action
+    public func powerOff(serverID: Int) async throws -> Action    // hard power off
+    public func shutdown(serverID: Int) async throws -> Action    // ACPI
+    public func reboot(serverID: Int) async throws -> Action      // soft
+    public func reset(serverID: Int) async throws -> Action       // hard reset
+    public func action(id: Int) async throws -> Action
+    public func serverMetrics(serverID: Int, types: Set<MetricsType>, start: Date, end: Date, step: TimeInterval) async throws -> ServerMetrics
+    public func pricing() async throws -> Pricing                 // callers cache (24h) via ResponseCache
+}
+public enum MetricsType: String, Sendable { case cpu, disk, network }
+```
+
+Models (all `Sendable`, `Codable` with explicit CodingKeys, `Identifiable` where an id exists; unknown enum values decode to `.unknown` — NEVER throw on new server states):
+- `Server`: id Int, name, status `ServerStatus` (running, initializing, starting, stopping, off, deleting, migrating, rebuilding, unknown), created Date, publicNet `PublicNet` (ipv4?.ip String, ipv6?.ip String), serverType `ServerType`, datacenter `Datacenter` (location: id/name/city/country/networkZone), labels [String:String], locked Bool, protection (delete Bool, rebuild Bool), backupWindow String?, rescueEnabled Bool, primaryDiskSize Int, includedTraffic Int64?, outgoingTraffic Int64?, ingoingTraffic Int64?
+- `ServerType`: id, name, description, cores Int, memory Double (GB), disk Int (GB), cpuType (shared/dedicated/unknown), architecture (x86/arm/unknown), deprecated Bool?, prices: [ServerTypePrice] (location String, hourly PriceValue, monthly PriceValue; PriceValue { net: String, gross: String } + `var netDecimal: Decimal?`)
+- `Action`: id, command String, status `ActionStatus` (running/success/error/unknown), progress Int, started Date, finished Date?, error ActionError? (code, message), resources [ActionResource (id, type)]
+- `ServerMetrics`: start, end, step, series: [MetricsSeries { name: String, points: [(timestamp: Date, value: Double)] }] — Hetzner returns values as `[[unix_ts, "string-number"]]`; parse defensively
+- `Pricing`: currency String, vatRate String, serverTypes/primaryIPs/volumes essentials for cost math
+
+`ActionTracker` (same dir): `public actor ActionTracker { init(client: CloudClient); func track(actionID: Int) -> AsyncStream<ActionUpdate> }` — polls every 2s, exponential backoff after 30s, terminates on success/error/120s timeout. `ActionUpdate` enum: `.progress(Action)`, `.finished(Action)`, `.failed(HetznerAPIError or action error)`, `.timedOut`.
+
+### Pricing engine (`Packages/HetznerKit/Sources/HetznerKit/Pricing/`) — Worker B
+
+Pure, deterministic, fully unit-tested. Own input types (does NOT import CloudAPI models):
+```swift
+public struct CostItem: Sendable, Identifiable {
+    public let id: String; public let name: String; public let kind: CostKind  // server, volume, primaryIP, floatingIP, loadBalancer, backup, dedicated, other
+    public let pricing: CostPricing  // .hourly(net: Decimal, monthlyCap: Decimal?), .monthlyFlat(net: Decimal)
+    public let createdAt: Date?
+    public init(...)
+}
+public struct CostSummary: Sendable { monthToDate: Decimal, projectedMonthTotal: Decimal, perItem: [ItemCost], currency: String }
+public enum CostEngine {
+    public static func summary(items: [CostItem], now: Date, calendar: Calendar, currency: String) -> CostSummary
+    // MTD: hours elapsed this month (or since createdAt if later) × hourly, capped at monthlyCap; monthlyFlat prorated? NO — flat = full month in projection, MTD = elapsed fraction
+}
+```
+
+### Store (`Hetzly/Store/`) — Worker B
+
+```swift
+@Model final class ProjectRecord { @Attribute(.unique) var id: UUID; var name: String; var createdAt: Date; var sortOrder: Int }
+// Token NEVER stored here — Keychain via TokenVault, account = id.uuidString
+@Model final class ServerSnapshotRecord { var projectID: UUID; var payload: Data; var updatedAt: Date }  // JSON-encoded [Server]
+@MainActor @Observable final class ProjectsStore {
+    init(context: ModelContext)
+    private(set) var projects: [ProjectRecord]
+    func addProject(name: String, token: String) throws -> ProjectRecord   // saves token to TokenVault
+    func rename(_ project: ProjectRecord, to: String)
+    func remove(_ project: ProjectRecord) throws                            // deletes token + snapshots too
+    func token(for project: ProjectRecord) throws -> String?
+}
+@MainActor final class SnapshotStore {
+    init(context: ModelContext)
+    func saveServers(_ servers: [Server], projectID: UUID)
+    func loadServers(projectID: UUID) -> (servers: [Server], updatedAt: Date)?
+}
+static func hetzlyModelContainer() throws -> ModelContainer   // free func or on an enum; schema = both models
+```
+
+### App shell (`Hetzly/App/`, `Hetzly/Features/Onboarding/`, `Hetzly/Features/Settings/`) — Worker C
+
+```swift
+@MainActor @Observable final class AppContainer {
+    static func makeDefault() -> AppContainer
+    var projectsStore: ProjectsStore { get }
+    var modelContainer: ModelContainer { get }
+    func cloudClient(for projectID: UUID) -> CloudClient?     // cached per project; nil if token missing
+    func snapshotStore() -> SnapshotStore
+    var settings: AppSettings                                  // @Observable: requireBiometricsForDestructive: Bool, mascotEnabled: Bool (AppStorage-backed)
+    let biometricGate: BiometricGate
+}
+// Injection: WindowGroup { RootView().environment(container) }; consumers: @Environment(AppContainer.self)
+struct RootView: View        // no projects → OnboardingView; else MainTabView
+struct MainTabView: View     // Tabs: Dashboard (DashboardView()), Resources placeholder, Costs placeholder, Settings (SettingsView)
+```
+
+### Dashboard (`Hetzly/Features/Dashboard/`) — Worker D
+`struct DashboardView: View` — init(), reads `@Environment(AppContainer.self)`. Navigates to Server Detail via `NavigationStack` + `.navigationDestination(for: ServerRoute.self)`. `ServerRoute` (Hashable: projectID UUID, serverID Int, defined in Dashboard, used by detail).
+
+### Server Detail (`Hetzly/Features/Servers/`) — Worker E
+`struct ServerDetailView: View { init(route: ServerRoute) }` — reads container from environment, loads server, renders detail. Worker D's dashboard calls this via navigationDestination — Worker D declares the destination mapping `ServerRoute -> ServerDetailView(route:)`.
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

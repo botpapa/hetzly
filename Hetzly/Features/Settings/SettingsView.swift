@@ -1,0 +1,268 @@
+import SwiftUI
+
+/// The Settings tab: project management (Accounts), the Face ID gate for
+/// destructive actions, appearance, the mascot toggle, and an About section.
+struct SettingsView: View {
+    @Environment(AppContainer.self) private var container
+
+    @State private var isPresentingAddProject = false
+    @State private var renamingProject: ProjectRecord?
+    @State private var renameText = ""
+    @State private var pendingDeletion: ProjectRecord?
+    @State private var actionError: String?
+
+    var body: some View {
+        @Bindable var settings = container.settings
+
+        NavigationStack {
+            ZStack {
+                CanvasBackground()
+
+                List {
+                    accountsSection
+                    securitySection(requireBiometrics: $settings.requireBiometricsForDestructive)
+                    appearanceSection(appearance: $settings.appearance)
+                    mascotSection(mascotEnabled: $settings.mascotEnabled)
+                    aboutSection
+                }
+                .scrollContentBackground(.hidden)
+                .listRowSpacing(Spacing.unit * 2)
+            }
+            .navigationTitle("Settings")
+            .sheet(isPresented: $isPresentingAddProject) {
+                AddProjectSheet()
+            }
+            .alert("Rename Project", isPresented: renameAlertBinding) {
+                TextField("Project name", text: $renameText)
+                Button("Cancel", role: .cancel) {}
+                Button("Save") { commitRename() }
+            }
+            .confirmationDialog(
+                "Remove Project",
+                isPresented: pendingDeletionBinding,
+                titleVisibility: .visible
+            ) {
+                Button("Remove from Hetzly", role: .destructive) { commitDeletion() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This only removes \"\(pendingDeletion?.name ?? "")\" from Hetzly. Nothing is deleted on Hetzner.")
+            }
+            .alert(
+                "Something Went Wrong",
+                isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(actionError ?? "")
+            }
+        }
+    }
+
+    // MARK: - Accounts
+
+    private var accountsSection: some View {
+        Section {
+            ForEach(container.projectsStore.projects) { project in
+                ProjectRow(project: project)
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            pendingDeletion = project
+                        } label: {
+                            Label("Remove", systemImage: "trash")
+                        }
+                        Button {
+                            beginRename(project)
+                        } label: {
+                            Label("Rename", systemImage: "pencil")
+                        }
+                        .tint(HetzlyColors.textTertiary)
+                    }
+            }
+            .listRowBackground(rowBackground)
+
+            Button {
+                isPresentingAddProject = true
+            } label: {
+                Label("Add Project", systemImage: "plus.circle.fill")
+                    .foregroundStyle(HetzlyColors.accent)
+            }
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("Accounts")
+        }
+    }
+
+    // MARK: - Security
+
+    private func securitySection(requireBiometrics: Binding<Bool>) -> some View {
+        Section {
+            Toggle(isOn: requireBiometrics) {
+                Label("Require Face ID for destructive actions", systemImage: "faceid")
+                    .foregroundStyle(HetzlyColors.textPrimary)
+            }
+            .tint(HetzlyColors.accent)
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("Security")
+        }
+    }
+
+    // MARK: - Appearance
+
+    private func appearanceSection(appearance: Binding<String>) -> some View {
+        Section {
+            Picker(selection: appearance) {
+                Text("Dark").tag("dark")
+                Text("System").tag("system")
+            } label: {
+                Label("Appearance", systemImage: "circle.lefthalf.filled")
+                    .foregroundStyle(HetzlyColors.textPrimary)
+            }
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("Appearance")
+        }
+    }
+
+    // MARK: - Mascot
+
+    private func mascotSection(mascotEnabled: Binding<Bool>) -> some View {
+        Section {
+            Toggle(isOn: mascotEnabled) {
+                Label("Show Hetzi", systemImage: "pawprint.fill")
+                    .foregroundStyle(HetzlyColors.textPrimary)
+            }
+            .tint(HetzlyColors.accent)
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("Mascot")
+        }
+    }
+
+    // MARK: - About
+
+    private var aboutSection: some View {
+        Section {
+            LabeledContent("Version") {
+                Text(appVersionString).bodySecondary()
+            }
+            .listRowBackground(rowBackground)
+
+            Text("Hetzly is open source under the MIT license.")
+                .bodySecondary()
+                .listRowBackground(rowBackground)
+
+            Text(
+                "Hetzly is an independent third-party app. It is not affiliated with, "
+                    + "endorsed by, or sponsored by Hetzner Online GmbH."
+            )
+            .caption()
+            .listRowBackground(rowBackground)
+
+            Link(destination: githubURL) {
+                Label("View on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+            }
+            .listRowBackground(rowBackground)
+
+            Link(destination: githubURL) {
+                Label("Star on GitHub", systemImage: "star.fill")
+                    .foregroundStyle(HetzlyColors.accent)
+            }
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("About")
+        }
+    }
+
+    // MARK: - Row styling
+
+    private var rowBackground: some View {
+        RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+            .fill(Color.white.opacity(0.05))
+    }
+
+    private var appVersionString: String {
+        let shortVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(shortVersion) (\(build))"
+    }
+
+    private var githubURL: URL {
+        URL(string: "https://github.com/hetzly/hetzly") ?? URL(fileURLWithPath: "/")
+    }
+
+    // MARK: - Rename
+
+    private var renameAlertBinding: Binding<Bool> {
+        Binding(
+            get: { renamingProject != nil },
+            set: { if !$0 { renamingProject = nil } }
+        )
+    }
+
+    private func beginRename(_ project: ProjectRecord) {
+        renameText = project.name
+        renamingProject = project
+    }
+
+    private func commitRename() {
+        guard let project = renamingProject else { return }
+        let trimmed = renameText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        container.projectsStore.rename(project, to: trimmed)
+        renamingProject = nil
+    }
+
+    // MARK: - Deletion
+
+    private var pendingDeletionBinding: Binding<Bool> {
+        Binding(
+            get: { pendingDeletion != nil },
+            set: { if !$0 { pendingDeletion = nil } }
+        )
+    }
+
+    private func commitDeletion() {
+        guard let project = pendingDeletion else { return }
+        pendingDeletion = nil
+
+        Task {
+            if container.settings.requireBiometricsForDestructive {
+                let authenticated = await container.biometricGate.authenticate(
+                    reason: "Confirm removing \"\(project.name)\" from Hetzly"
+                )
+                guard authenticated else { return }
+            }
+            do {
+                try container.projectsStore.remove(project)
+            } catch {
+                actionError = "Couldn't remove this project. Please try again."
+            }
+        }
+    }
+}
+
+/// A single project row: name plus the date it was added. Swipe actions for
+/// rename/remove are attached by the caller (`SettingsView.accountsSection`).
+private struct ProjectRow: View {
+    let project: ProjectRecord
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.unit) {
+                Text(project.name)
+                    .bodyPrimary()
+                Text("Added \(project.createdAt.formatted(date: .abbreviated, time: .omitted))")
+                    .caption()
+            }
+            Spacer()
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+#Preview {
+    SettingsView()
+        .environment(AppContainer.makeDefault())
+        .preferredColorScheme(.dark)
+}

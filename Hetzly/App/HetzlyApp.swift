@@ -1,11 +1,12 @@
+import SwiftData
 import SwiftUI
 
 @main
 struct HetzlyApp: App {
-    @AppStorage("appearance") private var appearance: String = "dark"
+    @State private var container = AppContainer.makeDefault()
 
     private var preferredColorScheme: ColorScheme? {
-        switch appearance {
+        switch container.settings.appearance {
         case "system":
             return nil
         default:
@@ -16,7 +17,10 @@ struct HetzlyApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(container)
+                .modelContainer(container.modelContainer)
                 .preferredColorScheme(preferredColorScheme)
+                .privacyOverlay()
         }
     }
 }

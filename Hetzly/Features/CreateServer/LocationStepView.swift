@@ -31,15 +31,17 @@ struct LocationStepView: View {
         } label: {
             GlassCard(interactive: true) {
                 VStack(alignment: .leading, spacing: Spacing.unit * 2) {
-                    Text(flagEmoji(countryCode: location.country))
-                        .font(.system(size: 28))
+                    HStack(spacing: Spacing.unit * 2) {
+                        Text(flagEmoji(countryCode: location.country))
+                            .font(.system(size: 28))
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(location.city)
-                            .bodyPrimary()
-                            .fontWeight(.semibold)
-                        Text(location.country)
-                            .caption()
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(location.city)
+                                .bodyPrimary()
+                                .fontWeight(.semibold)
+                            Text(location.country)
+                                .caption()
+                        }
                     }
 
                     GlassChip(location.networkZone, systemImage: "network")

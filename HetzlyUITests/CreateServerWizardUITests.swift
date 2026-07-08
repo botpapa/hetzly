@@ -14,7 +14,14 @@ final class CreateServerWizardUITests: HetzlyUITestCase {
 
         XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
 
-        waitAndTap(element(labeled: "Create Server", in: app))
+        // Toolbar "New" menu → "Create Server" (single project: jumps
+        // straight into the wizard). The menu item is scoped to the menu
+        // popup's collection view — an unscoped `.any`-typed CONTAINS match
+        // can resolve to a non-tappable wrapper mid-animation and silently
+        // miss (observed as a flake), whereas the collection-view button is
+        // the real tappable menu row.
+        waitAndTap(element(labeled: "New", in: app))
+        waitAndTap(app.collectionViews.buttons["Create Server"])
 
         // Step 1 — Location: first card (fsn1 / Falkenstein).
         waitAndTap(element(identifier: "createServer.locationCard.fsn1", in: app), timeout: 15)

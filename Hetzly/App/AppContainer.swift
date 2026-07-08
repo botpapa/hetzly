@@ -109,6 +109,15 @@ final class AppContainer {
         return client
     }
 
+    /// Drops the cached `CloudClient` for `projectID`, if any. Call this
+    /// after `ProjectsStore.updateToken(for:to:)` so the next
+    /// `cloudClient(for:)` rebuilds from the fresh Keychain token instead of
+    /// continuing to use the stale (possibly now-revoked) one baked into the
+    /// cached actor.
+    func invalidateCloudClient(for projectID: UUID) {
+        cloudClients.removeValue(forKey: projectID)
+    }
+
     /// The shared on-device server snapshot cache.
     func snapshotStore() -> SnapshotStore {
         sharedSnapshotStore

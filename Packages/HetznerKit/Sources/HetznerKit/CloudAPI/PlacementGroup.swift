@@ -29,6 +29,17 @@ public struct PlacementGroup: Codable, Sendable, Identifiable, Equatable {
         self.servers = servers
         self.created = created
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        type = try container.decode(PlacementGroupType.self, forKey: .type)
+        servers = try container.decode([Int].self, forKey: .servers)
+        created = try container.decode(Date.self, forKey: .created)
+    }
 }
 
 /// Unknown wire values decode to `.unknown` instead of throwing.

@@ -13,6 +13,12 @@ struct ResourcesHubView: View {
     @State private var selection = ResourcesProjectSelection()
     @State private var viewModel = ResourcesHubViewModel()
 
+    /// Remembers the scoped project across launches (stored as a `String`
+    /// since `AppStorage` has no native `UUID?` support). Read once on
+    /// appear to seed `selection.projectID`; written back whenever the user
+    /// switches projects via `ProjectPickerChip`.
+    @AppStorage("resources.selectedProject") private var persistedProjectIDStorage = ""
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -49,13 +55,33 @@ struct ResourcesHubView: View {
         .environment(selection)
         .task {
             if selection.projectID == nil {
-                selection.projectID = container.projectsStore.projects.first?.id
+                selection.projectID = resolvedInitialProjectID()
             }
             await viewModel.loadIfNeeded(projectID: selection.projectID, container: container)
         }
         .onChange(of: selection.projectID) { _, newValue in
+            persistedProjectIDStorage = newValue?.uuidString ?? ""
             Task { await viewModel.load(projectID: newValue, container: container) }
         }
+        .onChange(of: container.projectsStore.projects.map(\.id)) { _, currentIDs in
+            // The scoped project may have been removed (Settings) while
+            // Resources was showing it — fall back to the first remaining
+            // project rather than staying scoped to nothing.
+            if let current = selection.projectID, !currentIDs.contains(current) {
+                selection.projectID = currentIDs.first
+            }
+        }
+    }
+
+    /// The project to scope to on first appearance: the persisted selection
+    /// if it still exists, otherwise the first project — gracefully
+    /// recovering if that project was deleted since the last launch.
+    private func resolvedInitialProjectID() -> UUID? {
+        let projects = container.projectsStore.projects
+        if let stored = UUID(uuidString: persistedProjectIDStorage), projects.contains(where: { $0.id == stored }) {
+            return stored
+        }
+        return projects.first?.id
     }
 
     // MARK: - No projects

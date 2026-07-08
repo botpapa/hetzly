@@ -71,6 +71,27 @@ public struct Image: Codable, Sendable, Identifiable, Equatable {
         self.deprecated = deprecated
         self.labels = labels
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        type = try container.decode(ImageType.self, forKey: .type)
+        status = try container.decode(ImageStatus.self, forKey: .status)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        description = try container.decode(String.self, forKey: .description)
+        imageSize = try container.decodeIfPresent(Double.self, forKey: .imageSize)
+        diskSize = try container.decode(Double.self, forKey: .diskSize)
+        created = try container.decode(Date.self, forKey: .created)
+        createdFrom = try container.decodeIfPresent(ImageCreator.self, forKey: .createdFrom)
+        boundTo = try container.decodeIfPresent(Int.self, forKey: .boundTo)
+        osFlavor = try container.decode(String.self, forKey: .osFlavor)
+        osVersion = try container.decodeIfPresent(String.self, forKey: .osVersion)
+        architecture = try container.decode(Architecture.self, forKey: .architecture)
+        protection = try container.decode(ImageProtection.self, forKey: .protection)
+        deprecated = try container.decodeIfPresent(Date.self, forKey: .deprecated)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+    }
 }
 
 /// Unknown wire values decode to `.unknown` instead of throwing.

@@ -31,6 +31,17 @@ public struct SSHKey: Codable, Sendable, Identifiable, Equatable {
         self.labels = labels
         self.created = created
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        fingerprint = try container.decode(String.self, forKey: .fingerprint)
+        publicKey = try container.decode(String.self, forKey: .publicKey)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        created = try container.decode(Date.self, forKey: .created)
+    }
 }
 
 /// Wire envelope for `GET/POST/PUT /ssh_keys/{id}` → `{"ssh_key": {...}}`.

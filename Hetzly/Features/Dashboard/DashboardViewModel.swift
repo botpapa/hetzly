@@ -48,6 +48,13 @@ final class DashboardViewModel {
     private(set) var projected: Decimal?
     private(set) var currency = "EUR"
 
+    /// Per-project cost burn, computed alongside the combined totals above so
+    /// the burn card can scope to a single project when the dashboard's
+    /// `ProjectFilterBar` selection isn't "All". Additive to the combined
+    /// figures — never consulted by `writeWidgetSnapshot()`, which always
+    /// mirrors the unfiltered combined totals (widgets show everything).
+    private(set) var perProjectBurn: [UUID: (monthToDate: Decimal, projected: Decimal)] = [:]
+
     /// A Robot dedicated server paired with the account it was loaded from —
     /// the account ID is needed alongside the server number to build a
     /// `RobotServerRoute` for navigation into `DedicatedServerDetailView`.
@@ -95,7 +102,8 @@ final class DashboardViewModel {
         cpuSparklines: [String: [Double]] = [:],
         lastRefreshed: Date? = nil,
         dedicatedServers: [DedicatedServerItem] = [],
-        dedicatedError: String? = nil
+        dedicatedError: String? = nil,
+        perProjectBurn: [UUID: (monthToDate: Decimal, projected: Decimal)] = [:]
     ) {
         self.projectSections = projectSections
         self.attention = attention
@@ -106,10 +114,24 @@ final class DashboardViewModel {
         self.lastRefreshed = lastRefreshed
         self.dedicatedServers = dedicatedServers
         self.dedicatedError = dedicatedError
+        self.perProjectBurn = perProjectBurn
     }
 
     var isHealthy: Bool {
         attention.isEmpty && !projectSections.contains { $0.errorMessage != nil }
+    }
+
+    /// Cost burn scoped to a single project, or the combined totals when
+    /// `projectID` is `nil` ("All"). Falls back to `(nil, nil)` for a project
+    /// that has no cost items yet (e.g. still loading, or has zero servers).
+    func burn(for projectID: UUID?) -> (monthToDate: Decimal?, projected: Decimal?) {
+        guard let projectID else {
+            return (monthToDate, projected)
+        }
+        guard let value = perProjectBurn[projectID] else {
+            return (nil, nil)
+        }
+        return (value.monthToDate, value.projected)
     }
 
     /// Drives the "Showing cached data — refreshing…" / "Offline — showing
@@ -278,6 +300,7 @@ final class DashboardViewModel {
 
     private func loadCostSummary(container: AppContainer) async {
         var items: [CostItem] = []
+        var itemsByProject: [UUID: [CostItem]] = [:]
         var resolvedCurrency = currency
 
         for project in container.projectsStore.projects {
@@ -285,12 +308,15 @@ final class DashboardViewModel {
             guard let client = container.cloudClient(for: project.id) else { continue }
             guard let projectPricing = await pricing(for: project.id, client: client) else { continue }
             resolvedCurrency = projectPricing.currency
-            items.append(contentsOf: CostItemBuilder.items(servers: servers, pricing: projectPricing))
+            let projectItems = CostItemBuilder.items(servers: servers, pricing: projectPricing)
+            items.append(contentsOf: projectItems)
+            itemsByProject[project.id] = projectItems
         }
 
         guard !items.isEmpty else {
             monthToDate = nil
             projected = nil
+            perProjectBurn = [:]
             return
         }
 
@@ -298,6 +324,13 @@ final class DashboardViewModel {
         monthToDate = summary.monthToDate
         projected = summary.projectedMonthTotal
         currency = summary.currency
+
+        var perProject: [UUID: (monthToDate: Decimal, projected: Decimal)] = [:]
+        for (projectID, projectItems) in itemsByProject {
+            let projectSummary = CostEngine.summary(items: projectItems, now: Date(), calendar: .current, currency: resolvedCurrency)
+            perProject[projectID] = (monthToDate: projectSummary.monthToDate, projected: projectSummary.projectedMonthTotal)
+        }
+        perProjectBurn = perProject
     }
 
     // MARK: - Dedicated servers (Robot)
@@ -533,6 +566,65 @@ extension DashboardViewModel {
         return DashboardViewModel(
             projectSections: [
                 ProjectSection(projectID: projectID, projectName: "Sandbox", servers: [], isStale: false, errorMessage: nil),
+            ]
+        )
+    }
+
+    /// Multi-project state: three `ProjectSection`s plus a `perProjectBurn`
+    /// entry for each, so previews can exercise `ProjectFilterBar` scoping,
+    /// section collapse, and the per-project burn card together. Fixed
+    /// UUIDs keep the fixture deterministic across preview reloads.
+    static var previewMultiProject: DashboardViewModel {
+        let production = UUID(uuidString: "AAAAAAAA-0000-0000-0000-000000000001") ?? UUID()
+        let staging = UUID(uuidString: "AAAAAAAA-0000-0000-0000-000000000002") ?? UUID()
+        let sandbox = UUID(uuidString: "AAAAAAAA-0000-0000-0000-000000000003") ?? UUID()
+
+        let stopping = ServerListItem(
+            projectID: staging, serverID: 30, name: "worker-03",
+            status: .stopping, typeName: "cx22", city: "Ashburn", countryCode: "US"
+        )
+
+        return DashboardViewModel(
+            projectSections: [
+                ProjectSection(
+                    projectID: production,
+                    projectName: "Production",
+                    servers: [
+                        ServerListItem(
+                            projectID: production, serverID: 10, name: "web-01",
+                            status: .running, typeName: "cx32", city: "Falkenstein", countryCode: "DE"
+                        ),
+                        ServerListItem(
+                            projectID: production, serverID: 11, name: "db-01",
+                            status: .running, typeName: "cx42", city: "Falkenstein", countryCode: "DE"
+                        ),
+                    ],
+                    isStale: false,
+                    errorMessage: nil
+                ),
+                ProjectSection(
+                    projectID: staging,
+                    projectName: "Staging",
+                    servers: [
+                        stopping,
+                        ServerListItem(
+                            projectID: staging, serverID: 31, name: "cache-01",
+                            status: .running, typeName: "cx22", city: "Ashburn", countryCode: "US"
+                        ),
+                    ],
+                    isStale: false,
+                    errorMessage: nil
+                ),
+                ProjectSection(projectID: sandbox, projectName: "Sandbox", servers: [], isStale: false, errorMessage: nil),
+            ],
+            attention: [stopping],
+            monthToDate: 68.42,
+            projected: 154.90,
+            currency: "EUR",
+            lastRefreshed: Date(),
+            perProjectBurn: [
+                production: (monthToDate: 51.20, projected: 118.40),
+                staging: (monthToDate: 17.22, projected: 36.50),
             ]
         )
     }

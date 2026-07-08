@@ -63,6 +63,26 @@ public struct LoadBalancer: Codable, Sendable, Identifiable, Equatable {
         self.ingoingTraffic = ingoingTraffic
         self.includedTraffic = includedTraffic
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        publicNet = try container.decode(LBPublicNet.self, forKey: .publicNet)
+        privateNet = try container.decode([LBPrivateNet].self, forKey: .privateNet)
+        location = try container.decode(Location.self, forKey: .location)
+        loadBalancerType = try container.decode(LoadBalancerType.self, forKey: .loadBalancerType)
+        protection = try container.decode(LBProtection.self, forKey: .protection)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        created = try container.decode(Date.self, forKey: .created)
+        services = try container.decode([LBService].self, forKey: .services)
+        targets = try container.decode([LBTarget].self, forKey: .targets)
+        algorithm = try container.decode(LBAlgorithm.self, forKey: .algorithm)
+        outgoingTraffic = try container.decodeIfPresent(Int64.self, forKey: .outgoingTraffic)
+        ingoingTraffic = try container.decodeIfPresent(Int64.self, forKey: .ingoingTraffic)
+        includedTraffic = try container.decodeIfPresent(Int64.self, forKey: .includedTraffic)
+    }
 }
 
 public struct LBProtection: Codable, Sendable, Equatable {

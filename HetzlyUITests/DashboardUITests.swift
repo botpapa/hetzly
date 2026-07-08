@@ -27,11 +27,13 @@ final class DashboardUITests: HetzlyUITestCase {
         XCTAssertTrue(element(labeled: "Demo Project", in: app).waitForExistence(timeout: 10))
     }
 
-    /// Two seeded projects each render their own dashboard section, with
-    /// server rows under both, and the create-server "+" button offers a
-    /// project picker (menu) instead of jumping straight into the wizard.
-    /// Exercises the multi-project aggregation paths: per-project fetch
-    /// isolation, section rendering, and the combined burn card.
+    /// Two seeded projects each render their own dashboard section — each
+    /// with a DISTINCT fixture server pair (Production: web-01/worker-02,
+    /// Staging: api-01/cache-02 — see `UITestTransport.serverNames`), so
+    /// this exercises genuine per-project fetch isolation rather than just
+    /// two sections that happen to look identical. The create-server "+"
+    /// button offers a project picker (menu) instead of jumping straight
+    /// into the wizard, and the combined burn card renders.
     func test_dashboard_aggregatesMultipleProjects() {
         let app = launchMultiProject()
 
@@ -41,27 +43,94 @@ final class DashboardUITests: HetzlyUITestCase {
         XCTAssertTrue(element(labeled: "Production", in: app).waitForExistence(timeout: 10))
         XCTAssertTrue(element(labeled: "Staging", in: app).waitForExistence(timeout: 10))
 
-        // Server rows exist under both sections: the fixture set (web-01,
-        // worker-02) appears once per project.
-        let webRows = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "web-01"))
-        XCTAssertTrue(webRows.firstMatch.waitForExistence(timeout: 10))
-        XCTAssertGreaterThanOrEqual(webRows.count, 2, "Expected web-01 in both project sections")
+        // Production's fixture server renders...
+        XCTAssertTrue(element(labeled: "web-01", in: app).waitForExistence(timeout: 10))
+        // ...and Staging's DISTINCT fixture server renders too — proof the
+        // two projects' fetches are genuinely isolated, not just both
+        // showing the same default "web-01"/"worker-02" pair twice.
+        XCTAssertTrue(element(labeled: "api-01", in: app).waitForExistence(timeout: 10))
 
         // Combined burn card is present (fixture pricing × 2 projects).
         XCTAssertTrue(element(labeled: "This Month", in: app).waitForExistence(timeout: 10))
 
-        // With >1 project the "+" button must present the project menu, not
-        // jump straight into the wizard.
-        waitAndTap(element(labeled: "Create Server", in: app))
-        XCTAssertTrue(app.buttons["Production"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Staging"].waitForExistence(timeout: 5))
+        // With >1 project the toolbar "+" ("New") menu's "Create Server"
+        // entry must present a nested project-picker submenu, not jump
+        // straight into the wizard. Menu items live inside the menu popup's
+        // collection view — scoping there is required because the
+        // `ProjectFilterBar` chips on the dashboard beneath are ALSO buttons
+        // labeled "Production"/"Staging", and an unscoped `app.buttons[...]`
+        // tap fails the ambiguity check ("Multiple matching elements found").
+        waitAndTap(element(labeled: "New", in: app))
+        waitAndTap(app.collectionViews.buttons["Create Server"])
+        XCTAssertTrue(app.collectionViews.buttons["Production"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.collectionViews.buttons["Staging"].waitForExistence(timeout: 5))
 
         // Choosing a project opens the wizard for it.
-        waitAndTap(app.buttons["Staging"])
+        waitAndTap(app.collectionViews.buttons["Staging"])
         XCTAssertTrue(
             element(identifier: "createServer.footer.primaryCTA", in: app).waitForExistence(timeout: 10),
             "Wizard should open after picking a project from the menu"
         )
+    }
+
+    /// `ProjectFilterBar`'s "Production" chip scopes the whole dashboard to
+    /// that project: Staging's section header (uppercased "STAGING") and its
+    /// distinct `api-01` fixture server disappear entirely, Production's
+    /// `web-01` remains, and tapping "All" brings everything back.
+    ///
+    /// Matching is deliberately case-SENSITIVE throughout: the filter bar's
+    /// "Staging" chip stays on screen while the section is filtered out, so
+    /// the assertions must target the header's uppercased "STAGING" (and the
+    /// chip tap must target lowercase-exact "Production" to not hit the
+    /// "PRODUCTION" header link).
+    func test_dashboard_projectFilter_scopesSections() {
+        let app = launchMultiProject()
+
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
+        XCTAssertTrue(element(labeled: "web-01", in: app).waitForExistence(timeout: 10))
+        XCTAssertTrue(element(labeled: "api-01", in: app).waitForExistence(timeout: 10))
+        XCTAssertTrue(button(labelContainsCaseSensitive: "STAGING", in: app).waitForExistence(timeout: 10))
+
+        // The chip renders the name as-is ("Production"); the section header
+        // renders it uppercased ("PRODUCTION") — case-sensitive exact match
+        // picks the chip.
+        waitAndTap(button(exactLabel: "Production", in: app))
+
+        // Staging's section header and its distinct fixture server drop out.
+        // (The "Staging" filter CHIP intentionally stays — that's the whole
+        // filter bar — which is why these assertions target the uppercased
+        // header text and the server name, never the word "Staging" itself.)
+        XCTAssertFalse(button(labelContainsCaseSensitive: "STAGING", in: app).waitForExistence(timeout: 3))
+        XCTAssertFalse(element(labeled: "api-01", in: app).waitForExistence(timeout: 3))
+        // Production's server remains.
+        XCTAssertTrue(element(labeled: "web-01", in: app).waitForExistence(timeout: 5))
+
+        // "All" restores both sections.
+        waitAndTap(button(exactLabel: "All", in: app))
+        XCTAssertTrue(button(labelContainsCaseSensitive: "STAGING", in: app).waitForExistence(timeout: 10))
+        XCTAssertTrue(element(labeled: "api-01", in: app).waitForExistence(timeout: 10))
+    }
+
+    /// The toolbar "New" menu's "Add Project" entry opens `AddProjectSheet`
+    /// (title + API token field) rather than jumping into server creation.
+    /// `AddProjectSheet` validates against the live network (constructs its
+    /// own `CloudClient(token:)`, same as `UpdateTokenSheet` — see
+    /// `SettingsUITests`'s doc comment), so this only covers presenting the
+    /// sheet and canceling back out, not submit-and-persist.
+    func test_dashboard_addProjectMenuEntry_presentsSheet() {
+        let app = launchSeeded()
+
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
+
+        waitAndTap(element(labeled: "New", in: app))
+        // Menu row scoped to the popup's collection view (see
+        // `CreateServerWizardUITests` for why the unscoped match flakes).
+        waitAndTap(app.collectionViews.buttons["Add Project"])
+
+        XCTAssertTrue(app.navigationBars["Add Project"].waitForExistence(timeout: 10))
+        XCTAssertTrue(element(labeled: "API token", in: app).waitForExistence(timeout: 5))
+
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 10))
     }
 }

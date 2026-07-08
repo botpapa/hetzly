@@ -11,13 +11,33 @@ public struct ServerType: Codable, Sendable, Identifiable, Equatable {
     public let disk: Int
     public let cpuType: CPUType
     public let architecture: Architecture
+    /// `true`/`false` deprecation flag. Kept alongside the newer
+    /// `deprecation` object (announcement/unavailability dates) added by
+    /// the 2026 API — both are populated together on current responses, but
+    /// older fixtures/responses only ever had this field.
     public let deprecated: Bool?
     public let prices: [ServerTypePrice]
+    /// Server type grouping added by the 2026 API, e.g. `"cost_optimized"`,
+    /// `"regular_purpose"`, `"dedicated_purpose"`. `nil` on older responses
+    /// that don't send it.
+    public let category: String?
+    /// `"local"` or `"network"`, added by the 2026 API. `nil` on older
+    /// responses that don't send it.
+    public let storageType: String?
+    /// Announcement/unavailability dates for a deprecated server type,
+    /// added by the 2026 API. `nil` when not deprecated (or on older
+    /// responses that only send the `deprecated` bool).
+    public let deprecation: ServerTypeDeprecation?
+    /// Per-location availability, added by the 2026 API. `nil` on older
+    /// responses that don't send it.
+    public let locations: [ServerTypeLocation]?
 
     enum CodingKeys: String, CodingKey {
         case id, name, description, cores, memory, disk
         case cpuType = "cpu_type"
-        case architecture, deprecated, prices
+        case architecture, deprecated, prices, category
+        case storageType = "storage_type"
+        case deprecation, locations
     }
 
     public init(
@@ -30,7 +50,11 @@ public struct ServerType: Codable, Sendable, Identifiable, Equatable {
         cpuType: CPUType,
         architecture: Architecture,
         deprecated: Bool?,
-        prices: [ServerTypePrice]
+        prices: [ServerTypePrice],
+        category: String? = nil,
+        storageType: String? = nil,
+        deprecation: ServerTypeDeprecation? = nil,
+        locations: [ServerTypeLocation]? = nil
     ) {
         self.id = id
         self.name = name
@@ -42,6 +66,51 @@ public struct ServerType: Codable, Sendable, Identifiable, Equatable {
         self.architecture = architecture
         self.deprecated = deprecated
         self.prices = prices
+        self.category = category
+        self.storageType = storageType
+        self.deprecation = deprecation
+        self.locations = locations
+    }
+}
+
+/// `server_type.deprecation` object added by the 2026 API — distinct from
+/// `ISODeprecation`'s identical shape (kept separate to avoid coupling two
+/// otherwise-unrelated resource types to the same wire type).
+public struct ServerTypeDeprecation: Codable, Sendable, Equatable {
+    public let announced: Date
+    public let unavailableAfter: Date
+
+    enum CodingKeys: String, CodingKey {
+        case announced
+        case unavailableAfter = "unavailable_after"
+    }
+
+    public init(announced: Date, unavailableAfter: Date) {
+        self.announced = announced
+        self.unavailableAfter = unavailableAfter
+    }
+}
+
+/// One entry of `server_type.locations`, added by the 2026 API: whether a
+/// server type is currently orderable/recommended at a given location, and
+/// that location's own deprecation window if it's being phased out there.
+public struct ServerTypeLocation: Codable, Sendable, Equatable {
+    public let id: Int
+    public let name: String
+    public let available: Bool
+    public let recommended: Bool
+    public let deprecation: ServerTypeDeprecation?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, available, recommended, deprecation
+    }
+
+    public init(id: Int, name: String, available: Bool, recommended: Bool, deprecation: ServerTypeDeprecation?) {
+        self.id = id
+        self.name = name
+        self.available = available
+        self.recommended = recommended
+        self.deprecation = deprecation
     }
 }
 

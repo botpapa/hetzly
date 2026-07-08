@@ -8,6 +8,12 @@ public struct Server: Codable, Sendable, Identifiable, Equatable {
     public let created: Date
     public let publicNet: PublicNet
     public let serverType: ServerType
+    /// The server's datacenter. On the 2026 API, servers no longer carry a
+    /// `datacenter` object on the wire — only a top-level `location`. In
+    /// that case this is a *synthesized* placeholder (`id: -1`, `name:
+    /// "<location>-dc"`) built from `location`; see `init(from:)` and
+    /// `decodeDatacenterOrSynthesize` in `CloudAPICompat.swift`. Use
+    /// `location` instead when only the real location data is needed.
     public let datacenter: Datacenter
     public let labels: [String: String]
     public let locked: Bool
@@ -68,6 +74,36 @@ public struct Server: Codable, Sendable, Identifiable, Equatable {
         self.outgoingTraffic = outgoingTraffic
         self.ingoingTraffic = ingoingTraffic
     }
+
+    /// Back-compat decode: the 2026 API dropped the `datacenter` object in
+    /// favor of a top-level `location` object. See
+    /// `decodeDatacenterOrSynthesize` in `CloudAPICompat.swift` for the
+    /// synthesis strategy when only `location` is present. Labels decode
+    /// leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        status = try container.decode(ServerStatus.self, forKey: .status)
+        created = try container.decode(Date.self, forKey: .created)
+        publicNet = try container.decode(PublicNet.self, forKey: .publicNet)
+        serverType = try container.decode(ServerType.self, forKey: .serverType)
+        datacenter = try decodeDatacenterOrSynthesize(from: decoder)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        locked = try container.decode(Bool.self, forKey: .locked)
+        protection = try container.decode(ServerProtection.self, forKey: .protection)
+        backupWindow = try container.decodeIfPresent(String.self, forKey: .backupWindow)
+        rescueEnabled = try container.decode(Bool.self, forKey: .rescueEnabled)
+        primaryDiskSize = try container.decode(Int.self, forKey: .primaryDiskSize)
+        includedTraffic = try container.decodeIfPresent(Int64.self, forKey: .includedTraffic)
+        outgoingTraffic = try container.decodeIfPresent(Int64.self, forKey: .outgoingTraffic)
+        ingoingTraffic = try container.decodeIfPresent(Int64.self, forKey: .ingoingTraffic)
+    }
+
+    /// `datacenter.location` convenience — `location` is the wire's
+    /// canonical field in the post-2026 API shape (see `datacenter`'s doc
+    /// comment on `CloudAPICompat.swift`'s synthesis strategy).
+    public var location: Location { datacenter.location }
 }
 
 /// Hetzner server lifecycle state. Unknown wire values (new states Hetzner

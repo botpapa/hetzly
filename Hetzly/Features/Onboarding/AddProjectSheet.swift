@@ -29,8 +29,16 @@ struct AddProjectSheet: View {
         token.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Hetzner's API has no endpoint that reveals a project's name from its
+    /// token, so the name can't be fetched automatically — but it CAN be
+    /// optional: an empty field falls back to "Project N".
+    private var effectiveName: String {
+        if !trimmedName.isEmpty { return trimmedName }
+        return "Project \(container.projectsStore.projects.count + 1)"
+    }
+
     private var canSubmit: Bool {
-        !trimmedName.isEmpty && !trimmedToken.isEmpty && !isValidating
+        !trimmedToken.isEmpty && !isValidating
     }
 
     var body: some View {
@@ -43,7 +51,7 @@ struct AddProjectSheet: View {
                         VStack(alignment: .leading, spacing: Spacing.unit * 2) {
                             SectionLabel("Project name")
                             GlassCard {
-                                TextField("e.g. Personal, Work", text: $name)
+                                TextField("Optional — e.g. Personal, Work", text: $name)
                                     .textFieldStyle(.plain)
                                     .textInputAutocapitalization(.words)
                                     .autocorrectionDisabled()
@@ -63,7 +71,9 @@ struct AddProjectSheet: View {
                             }
                             Text(
                                 "Create a token in Hetzner Console → Security → API tokens. "
-                                    + "Read & Write unlocks actions; Read-only works for monitoring."
+                                    + "Read & Write unlocks actions; Read-only works for monitoring. "
+                                    + "Tokens are project-scoped, so the name can't be read from the "
+                                    + "token — leave it blank and we'll number it for you."
                             )
                             .caption()
                         }
@@ -108,7 +118,7 @@ struct AddProjectSheet: View {
 
         errorMessage = nil
         isValidating = true
-        let name = trimmedName
+        let name = effectiveName
         let token = trimmedToken
 
         Task {
@@ -129,7 +139,11 @@ struct AddProjectSheet: View {
                 _ = try container.projectsStore.addProject(name: name, token: token)
                 dismiss()
             } catch {
-                errorMessage = "The token is valid, but the project couldn't be saved on this device. Please try again."
+                // Almost always a Keychain denial (e.g. running an unsigned
+                // development build) — surface the underlying reason so the
+                // failure is diagnosable instead of a dead-end "try again".
+                errorMessage = "The token is valid, but it couldn't be stored in the device Keychain: "
+                    + error.localizedDescription
             }
         }
     }

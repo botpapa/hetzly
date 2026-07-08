@@ -81,17 +81,19 @@ enum UITestSupport {
             try? modelContainer.mainContext.save()
 
             // Each project gets its own client instance (mirroring the real
-            // per-project cache); both route to the same stateless fixtures.
+            // per-project cache) AND its own server-name pair, so the two
+            // sections are visually and assertably distinct rather than both
+            // showing "web-01"/"worker-02" twice.
             return AppContainer.makeForUITesting(
                 modelContainer: modelContainer,
                 preconfiguredCloudClients: [
                     production.id: CloudClient(
                         token: "uitest-fake-token-never-sent",
-                        transport: UITestTransport()
+                        transport: UITestTransport(serverNames: ["web-01", "worker-02"])
                     ),
                     staging.id: CloudClient(
                         token: "uitest-fake-token-never-sent",
-                        transport: UITestTransport()
+                        transport: UITestTransport(serverNames: ["api-01", "cache-02"])
                     ),
                 ]
             )
@@ -134,6 +136,17 @@ enum UITestSupport {
 /// `ActionTracker` polls once and is done), so the wizard's happy path never
 /// needs to wait out real polling cadence.
 struct UITestTransport: HTTPTransport {
+    /// The two fixture servers' names — `[runningServerName, offServerName]`.
+    /// Defaults to the original single-project fixture names so every
+    /// pre-existing test (and any call site that doesn't care) is unaffected.
+    /// `HETZLY_UITEST_MULTI` gives each project's client a distinct pair so
+    /// Production and Staging sections are visually and assertably distinct.
+    let serverNames: [String]
+
+    init(serverNames: [String] = ["web-01", "worker-02"]) {
+        self.serverNames = serverNames
+    }
+
     func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         guard let url = request.url else { throw URLError(.badURL) }
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -144,7 +157,9 @@ struct UITestTransport: HTTPTransport {
         let query = components?.queryItems ?? []
         let method = request.httpMethod ?? "GET"
 
-        let body = UITestFixtures.response(method: method, path: Array(path), query: query, requestBody: request.httpBody)
+        let body = UITestFixtures.response(
+            method: method, path: Array(path), query: query, requestBody: request.httpBody, serverNames: serverNames
+        )
         guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [:]) else {
             throw URLError(.badServerResponse)
         }
@@ -157,7 +172,9 @@ struct UITestTransport: HTTPTransport {
 /// Realistic Hetzner Cloud API JSON, adapted from
 /// `Packages/HetznerKit/Tests/HetznerKitTests/CloudAPIFixtures.swift` (same
 /// wire shapes, trimmed to what the app's UI-test surface actually reads).
-/// Two demo servers (`web-01` running, `worker-02` off) at `fsn1`/`nbg1`, a
+/// Two demo servers (`web-01` running, `worker-02` off by default — see
+/// `UITestTransport.serverNames` for how `HETZLY_UITEST_MULTI` overrides
+/// these per project) at `fsn1`/`nbg1`, a
 /// three-location catalog with `fsn1` sorting first (matching
 /// `CreateServerViewModel`'s city-name sort — the UI test's "first location
 /// card"), and `cx22` priced cheapest everywhere it's sold (the UI test's
@@ -168,12 +185,17 @@ enum UITestFixtures {
     static let createdServerID = 5201
     static let createActionID = 5301
 
-    static func response(method: String, path: [String], query: [URLQueryItem], requestBody: Data?) -> Data {
+    static func response(
+        method: String, path: [String], query: [URLQueryItem], requestBody: Data?,
+        serverNames: [String] = ["web-01", "worker-02"]
+    ) -> Data {
         switch method {
         case "GET":
             if path == ["pricing"] { return pricingJSON }
-            if path == ["servers"] { return serversListJSON }
-            if path.count == 2, path[0] == "servers", let id = Int(path[1]) { return serverEnvelopeJSON(id: id) }
+            if path == ["servers"] { return serversListJSON(serverNames: serverNames) }
+            if path.count == 2, path[0] == "servers", let id = Int(path[1]) {
+                return serverEnvelopeJSON(id: id, serverNames: serverNames)
+            }
             if path.count == 3, path[0] == "servers", path[2] == "metrics" { return metricsJSON }
             if path == ["locations"] { return locationsJSON }
             if path == ["images"] { return imagesJSON(query: query) }
@@ -270,22 +292,33 @@ enum UITestFixtures {
         """
     }
 
-    private static let runningServerJSON = serverJSON(
-        id: runningServerID, name: "web-01", status: "running",
-        datacenter: fsn1DatacenterJSON, serverType: cx22JSON, ipv4: "95.216.1.10"
-    )
-    private static let offServerJSON = serverJSON(
-        id: offServerID, name: "worker-02", status: "off",
-        datacenter: nbg1DatacenterJSON, serverType: cx22JSON, ipv4: "95.216.1.11"
-    )
+    /// `names[0]` is the running server's name, `names[1]` the off server's —
+    /// falling back to the original fixed names if a caller passes something
+    /// shorter than 2 elements, so this never crashes on a malformed override.
+    private static func runningServerJSON(name: String) -> String {
+        serverJSON(
+            id: runningServerID, name: name, status: "running",
+            datacenter: fsn1DatacenterJSON, serverType: cx22JSON, ipv4: "95.216.1.10"
+        )
+    }
+    private static func offServerJSON(name: String) -> String {
+        serverJSON(
+            id: offServerID, name: name, status: "off",
+            datacenter: nbg1DatacenterJSON, serverType: cx22JSON, ipv4: "95.216.1.11"
+        )
+    }
 
-    static let serversListJSON = Data("{\"servers\": [\(runningServerJSON), \(offServerJSON)]}".utf8)
+    static func serversListJSON(serverNames: [String] = ["web-01", "worker-02"]) -> Data {
+        let running = runningServerJSON(name: serverNames.first ?? "web-01")
+        let off = offServerJSON(name: serverNames.count > 1 ? serverNames[1] : "worker-02")
+        return Data("{\"servers\": [\(running), \(off)]}".utf8)
+    }
 
-    static func serverEnvelopeJSON(id: Int) -> Data {
+    static func serverEnvelopeJSON(id: Int, serverNames: [String] = ["web-01", "worker-02"]) -> Data {
         let body: String
         switch id {
-        case runningServerID: body = runningServerJSON
-        case offServerID: body = offServerJSON
+        case runningServerID: body = runningServerJSON(name: serverNames.first ?? "web-01")
+        case offServerID: body = offServerJSON(name: serverNames.count > 1 ? serverNames[1] : "worker-02")
         default:
             // Never expected on the UI-test happy path (the wizard's
             // `onCreated` callback re-lists rather than re-fetching by id),

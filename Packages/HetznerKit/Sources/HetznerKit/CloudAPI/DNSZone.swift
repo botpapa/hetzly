@@ -43,6 +43,20 @@ public struct DNSZone: Codable, Sendable, Identifiable, Equatable {
         self.created = created
         self.protection = protection
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        ttl = try container.decode(Int.self, forKey: .ttl)
+        mode = try container.decode(DNSZoneMode.self, forKey: .mode)
+        status = try container.decode(DNSZoneStatus.self, forKey: .status)
+        recordCount = try container.decode(Int.self, forKey: .recordCount)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        created = try container.decode(Date.self, forKey: .created)
+        protection = try container.decode(DNSZoneProtection.self, forKey: .protection)
+    }
 }
 
 /// Unknown wire values decode to `.unknown` instead of throwing.
@@ -105,6 +119,16 @@ public struct DNSRecordSet: Codable, Sendable, Equatable {
         self.ttl = ttl
         self.labels = labels
         self.records = records
+    }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        type = try container.decode(DNSRecordType.self, forKey: .type)
+        ttl = try container.decodeIfPresent(Int.self, forKey: .ttl)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        records = try container.decode([DNSRecordValue].self, forKey: .records)
     }
 }
 

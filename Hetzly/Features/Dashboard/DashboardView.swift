@@ -14,6 +14,42 @@ struct DashboardView: View {
     }
 
     @State private var createServerTarget: CreateServerTarget?
+    @State private var isAddProjectPresented = false
+    @State private var updateTokenProject: ProjectRecord?
+
+    /// Which projects' sections are collapsed in "All" mode. Empty by
+    /// default (every section starts expanded); intentionally not
+    /// persisted — a fresh launch always shows everything.
+    @State private var collapsedProjectIDs: Set<UUID> = []
+
+    /// Dashboard-wide project scope: `nil` means "All". Persisted as a raw
+    /// UUID string (`AppStorage` has no native `UUID?` support) so the scope
+    /// survives relaunch; an empty string round-trips to `nil`.
+    @AppStorage("dashboard.selectedProject") private var selectedProjectIDRaw = ""
+
+    private var selectedProjectID: UUID? {
+        UUID(uuidString: selectedProjectIDRaw)
+    }
+
+    private var selectedProjectIDBinding: Binding<UUID?> {
+        Binding(
+            get: { selectedProjectID },
+            set: { selectedProjectIDRaw = $0?.uuidString ?? "" }
+        )
+    }
+
+    /// `viewModel.projectSections`, scoped to the selected project — the
+    /// other projects' sections are skipped entirely rather than shown
+    /// collapsed, per the filter contract.
+    private var visibleProjectSections: [DashboardViewModel.ProjectSection] {
+        guard let selectedProjectID else { return viewModel.projectSections }
+        return viewModel.projectSections.filter { $0.projectID == selectedProjectID }
+    }
+
+    private var visibleAttention: [ServerListItem] {
+        guard let selectedProjectID else { return viewModel.attention }
+        return viewModel.attention.filter { $0.projectID == selectedProjectID }
+    }
 
     init() {
         _viewModel = State(initialValue: DashboardViewModel())
@@ -32,28 +68,34 @@ struct DashboardView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.unit * 6) {
+                        ProjectFilterBar(
+                            projects: container.projectsStore.projects,
+                            selection: selectedProjectIDBinding,
+                            onAddProject: { isAddProjectPresented = true }
+                        )
+
                         freshnessBanner
 
                         BurnCardView(
-                            monthToDate: viewModel.monthToDate,
-                            projected: viewModel.projected,
+                            monthToDate: scopedBurn.monthToDate,
+                            projected: scopedBurn.projected,
                             currency: viewModel.currency,
                             idleMascotState: idleMascotState
                         )
 
-                        if !viewModel.attention.isEmpty {
+                        if !visibleAttention.isEmpty {
                             AttentionSectionView(
-                                items: viewModel.attention,
+                                items: visibleAttention,
                                 cpuSamples: viewModel.cpuSparklines,
                                 mascotEnabled: container.settings.mascotEnabled
                             )
                         }
 
-                        ForEach(viewModel.projectSections) { section in
+                        ForEach(visibleProjectSections) { section in
                             projectSection(section)
                         }
 
-                        if !viewModel.dedicatedServers.isEmpty || viewModel.dedicatedError != nil {
+                        if selectedProjectID == nil, !viewModel.dedicatedServers.isEmpty || viewModel.dedicatedError != nil {
                             DedicatedSectionView(
                                 servers: viewModel.dedicatedServers,
                                 errorMessage: viewModel.dedicatedError
@@ -84,30 +126,31 @@ struct DashboardView: View {
             .navigationDestination(for: RobotServerRoute.self) { route in
                 DedicatedServerDetailView(route: route)
             }
+            .navigationDestination(for: ProjectRoute.self) { route in
+                ProjectDetailView(route: route)
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    // Single project: tap goes straight into the wizard.
-                    // Multiple: tap opens a project picker menu. (A Menu with
-                    // primaryAction won't do here — its tap fires the action
-                    // and only a long-press reveals the menu, which made the
-                    // button a no-op with >1 projects.)
-                    if container.projectsStore.projects.count == 1,
-                       let only = container.projectsStore.projects.first {
+                    // Always a menu (never a direct-tap shortcut): "Add
+                    // Project" starts the sync-a-new-project flow, "Create
+                    // Server" either jumps straight into the wizard (exactly
+                    // one project) or opens a nested project-picker submenu
+                    // (more than one) — disabled with no projects at all.
+                    Menu {
                         Button {
-                            createServerTarget = CreateServerTarget(id: only.id)
+                            isAddProjectPresented = true
                         } label: {
-                            Label("Create Server", systemImage: "plus")
+                            Label("Add Project", systemImage: "folder.badge.plus")
                         }
-                    } else {
-                        Menu {
-                            ForEach(container.projectsStore.projects) { project in
-                                Button(project.name) {
-                                    createServerTarget = CreateServerTarget(id: project.id)
-                                }
-                            }
-                        } label: {
-                            Label("Create Server", systemImage: "plus")
-                        }
+
+                        createServerMenuEntry
+                    } label: {
+                        // "New", not "Add" — `HetzlyUITestCase.element(labeled:)`
+                        // matches substrings case-insensitively, and
+                        // `ProjectFilterBar`'s "+" chip is already
+                        // accessibility-labeled "Add project"; a same-prefix
+                        // label here would make that lookup ambiguous.
+                        Label("New", systemImage: "plus")
                     }
                 }
             }
@@ -116,10 +159,60 @@ struct DashboardView: View {
                     Task { await viewModel.refresh(container: container) }
                 }
             }
+            .sheet(item: $updateTokenProject) { project in
+                UpdateTokenSheet(project: project)
+                    .onDisappear {
+                        Task { await viewModel.refresh(container: container) }
+                    }
+            }
+            .sheet(isPresented: $isAddProjectPresented) {
+                AddProjectSheet()
+            }
         }
         .task {
             await viewModel.load(container: container)
             resetIdleTimer()
+        }
+    }
+
+    /// The burn card's figures, scoped to `selectedProjectID` ("All" shows
+    /// the combined totals). Widgets still get the unfiltered combined
+    /// totals via `DashboardViewModel.writeWidgetSnapshot()` — this scoping
+    /// is purely a display concern.
+    private var scopedBurn: (monthToDate: Decimal?, projected: Decimal?) {
+        viewModel.burn(for: selectedProjectID)
+    }
+
+    /// The toolbar "+" menu's "Create Server" entry: zero projects disables
+    /// it outright, exactly one jumps straight into the wizard for it, and
+    /// more than one exposes a nested submenu of projects (the accessible
+    /// label stays "Create Server" either way, so UI tests can keep finding
+    /// it by that text once the parent menu is open).
+    @ViewBuilder
+    private var createServerMenuEntry: some View {
+        let projects = container.projectsStore.projects
+        if projects.isEmpty {
+            Button {
+            } label: {
+                Label("Create Server", systemImage: "server.rack")
+            }
+            .disabled(true)
+        } else if projects.count == 1, let only = projects.first {
+            Button {
+                createServerTarget = CreateServerTarget(id: only.id)
+            } label: {
+                Label("Create Server", systemImage: "server.rack")
+            }
+        } else {
+            Menu {
+                ForEach(projects) { project in
+                    Button(project.name) {
+                        createServerTarget = CreateServerTarget(id: project.id)
+                    }
+                }
+            } label: {
+                Label("Create Server", systemImage: "server.rack")
+            }
         }
     }
 
@@ -181,44 +274,123 @@ struct DashboardView: View {
 
     // MARK: - Per-project section
 
+    /// Collapse is an "All" mode affordance only — with a single project
+    /// selected there's nothing else on screen to collapse away from, so
+    /// the section always renders expanded and the toggle is hidden.
+    private func isCollapsed(_ section: DashboardViewModel.ProjectSection) -> Bool {
+        selectedProjectID == nil && collapsedProjectIDs.contains(section.projectID)
+    }
+
     @ViewBuilder
     private func projectSection(_ section: DashboardViewModel.ProjectSection) -> some View {
+        let collapsed = isCollapsed(section)
+
         VStack(alignment: .leading, spacing: Spacing.unit * 3) {
-            HStack {
-                SectionLabel(section.projectName)
+            HStack(spacing: Spacing.unit * 2) {
+                NavigationLink(value: ProjectRoute(projectID: section.projectID)) {
+                    HStack(spacing: Spacing.unit) {
+                        SectionLabel(section.projectName)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(HetzlyColors.textTertiary)
+                    }
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
+
                 if section.isStale {
                     GlassChip("Stale", systemImage: "clock.arrow.circlepath")
                 }
-            }
 
-            if let errorMessage = section.errorMessage {
-                GlassCard {
-                    HStack(spacing: Spacing.unit * 2) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(HetzlyColors.statusError)
-                        Text(errorMessage)
-                            .bodySecondary()
+                if collapsed {
+                    GlassChip(collapsedSummary(for: section))
+                }
+
+                if selectedProjectID == nil {
+                    Button {
+                        toggleCollapsed(section.projectID)
+                    } label: {
+                        Image(systemName: collapsed ? "chevron.down" : "chevron.up")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(HetzlyColors.textTertiary)
+                            .frame(width: 28, height: 28)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(collapsed ? "Expand \(section.projectName)" : "Collapse \(section.projectName)")
                 }
             }
 
-            if section.servers.isEmpty {
-                if section.errorMessage == nil {
+            if !collapsed {
+                if let errorMessage = section.errorMessage {
                     GlassCard {
-                        Text("No servers in this project")
-                            .bodySecondary()
-                    }
-                }
-            } else {
-                VStack(spacing: Spacing.unit * 2) {
-                    ForEach(section.servers) { item in
-                        NavigationLink(value: ServerRoute(projectID: item.projectID, serverID: item.serverID)) {
-                            ServerRowView(item: item, cpuSamples: viewModel.cpuSparklines[item.id])
+                        VStack(alignment: .leading, spacing: Spacing.unit * 3) {
+                            HStack(spacing: Spacing.unit * 2) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(HetzlyColors.statusError)
+                                Text(errorMessage)
+                                    .bodySecondary()
+                            }
+                            // Auth failures are recoverable in place: a
+                            // rotated/revoked key just needs replacing.
+                            if isAuthError(errorMessage),
+                               let project = container.projectsStore.projects.first(
+                                where: { $0.id == section.projectID }
+                               ) {
+                                Button("Update token…") {
+                                    updateTokenProject = project
+                                }
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(HetzlyColors.accent)
+                            }
                         }
-                        .buttonStyle(.plain)
                     }
                 }
+
+                if section.servers.isEmpty {
+                    if section.errorMessage == nil {
+                        GlassCard {
+                            Text("No servers in this project")
+                                .bodySecondary()
+                        }
+                    }
+                } else {
+                    VStack(spacing: Spacing.unit * 2) {
+                        ForEach(section.servers) { item in
+                            NavigationLink(value: ServerRoute(projectID: item.projectID, serverID: item.serverID)) {
+                                ServerRowView(item: item, cpuSamples: viewModel.cpuSparklines[item.id])
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+        }
+        .animation(.snappy, value: collapsed)
+    }
+
+    /// A section error is auth-related (revoked/rotated key) when it carries
+    /// the `HetznerAPIError.unauthorized` user message — matched on the
+    /// stable "token was rejected" phrase since `ProjectSection` transports
+    /// only the rendered string, not the typed error.
+    private func isAuthError(_ message: String) -> Bool {
+        message.localizedCaseInsensitiveContains("token was rejected")
+    }
+
+    /// "N servers · M running" summary chip shown in place of the full
+    /// server list when a section is collapsed.
+    private func collapsedSummary(for section: DashboardViewModel.ProjectSection) -> String {
+        let total = section.servers.count
+        let running = section.servers.filter { $0.status == .running }.count
+        return "\(total) server\(total == 1 ? "" : "s") · \(running) running"
+    }
+
+    private func toggleCollapsed(_ projectID: UUID) {
+        withAnimation(.snappy) {
+            if collapsedProjectIDs.contains(projectID) {
+                collapsedProjectIDs.remove(projectID)
+            } else {
+                collapsedProjectIDs.insert(projectID)
             }
         }
     }
@@ -244,6 +416,20 @@ struct DashboardView: View {
 
 #Preview("Empty project") {
     DashboardView(previewViewModel: .previewEmptyProject)
+        .environment(AppContainer.makeDefault())
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Multi-project") {
+    // Note: `ProjectFilterBar`'s chips read live `ProjectRecord`s from
+    // `AppContainer.projectsStore` (per the module contract, not from the
+    // view model), so this preview exercises section collapse and the
+    // per-project burn card scoping via `previewMultiProject`'s three
+    // `ProjectSection`s + `perProjectBurn`; the filter bar itself renders
+    // whatever projects (if any) exist in `AppContainer.makeDefault()`'s
+    // on-disk store, matching the same pre-existing constraint the
+    // create-server toolbar menu already has.
+    DashboardView(previewViewModel: .previewMultiProject)
         .environment(AppContainer.makeDefault())
         .preferredColorScheme(.dark)
 }

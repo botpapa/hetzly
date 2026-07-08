@@ -55,6 +55,13 @@ public struct PrimaryIP: Codable, Sendable, Identifiable, Equatable {
     public let autoDelete: Bool
     public let blocked: Bool
     public let created: Date
+    /// The primary IP's datacenter. On the 2026 API, primary IPs no longer
+    /// carry a `datacenter` object on the wire — only a top-level
+    /// `location`. In that case this is a *synthesized* placeholder (`id:
+    /// -1`, `name: "<location>-dc"`) built from `location`; see
+    /// `init(from:)` and `decodeDatacenterOrSynthesize` in
+    /// `CloudAPICompat.swift`. Use `location` instead when only the real
+    /// location data is needed.
     public let datacenter: Datacenter
     public let dnsPtr: [DNSPtrEntry]
     public let labels: [String: String]
@@ -99,6 +106,31 @@ public struct PrimaryIP: Codable, Sendable, Identifiable, Equatable {
         self.labels = labels
         self.protection = protection
     }
+
+    /// Back-compat decode: the 2026 API dropped the `datacenter` object in
+    /// favor of a top-level `location` object. See
+    /// `decodeDatacenterOrSynthesize` in `CloudAPICompat.swift`. Labels
+    /// decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        ip = try container.decode(String.self, forKey: .ip)
+        type = try container.decode(IPAddressType.self, forKey: .type)
+        assigneeID = try container.decodeIfPresent(Int.self, forKey: .assigneeID)
+        assigneeType = try container.decodeIfPresent(String.self, forKey: .assigneeType)
+        autoDelete = try container.decode(Bool.self, forKey: .autoDelete)
+        blocked = try container.decode(Bool.self, forKey: .blocked)
+        created = try container.decode(Date.self, forKey: .created)
+        datacenter = try decodeDatacenterOrSynthesize(from: decoder)
+        dnsPtr = try container.decode([DNSPtrEntry].self, forKey: .dnsPtr)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        protection = try container.decode(DeleteProtection.self, forKey: .protection)
+    }
+
+    /// `datacenter.location` convenience — `location` is the wire's
+    /// canonical field in the post-2026 API shape.
+    public var location: Location { datacenter.location }
 }
 
 /// Wire envelope for `GET /primary_ips/{id}` and `PUT` responses.

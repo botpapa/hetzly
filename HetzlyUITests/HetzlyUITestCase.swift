@@ -65,6 +65,31 @@ class HetzlyUITestCase: XCTestCase {
         app.descendants(matching: .any)[identifier]
     }
 
+    /// Finds the first BUTTON whose label matches `exactLabel`
+    /// case-SENSITIVELY. The case-sensitivity is the whole point: the
+    /// dashboard renders the same project name twice — `ProjectFilterBar`'s
+    /// chip (label exactly "Production") and the project section header
+    /// (whose `SectionLabel` renders/labels the uppercased "PRODUCTION") —
+    /// so any case-insensitive exact match (`==[c]`) is ambiguous between
+    /// them, while plain `==` cleanly picks one or the other depending on
+    /// the casing the caller passes.
+    func button(exactLabel: String, in app: XCUIApplication) -> XCUIElement {
+        app.buttons
+            .matching(NSPredicate(format: "label == %@", exactLabel))
+            .firstMatch
+    }
+
+    /// Finds the first BUTTON whose label CONTAINS `text` case-SENSITIVELY —
+    /// see `button(exactLabel:in:)` for why case-sensitive matching matters
+    /// on the dashboard. Used for the section-header NavigationLinks, whose
+    /// label starts with the uppercased project name ("PRODUCTION") but may
+    /// carry additional accessibility text from sibling views.
+    func button(labelContainsCaseSensitive text: String, in app: XCUIApplication) -> XCUIElement {
+        app.buttons
+            .matching(NSPredicate(format: "label CONTAINS %@", text))
+            .firstMatch
+    }
+
     /// Waits for `element` to exist, fails loudly (with source location) if
     /// it never appears, then taps it.
     func waitAndTap(

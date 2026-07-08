@@ -46,6 +46,14 @@ final class CostsViewModel {
                 }
                 .sorted { $0.projectedTotal > $1.projectedTotal }
         }
+
+        /// This project's own kind breakdown, shaped for `CostKindDonutChart`
+        /// — used when Costs is scoped to a single project via
+        /// `ProjectFilterBar`, mirroring the combined `kindShares` the donut
+        /// shows in the "All" view.
+        var kindShares: [KindShare] {
+            kindSubtotals.map { KindShare(kind: $0.kind, projected: $0.projectedTotal) }
+        }
     }
 
     struct KindSubtotal: Identifiable {
@@ -135,6 +143,21 @@ final class CostsViewModel {
     /// has any billable resource, and there are no manual entries either.
     var isEmpty: Bool {
         combinedProjected == nil
+    }
+
+    /// Hero numbers scoped to a single project (or the combined totals when
+    /// `projectID` is `nil`, i.e. the "All" view). Reuses each project's
+    /// already-computed `ProjectSection` — no extra fetch or math, just a
+    /// lookup — so `CostsView` can drive `CostsHeroCard` from whatever the
+    /// `ProjectFilterBar` selection is.
+    func heroSummary(forProjectID projectID: UUID?) -> (monthToDate: Decimal?, projected: Decimal?) {
+        guard let projectID else {
+            return (combinedMonthToDate, combinedProjected)
+        }
+        guard let section = projectSections.first(where: { $0.projectID == projectID }) else {
+            return (nil, nil)
+        }
+        return (section.monthToDate, section.projectedTotal)
     }
 
     // MARK: - Lifecycle

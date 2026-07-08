@@ -322,6 +322,34 @@ Key models: `RobotServer` (serverNumber Int ("server_number"), serverName, produ
 - Costs (worker 5): Robot servers auto-listed in Costs with per-server manual €/mo (persisted, keyed by server number in ManualCostStore-style UserDefaults JSON,
   distinct store: `DedicatedPriceStore`); Dashboard gets a "DEDICATED" section listing robot servers (status dot: ready/in-process) when accounts exist.
 
+## Multi-project wave contracts (post-M4)
+
+Binding cross-worker touchpoints:
+
+```swift
+// Hetzly/Features/Projects/ (Worker P2)
+struct ProjectRoute: Hashable, Codable { let projectID: UUID }
+struct ProjectDetailView: View { init(route: ProjectRoute) }   // reads AppContainer from environment
+
+// Hetzly/Features/Dashboard/ProjectFilterBar.swift (Worker P1; reusable within the app target)
+struct ProjectFilterBar: View {
+    init(projects: [ProjectRecord], selection: Binding<UUID?>, onAddProject: @escaping () -> Void)
+    // nil selection = "All". Horizontal chip bar; >6 projects → picker menu chip instead of endless chips.
+}
+
+// Hetzly/Store/ProjectsStore.swift additions (Worker P4)
+func updateToken(for project: ProjectRecord, to newToken: String) throws   // Keychain replace, no record change
+func move(fromOffsets: IndexSet, toOffset: Int)                            // persists sortOrder
+
+// Hetzly/App/AppContainer.swift addition (Worker P4)
+func invalidateCloudClient(for projectID: UUID)   // drops the cached client (call after token update)
+```
+
+Navigation: Dashboard project section headers and Costs project section headers become NavigationLinks
+to `ProjectRoute`; each NavigationStack owner registers `.navigationDestination(for: ProjectRoute.self)`.
+Token-revoked UX: a 401-failing project section shows an "Update token" affordance that presents the
+token-update sheet (Worker P4's `UpdateTokenSheet(project:)` in Features/Settings/, reusable).
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

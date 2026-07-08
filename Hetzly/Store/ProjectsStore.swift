@@ -69,6 +69,31 @@ final class ProjectsStore {
         try TokenVault.cloudToken(projectID: project.id.uuidString)
     }
 
+    /// Replaces the Keychain-stored API token for `project` in place — the
+    /// record itself (id, name, sortOrder) is never touched. Callers must
+    /// also invalidate any cached `CloudClient` for this project (see
+    /// `AppContainer.invalidateCloudClient(for:)`) so the next access
+    /// rebuilds with the fresh token; this method has no knowledge of that
+    /// cache.
+    func updateToken(for project: ProjectRecord, to newToken: String) throws {
+        try TokenVault.saveCloudToken(newToken, projectID: project.id.uuidString)
+    }
+
+    /// Reorders `projects` per a SwiftUI `List.onMove` gesture, then
+    /// rewrites every record's `sortOrder` sequentially (0...n) to match the
+    /// new array order and persists it.
+    func move(fromOffsets source: IndexSet, toOffset destination: Int) {
+        var reordered = projects
+        reordered.move(fromOffsets: source, toOffset: destination)
+
+        for (index, project) in reordered.enumerated() {
+            project.sortOrder = index
+        }
+        try? context.save()
+
+        refresh()
+    }
+
     private func refresh() {
         let descriptor = FetchDescriptor<ProjectRecord>(
             sortBy: [

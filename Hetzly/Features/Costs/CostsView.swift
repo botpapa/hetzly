@@ -14,6 +14,20 @@ struct CostsView: View {
     @State private var editingManualEntry: ManualCostEntry?
     @State private var settingPriceForServer: CostsViewModel.DedicatedServerRow?
     @State private var shareImage: Image?
+    @State private var isPresentingAddProject = false
+
+    /// The project Costs is currently scoped to; `nil` = "All". Backed by
+    /// `@AppStorage` (stored as a `String` since `AppStorage` has no native
+    /// `UUID?` support) so the scope survives relaunches, matching
+    /// `ResourcesHubView`'s "resources.selectedProject" persistence.
+    @AppStorage("costs.selectedProject") private var selectedProjectIDStorage = ""
+
+    private var selectedProjectID: Binding<UUID?> {
+        Binding(
+            get: { UUID(uuidString: selectedProjectIDStorage) },
+            set: { selectedProjectIDStorage = $0?.uuidString ?? "" }
+        )
+    }
 
     init() {
         _viewModel = State(initialValue: CostsViewModel())
@@ -32,9 +46,16 @@ struct CostsView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.unit * 6) {
+                        ProjectFilterBar(
+                            projects: container.projectsStore.projects,
+                            selection: selectedProjectID,
+                            onAddProject: { isPresentingAddProject = true }
+                        )
+
+                        let hero = viewModel.heroSummary(forProjectID: scopedProjectID)
                         CostsHeroCard(
-                            monthToDate: viewModel.combinedMonthToDate,
-                            projected: viewModel.combinedProjected,
+                            monthToDate: hero.monthToDate,
+                            projected: hero.projected,
                             currency: viewModel.currency,
                             monthElapsedFraction: viewModel.monthElapsedFraction
                         )
@@ -42,12 +63,12 @@ struct CostsView: View {
                         if viewModel.isEmpty && !viewModel.isLoading {
                             emptyState
                         } else {
-                            if viewModel.kindShares.count > 1 {
+                            if visibleKindShares.count > 1 {
                                 GlassCard {
                                     VStack(alignment: .leading, spacing: Spacing.unit * 4) {
                                         SectionLabel("Spend by kind")
                                         CostKindDonutChart(
-                                            shares: viewModel.kindShares,
+                                            shares: visibleKindShares,
                                             currency: viewModel.currency
                                         )
                                     }
@@ -55,32 +76,42 @@ struct CostsView: View {
                                 }
                             }
 
-                            ForEach(viewModel.projectSections) { section in
+                            ForEach(visibleProjectSections) { section in
                                 CostProjectSectionView(section: section, currency: viewModel.currency)
                             }
                         }
 
-                        DedicatedCostSection(
-                            dedicatedServers: viewModel.dedicatedServers,
-                            dedicatedErrorMessage: viewModel.dedicatedErrorMessage,
-                            manualEntries: manualStore.entries,
-                            currency: viewModel.currency,
-                            onSetPrice: { settingPriceForServer = $0 },
-                            onAddManual: { isPresentingAddManual = true },
-                            onEditManual: { editingManualEntry = $0 },
-                            onDeleteManual: { removeManualEntry($0) }
-                        )
+                        // Dedicated servers and manual entries aren't tied to
+                        // any Cloud project, so they only make sense in the
+                        // combined "All" view — scoping to one project would
+                        // otherwise show costs that don't belong to it.
+                        if scopedProjectID == nil {
+                            DedicatedCostSection(
+                                dedicatedServers: viewModel.dedicatedServers,
+                                dedicatedErrorMessage: viewModel.dedicatedErrorMessage,
+                                manualEntries: manualStore.entries,
+                                currency: viewModel.currency,
+                                onSetPrice: { settingPriceForServer = $0 },
+                                onAddManual: { isPresentingAddManual = true },
+                                onEditManual: { editingManualEntry = $0 },
+                                onDeleteManual: { removeManualEntry($0) }
+                            )
+                        }
                     }
                     .padding(.horizontal, Spacing.screenMargin)
                     .padding(.vertical, Spacing.screenMargin)
                     .animation(.smooth, value: manualStore.entries)
                     .animation(.smooth, value: dedicatedPriceStore.entries)
+                    .animation(.snappy, value: scopedProjectID)
                 }
                 .refreshable {
                     await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
                 }
             }
             .navigationTitle("Costs")
+            .navigationDestination(for: ProjectRoute.self) { route in
+                ProjectDetailView(route: route)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
@@ -108,6 +139,14 @@ struct CostsView: View {
         }
         .task(id: shareRenderKey) {
             await renderShareCard()
+        }
+        .onChange(of: container.projectsStore.projects.map(\.id)) { _, currentIDs in
+            // The scoped project may have been removed (Settings) while
+            // Costs was showing it — fall back to "All" rather than showing
+            // an empty scope with no way out.
+            if let scopedProjectID, !currentIDs.contains(scopedProjectID) {
+                selectedProjectIDStorage = ""
+            }
         }
         .onChange(of: manualStore.entries) {
             // Manual entries feed the combined summary; recompute without a
@@ -141,6 +180,29 @@ struct CostsView: View {
                 existing: dedicatedPriceStore.price(for: server.serverNumber)
             )
         }
+        .sheet(isPresented: $isPresentingAddProject) {
+            AddProjectSheet()
+        }
+    }
+
+    // MARK: - Project scope
+
+    private var scopedProjectID: UUID? {
+        selectedProjectID.wrappedValue
+    }
+
+    /// `viewModel.projectSections` narrowed to the scoped project, or every
+    /// section when scope is "All".
+    private var visibleProjectSections: [CostsViewModel.ProjectSection] {
+        guard let scopedProjectID else { return viewModel.projectSections }
+        return viewModel.projectSections.filter { $0.projectID == scopedProjectID }
+    }
+
+    /// The donut's slices: the scoped project's own kind breakdown, or the
+    /// combined breakdown across every project when scope is "All".
+    private var visibleKindShares: [CostsViewModel.KindShare] {
+        guard scopedProjectID != nil else { return viewModel.kindShares }
+        return visibleProjectSections.first?.kindShares ?? []
     }
 
     // MARK: - Empty state

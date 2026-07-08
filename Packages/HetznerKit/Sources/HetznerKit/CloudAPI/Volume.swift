@@ -46,6 +46,22 @@ public struct Volume: Codable, Sendable, Identifiable, Equatable {
         self.format = format
         self.labels = labels
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        created = try container.decode(Date.self, forKey: .created)
+        name = try container.decode(String.self, forKey: .name)
+        server = try container.decodeIfPresent(Int.self, forKey: .server)
+        location = try container.decode(Location.self, forKey: .location)
+        size = try container.decode(Int.self, forKey: .size)
+        linuxDevice = try container.decode(String.self, forKey: .linuxDevice)
+        protection = try container.decode(VolumeProtection.self, forKey: .protection)
+        status = try container.decode(VolumeStatus.self, forKey: .status)
+        format = try container.decodeIfPresent(String.self, forKey: .format)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+    }
 }
 
 /// Volume lifecycle state. Unknown wire values decode to `.unknown` instead

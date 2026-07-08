@@ -55,6 +55,22 @@ public struct Certificate: Codable, Sendable, Identifiable, Equatable {
         self.fingerprint = fingerprint
         self.status = status
     }
+
+    /// Labels decode leniently — see `decodeLenientLabels`.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        labels = try container.decodeLenientLabels(forKey: .labels)
+        type = try container.decode(CertificateType.self, forKey: .type)
+        certificate = try container.decodeIfPresent(String.self, forKey: .certificate)
+        created = try container.decode(Date.self, forKey: .created)
+        notValidBefore = try container.decodeIfPresent(Date.self, forKey: .notValidBefore)
+        notValidAfter = try container.decodeIfPresent(Date.self, forKey: .notValidAfter)
+        domainNames = try container.decode([String].self, forKey: .domainNames)
+        fingerprint = try container.decodeIfPresent(String.self, forKey: .fingerprint)
+        status = try container.decodeIfPresent(CertificateStatus.self, forKey: .status)
+    }
 }
 
 /// Unknown wire values decode to `.unknown` instead of throwing.

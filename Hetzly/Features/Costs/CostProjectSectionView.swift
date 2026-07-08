@@ -12,16 +12,23 @@ struct CostProjectSectionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 3) {
-            HStack(alignment: .firstTextBaseline) {
-                SectionLabel(section.projectName)
-                Spacer()
-                if section.projectedTotal > 0 {
-                    Text(section.projectedTotal, format: .currency(code: currency))
-                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                        .monospacedDigit()
-                        .foregroundStyle(HetzlyColors.textSecondary)
+            NavigationLink(value: ProjectRoute(projectID: section.projectID)) {
+                HStack(alignment: .firstTextBaseline) {
+                    SectionLabel(section.projectName)
+                    Spacer()
+                    if section.projectedTotal > 0 {
+                        Text(section.projectedTotal, format: .currency(code: currency))
+                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .monospacedDigit()
+                            .foregroundStyle(HetzlyColors.textSecondary)
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(HetzlyColors.textTertiary)
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
             if let errorMessage = section.errorMessage {
                 GlassCard {
@@ -135,15 +142,20 @@ struct CostItemRow: View {
 }
 
 #Preview {
-    ZStack {
-        CanvasBackground()
-        ScrollView {
-            VStack(spacing: Spacing.unit * 6) {
-                CostProjectSectionView(section: CostsPreviewFixtures.productionSection, currency: "EUR")
-                CostProjectSectionView(section: CostsPreviewFixtures.failedSection, currency: "EUR")
-                CostProjectSectionView(section: CostsPreviewFixtures.emptySection, currency: "EUR")
+    NavigationStack {
+        ZStack {
+            CanvasBackground()
+            ScrollView {
+                VStack(spacing: Spacing.unit * 6) {
+                    CostProjectSectionView(section: CostsPreviewFixtures.productionSection, currency: "EUR")
+                    CostProjectSectionView(section: CostsPreviewFixtures.failedSection, currency: "EUR")
+                    CostProjectSectionView(section: CostsPreviewFixtures.emptySection, currency: "EUR")
+                }
+                .padding(Spacing.screenMargin)
             }
-            .padding(Spacing.screenMargin)
+        }
+        .navigationDestination(for: ProjectRoute.self) { route in
+            ProjectDetailView(route: route)
         }
     }
     .preferredColorScheme(.dark)

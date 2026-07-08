@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var renamingProject: ProjectRecord?
     @State private var renameText = ""
     @State private var pendingDeletion: ProjectRecord?
+    @State private var updatingTokenFor: ProjectRecord?
     @State private var actionError: String?
 
     @State private var isPresentingAppIconPicker = false
@@ -37,8 +38,16 @@ struct SettingsView: View {
                 .listRowSpacing(Spacing.unit * 2)
             }
             .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                }
+            }
             .sheet(isPresented: $isPresentingAddProject) {
                 AddProjectSheet()
+            }
+            .sheet(item: $updatingTokenFor) { project in
+                UpdateTokenSheet(project: project)
             }
             .sheet(isPresented: $isPresentingAddRobotAccount) {
                 AddRobotAccountSheet()
@@ -109,7 +118,25 @@ struct SettingsView: View {
                         }
                         .tint(HetzlyColors.textTertiary)
                     }
+                    .contextMenu {
+                        Button {
+                            beginRename(project)
+                        } label: {
+                            Label("Rename", systemImage: "pencil")
+                        }
+                        Button {
+                            updatingTokenFor = project
+                        } label: {
+                            Label("Update Token", systemImage: "key.fill")
+                        }
+                        Button(role: .destructive) {
+                            pendingDeletion = project
+                        } label: {
+                            Label("Remove", systemImage: "trash")
+                        }
+                    }
             }
+            .onMove(perform: moveProjects)
             .listRowBackground(rowBackground)
 
             Button {
@@ -121,7 +148,16 @@ struct SettingsView: View {
             .listRowBackground(rowBackground)
         } header: {
             SectionLabel("Accounts")
+        } footer: {
+            if container.projectsStore.projects.count > 1 {
+                Text("Tap Edit to reorder. Touch and hold a project for more options.")
+                    .caption()
+            }
         }
+    }
+
+    private func moveProjects(from source: IndexSet, to destination: Int) {
+        container.projectsStore.move(fromOffsets: source, toOffset: destination)
     }
 
     // MARK: - Robot accounts

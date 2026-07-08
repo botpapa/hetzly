@@ -239,6 +239,33 @@ struct MainTabView: View     // Tabs: Dashboard (DashboardView()), Resources pla
 ### Server Detail (`Hetzly/Features/Servers/`) — Worker E
 `struct ServerDetailView: View { init(route: ServerRoute) }` — reads container from environment, loads server, renders detail. Worker D's dashboard calls this via navigationDestination — Worker D declares the destination mapping `ServerRoute -> ServerDetailView(route:)`.
 
+## M2 Wave A contracts (Cloud API full coverage — package layer)
+
+All wave-1/2 code is committed and real — read it. Conventions for extending the package:
+
+- Each resource gets its own model file in `CloudAPI/` (same rules: explicit CodingKeys, unknown-tolerant enums, Sendable, public memberwise inits).
+- Client methods are added as `extension CloudClient` in per-area files named `CloudClient+<Area>.swift`. Method naming: `listVolumes()`, `createVolume(...) -> (Volume, Action?)`, `deleteVolume(id:)`, action methods `attachVolume(id:serverID:automount:) -> Action` etc.
+- Requests with bodies: build `Data` via `JSONEncoder` with explicit `CodingKeys` request structs (snake_case spelled out), defined `internal` next to the extension.
+- Every Hetzner "actions" response returns `Action` — reuse the existing envelope pattern (see CloudClient.swift).
+- Tests: new files `CloudAPI<Area>Tests.swift` reusing `MockTransport`; never modify existing test files.
+- File ownership per worker is disjoint — do NOT edit CloudClient.swift or another worker's files.
+
+Binding client surface per area (wave-B features consume these):
+- Servers+: `createServer(CreateServerRequest) -> CreateServerResult(server, action, rootPassword?)`, `rebuild(serverID:imageIDOrName:)`, `changeType(serverID:serverTypeID:upgradeDisk:)`, `enableRescue(serverID:sshKeyIDs:) -> (rootPassword, Action)`, `disableRescue`, `enableBackups`, `disableBackups`, `createImage(serverID:description:type:)`, `changeProtection(serverID:delete:rebuild:)`, `resetPassword(serverID:) -> (rootPassword, Action)`, `requestConsole(serverID:) -> (wssURL, password, Action)`, `rename(serverID:name:)`, `updateLabels(serverID:labels:)`, `attachISO/detachISO`, `listISOs`, `listServerTypes`, `listImages(type:)`, `deleteImage`, `updateImage(id:description:labels:)`, `changeImageProtection`, `listLocations`, `listDatacenters`
+- Volumes/Networks: `listVolumes/createVolume/deleteVolume/resizeVolume/attachVolume/detachVolume/changeVolumeProtection/updateVolumeLabels`; `listNetworks/createNetwork/deleteNetwork/addSubnet/deleteSubnet/addRoute/deleteRoute/attachServerToNetwork/detachServerFromNetwork/updateNetwork`; `listPlacementGroups/createPlacementGroup/deletePlacementGroup`
+- Firewalls/IPs: `listFirewalls/createFirewall/deleteFirewall/setFirewallRules/applyFirewall(toServerIDs:labelSelectors:)/removeFirewallFrom...`; `listPrimaryIPs/createPrimaryIP/deletePrimaryIP/assignPrimaryIP/unassignPrimaryIP/changePrimaryIPProtection/setPrimaryIPRDNS`; `listFloatingIPs/...same pattern.../setFloatingIPRDNS`
+- Keys/Certs/LB/DNS: `listSSHKeys/createSSHKey(name:publicKey:)/deleteSSHKey/updateSSHKey`; `listCertificates/createManagedCertificate/uploadCertificate/deleteCertificate`; `listLoadBalancers/createLoadBalancer/deleteLoadBalancer/addLBService/deleteLBService/addLBTarget/removeLBTarget/attachLBToNetwork/detachLBFromNetwork/changeLBAlgorithm/changeLBType/loadBalancerMetrics(...)-> ServerMetrics-shaped`; DNS zones/records per current Hetzner DNS API (verify docs; separate `DNSClient` if base URL differs — token auth per docs)
+
+App-target (M2 Wave A worker 5):
+- `Hetzly/Security/SSHKeyGenerator.swift`: `enum SSHKeyGenerator { static func generateEd25519(comment: String) -> GeneratedSSHKey }` — CryptoKit Curve25519.Signing; `GeneratedSSHKey { publicKeyOpenSSH: String ("ssh-ed25519 AAAA... comment"), privateKeyOpenSSH: String (OpenSSH PEM format), fingerprintSHA256: String }`; store private key via KeychainStore service "com.hetzly.ssh-private-key" account = key name.
+- `Pricing/CostItemBuilder` extension: `items(volumes:pricing:)`, `items(primaryIPs:pricing:)`, `items(loadBalancers:pricing:)` following the server pattern (own file `CostItemBuilder+Resources.swift`).
+
+## M2 Wave B contracts (feature layer)
+
+- Wave-B workers do NOT touch `Hetzly/App/` — tab wiring happens at integration. Binding view entry points: `CreateServerFlow(projectID: UUID, onCreated: @escaping (Server) -> Void)` (sheet), `ResourcesHubView()` (reads AppContainer env, own NavigationStack), `CostsView()`, `InvoicesView()` (SafariView wrapper + explainer card).
+- Server Detail M2 surface stays in `Hetzly/Features/Servers/` (same worker family owns it).
+- Shared per-project selection for Resources/Costs: each view exposes its own project picker via a `ProjectPickerChip` — implemented once in `Hetzly/Features/Resources/ProjectPickerChip.swift`, reused by Costs via `import` (same target).
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

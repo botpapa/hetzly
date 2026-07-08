@@ -9,7 +9,18 @@ public enum MetricsType: String, Sendable, CaseIterable {
 /// `HetznerHTTPClient` with a conservative rate-limit budget (Hetzner's
 /// documented default is 3600 requests/hour per token).
 public actor CloudClient {
-    private let client: HetznerHTTPClient
+    // NOTE(Worker A1, M2 Wave A): widened from `private` to file-default
+    // `internal` so the per-area `extension CloudClient` files mandated by
+    // CONTRACTS.md (CloudClient+Servers.swift, +Images.swift, +Catalog.swift,
+    // and sibling areas from other workers) can share this actor's single
+    // rate-limited `HetznerHTTPClient` instance. `private` is file-scoped in
+    // Swift, so it cannot be accessed from extensions in other files — the
+    // documented multi-file extension pattern is otherwise unbuildable. No
+    // public API changed; this symbol stays invisible outside the module.
+    let client: HetznerHTTPClient
+    /// Same-instance alias for call sites (other CloudClient+*.swift files)
+    /// that spell the shared HTTP client `httpClient` instead of `client`.
+    var httpClient: HetznerHTTPClient { client }
 
     /// Fixed, well-formed literal — not user-controlled input, so the
     /// force-unwrap can never fail.

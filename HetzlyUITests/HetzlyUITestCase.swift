@@ -25,6 +25,17 @@ class HetzlyUITestCase: XCTestCase {
         return app
     }
 
+    /// Launches with TWO pre-seeded projects ("Production" and "Staging"),
+    /// each backed by its own fixture client — exercises multi-project
+    /// aggregation (per-project dashboard sections, combined cost burn).
+    @discardableResult
+    func launchMultiProject() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["HETZLY_UITEST_MULTI"] = "1"
+        app.launch()
+        return app
+    }
+
     /// Launches with an empty in-memory store — no projects, so `RootView`
     /// shows `OnboardingView`.
     @discardableResult

@@ -20,14 +20,24 @@ import SwiftData
 ///   id — no token is ever stored or validated. Necessarily so: UI-test
 ///   builds run with `CODE_SIGNING_ALLOWED=NO`, and keychain writes fail in
 ///   an unsigned app.
+/// - `HETZLY_UITEST_MULTI=1` — like `HETZLY_UITEST` but seeds TWO projects
+///   ("Production" and "Staging"), each with its own fixture client, to
+///   exercise the multi-project aggregation paths (per-project dashboard
+///   sections, combined cost burn). A separate flag so the single-project
+///   tests keep the "+" button's single-project shortcut behavior.
 /// - `HETZLY_UITEST_EMPTY=1` — an in-memory store with nothing seeded, so
 ///   `RootView` shows onboarding.
 enum UITestSupport {
     private static let seedEnvironmentKey = "HETZLY_UITEST"
+    private static let multiSeedEnvironmentKey = "HETZLY_UITEST_MULTI"
     private static let emptyEnvironmentKey = "HETZLY_UITEST_EMPTY"
 
     private static var isSeedRequested: Bool {
         ProcessInfo.processInfo.environment[seedEnvironmentKey] == "1"
+    }
+
+    private static var isMultiSeedRequested: Bool {
+        ProcessInfo.processInfo.environment[multiSeedEnvironmentKey] == "1"
     }
 
     private static var isEmptyRequested: Bool {
@@ -59,6 +69,31 @@ enum UITestSupport {
             return AppContainer.makeForUITesting(
                 modelContainer: modelContainer,
                 preconfiguredCloudClients: [project.id: fixtureClient]
+            )
+        }
+        if isMultiSeedRequested {
+            let modelContainer = inMemoryModelContainer()
+
+            let production = ProjectRecord(name: "Production", sortOrder: 0)
+            let staging = ProjectRecord(name: "Staging", sortOrder: 1)
+            modelContainer.mainContext.insert(production)
+            modelContainer.mainContext.insert(staging)
+            try? modelContainer.mainContext.save()
+
+            // Each project gets its own client instance (mirroring the real
+            // per-project cache); both route to the same stateless fixtures.
+            return AppContainer.makeForUITesting(
+                modelContainer: modelContainer,
+                preconfiguredCloudClients: [
+                    production.id: CloudClient(
+                        token: "uitest-fake-token-never-sent",
+                        transport: UITestTransport()
+                    ),
+                    staging.id: CloudClient(
+                        token: "uitest-fake-token-never-sent",
+                        transport: UITestTransport()
+                    ),
+                ]
             )
         }
         if isEmptyRequested {

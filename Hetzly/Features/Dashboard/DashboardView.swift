@@ -86,19 +86,27 @@ struct DashboardView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        ForEach(container.projectsStore.projects) { project in
-                            Button(project.name) {
-                                createServerTarget = CreateServerTarget(id: project.id)
-                            }
-                        }
-                    } label: {
-                        Label("Create Server", systemImage: "plus")
-                    } primaryAction: {
-                        // Single project: skip the picker.
-                        if container.projectsStore.projects.count == 1,
-                           let only = container.projectsStore.projects.first {
+                    // Single project: tap goes straight into the wizard.
+                    // Multiple: tap opens a project picker menu. (A Menu with
+                    // primaryAction won't do here — its tap fires the action
+                    // and only a long-press reveals the menu, which made the
+                    // button a no-op with >1 projects.)
+                    if container.projectsStore.projects.count == 1,
+                       let only = container.projectsStore.projects.first {
+                        Button {
                             createServerTarget = CreateServerTarget(id: only.id)
+                        } label: {
+                            Label("Create Server", systemImage: "plus")
+                        }
+                    } else {
+                        Menu {
+                            ForEach(container.projectsStore.projects) { project in
+                                Button(project.name) {
+                                    createServerTarget = CreateServerTarget(id: project.id)
+                                }
+                            }
+                        } label: {
+                            Label("Create Server", systemImage: "plus")
                         }
                     }
                 }

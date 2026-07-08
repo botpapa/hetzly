@@ -29,7 +29,11 @@ struct PrivacyOverlay: ViewModifier {
                     .transition(.opacity)
                 }
             }
-            .animation(.smooth, value: isShielded)
+            // Asymmetric on purpose: fade IN when leaving the app (a hard
+            // cut there looks glitchy in the app-switcher zoom animation),
+            // but drop the shield INSTANTLY on return — an eased fade-out
+            // reads as the app being slow to open after unlock.
+            .animation(isShielded ? .smooth : nil, value: isShielded)
     }
 }
 

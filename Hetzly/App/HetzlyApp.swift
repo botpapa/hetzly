@@ -35,7 +35,7 @@ struct HetzlyApp: App {
                 .environment(container)
                 .modelContainer(container.modelContainer)
                 .preferredColorScheme(preferredColorScheme)
-                .privacyOverlay()
+                .privacyOverlay(enabled: container.settings.privacyShieldEnabled)
         }
     }
 }

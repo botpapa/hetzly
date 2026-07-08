@@ -35,7 +35,10 @@ struct SettingsView: View {
                     accountsSection
                     robotAccountsSection
                     storageBoxAccountsSection
-                    securitySection(requireBiometrics: $settings.requireBiometricsForDestructive)
+                    securitySection(
+                        requireBiometrics: $settings.requireBiometricsForDestructive,
+                        privacyShield: $settings.privacyShieldEnabled
+                    )
                     appearanceSection(appearance: $settings.appearance)
                     mascotSection(mascotEnabled: $settings.mascotEnabled)
                     aboutSection
@@ -263,7 +266,7 @@ struct SettingsView: View {
 
     // MARK: - Security
 
-    private func securitySection(requireBiometrics: Binding<Bool>) -> some View {
+    private func securitySection(requireBiometrics: Binding<Bool>, privacyShield: Binding<Bool>) -> some View {
         Section {
             Toggle(isOn: requireBiometrics) {
                 Label("Require Face ID for destructive actions", systemImage: "faceid")
@@ -271,8 +274,18 @@ struct SettingsView: View {
             }
             .tint(HetzlyColors.accent)
             .listRowBackground(rowBackground)
+
+            Toggle(isOn: privacyShield) {
+                Label("Privacy screen in app switcher", systemImage: "eye.slash")
+                    .foregroundStyle(HetzlyColors.textPrimary)
+            }
+            .tint(HetzlyColors.accent)
+            .listRowBackground(rowBackground)
         } header: {
             SectionLabel("Security")
+        } footer: {
+            Text("Hides servers and costs in the app switcher and OS snapshots. Turning it off makes returning to the app feel instant.")
+                .caption()
         }
     }
 

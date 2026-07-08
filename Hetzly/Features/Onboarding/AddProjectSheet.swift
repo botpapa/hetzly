@@ -30,11 +30,12 @@ struct AddProjectSheet: View {
     }
 
     /// Hetzner's API has no endpoint that reveals a project's name from its
-    /// token, so the name can't be fetched automatically — but it CAN be
-    /// optional: an empty field falls back to "Project N".
-    private var effectiveName: String {
-        if !trimmedName.isEmpty { return trimmedName }
-        return "Project \(container.projectsStore.projects.count + 1)"
+    /// token (verified against both api.hetzner.cloud and api.hetzner.com),
+    /// so when the field is left empty the name is derived from the
+    /// project's server names after validation (see submit()), with this
+    /// numbered fallback for empty projects.
+    private var fallbackName: String {
+        "Project \(container.projectsStore.projects.count + 1)"
     }
 
     private var canSubmit: Bool {
@@ -72,8 +73,8 @@ struct AddProjectSheet: View {
                             Text(
                                 "Create a token in Hetzner Console → Security → API tokens. "
                                     + "Read & Write unlocks actions; Read-only works for monitoring. "
-                                    + "Tokens are project-scoped, so the name can't be read from the "
-                                    + "token — leave it blank and we'll number it for you."
+                                    + "Hetzner doesn't expose the project's name to the API — leave "
+                                    + "the name blank and we'll derive one from your server names."
                             )
                             .caption()
                         }
@@ -118,7 +119,8 @@ struct AddProjectSheet: View {
 
         errorMessage = nil
         isValidating = true
-        let name = effectiveName
+        let userProvidedName = trimmedName
+        let fallbackName = fallbackName
         let token = trimmedToken
 
         Task {
@@ -133,6 +135,14 @@ struct AddProjectSheet: View {
             } catch {
                 errorMessage = "Couldn't reach Hetzner right now. Check your connection and try again."
                 return
+            }
+
+            var name = userProvidedName
+            if name.isEmpty {
+                // Best-available substitute for the unfetchable Console name:
+                // derive it from the project's server naming convention.
+                let serverNames = ((try? await client.listServers()) ?? []).map(\.name)
+                name = ProjectNameSuggestion.suggest(fromServerNames: serverNames, fallback: fallbackName)
             }
 
             do {

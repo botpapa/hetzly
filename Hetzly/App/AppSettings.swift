@@ -39,6 +39,16 @@ final class AppSettings {
         }
     }
 
+    /// Whether the app-switcher privacy shield (blur + cube over content
+    /// when the scene isn't active) is enabled. On by default — it keeps
+    /// server details and costs out of OS snapshots.
+    var privacyShieldEnabled: Bool {
+        didSet {
+            guard privacyShieldEnabled != oldValue else { return }
+            defaults.set(privacyShieldEnabled, forKey: Keys.privacyShieldEnabled)
+        }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         self.requireBiometricsForDestructive =
@@ -47,11 +57,14 @@ final class AppSettings {
             (defaults.object(forKey: Keys.mascotEnabled) as? Bool) ?? true
         self.appearance =
             defaults.string(forKey: Keys.appearance) ?? "dark"
+        self.privacyShieldEnabled =
+            (defaults.object(forKey: Keys.privacyShieldEnabled) as? Bool) ?? true
     }
 
     private enum Keys {
         static let requireBiometricsForDestructive = "com.hetzly.settings.requireBiometricsForDestructive"
         static let mascotEnabled = "com.hetzly.settings.mascotEnabled"
         static let appearance = "com.hetzly.settings.appearance"
+        static let privacyShieldEnabled = "com.hetzly.settings.privacyShieldEnabled"
     }
 }

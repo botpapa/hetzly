@@ -92,9 +92,14 @@ struct ServerMetricsChart: View {
         Chart {
             ForEach(series) { entry in
                 ForEach(entry.points) { point in
+                    // `series:` is load-bearing on multi-series charts:
+                    // without it, Charts treats every LineMark as one
+                    // series and connects In→Out (Read→Write) into a
+                    // single path, drawing a stray arc across the plot.
                     LineMark(
                         x: .value("Time", point.date),
-                        y: .value(entry.name, point.value)
+                        y: .value(entry.name, point.value),
+                        series: .value("Series", entry.name)
                     )
                     .foregroundStyle(entry.color)
                     .interpolationMethod(.catmullRom)

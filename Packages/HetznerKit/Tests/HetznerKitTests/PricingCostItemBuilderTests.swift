@@ -142,6 +142,102 @@ struct PricingCostItemBuilderTests {
         #expect(items.isEmpty)
     }
 
+    // MARK: - Overrides ("what I actually pay")
+
+    @Test func overrideWinsOverListPriceAndBecomesMonthlyFlat() {
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        let fsn1 = ServerTypePrice(location: "fsn1", hourly: PriceValue(net: "0.0060", gross: "0.00714"), monthly: PriceValue(net: "4.00", gross: "4.76"))
+        let s = Self.server(id: 42, created: created, location: "fsn1", prices: [fsn1])
+        let p = Self.pricing(serverTypes: [PricingServerType(id: 22, name: "cx22", prices: [fsn1])], backupPercentage: nil)
+
+        let items = CostItemBuilder.items(servers: [s], pricing: p, overrides: [42: Decimal(string: "25.49")!])
+
+        #expect(items.count == 1)
+        #expect(items[0].id == "server-42")
+        #expect(items[0].kind == .server)
+        #expect(items[0].createdAt == created)
+        guard case .monthlyFlat(let net) = items[0].pricing else {
+            Issue.record("expected monthlyFlat pricing")
+            return
+        }
+        #expect(net == Decimal(string: "25.49")!)
+    }
+
+    @Test func overrideSkipsBackupSurchargeEvenWithBackupWindow() {
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        let fsn1 = ServerTypePrice(location: "fsn1", hourly: PriceValue(net: "0.0060", gross: "0.00714"), monthly: PriceValue(net: "4.00", gross: "4.76"))
+        let s = Self.server(id: 42, created: created, location: "fsn1", prices: [fsn1], backupWindow: "22-02")
+        let p = Self.pricing(serverTypes: [PricingServerType(id: 22, name: "cx22", prices: [fsn1])], backupPercentage: "20")
+
+        let items = CostItemBuilder.items(servers: [s], pricing: p, overrides: [42: Decimal(string: "25.49")!])
+
+        // A user-entered "what I pay" figure is assumed all-in — no separate
+        // backup line for this server.
+        #expect(items.count == 1)
+        #expect(items[0].kind == .server)
+    }
+
+    @Test func overrideAppliesEvenWhenNoPriceCanBeResolved() {
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        // No prices anywhere for this server's type — without an override
+        // this server would be skipped entirely (see
+        // `skipsServerWhenNoPriceCanBeResolved`).
+        let s = Self.server(id: 7, created: created, location: "fsn1", prices: [])
+        let p = Self.pricing(serverTypes: [], backupPercentage: nil)
+
+        let items = CostItemBuilder.items(servers: [s], pricing: p, overrides: [7: Decimal(string: "10.00")!])
+
+        #expect(items.count == 1)
+        guard case .monthlyFlat(let net) = items[0].pricing else {
+            Issue.record("expected monthlyFlat pricing")
+            return
+        }
+        #expect(net == Decimal(string: "10.00")!)
+    }
+
+    @Test func emptyOverridesLeaveExistingBehaviorUnchanged() {
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        let fsn1 = ServerTypePrice(location: "fsn1", hourly: PriceValue(net: "0.0060", gross: "0.00714"), monthly: PriceValue(net: "4.00", gross: "4.76"))
+        let s = Self.server(id: 1, created: created, location: "fsn1", prices: [fsn1])
+        let p = Self.pricing(serverTypes: [PricingServerType(id: 22, name: "cx22", prices: [fsn1])], backupPercentage: nil)
+
+        let withDefault = CostItemBuilder.items(servers: [s], pricing: p)
+        let withExplicitEmpty = CostItemBuilder.items(servers: [s], pricing: p, overrides: [:])
+
+        #expect(withDefault == withExplicitEmpty)
+        guard case .hourly(let net, _) = withDefault[0].pricing else {
+            Issue.record("expected hourly pricing")
+            return
+        }
+        #expect(net == Decimal(string: "0.0060")!)
+    }
+
+    @Test func multiServerMixOnlyOverriddenServerBecomesFlatAndOthersUnaffected() {
+        let created = Date(timeIntervalSince1970: 1_700_000_000)
+        let fsn1 = ServerTypePrice(location: "fsn1", hourly: PriceValue(net: "0.0060", gross: "0.00714"), monthly: PriceValue(net: "4.00", gross: "4.76"))
+        let overridden = Self.server(id: 1, name: "grandfathered-1", created: created, location: "fsn1", prices: [fsn1], backupWindow: "22-02")
+        let plain = Self.server(id: 2, name: "plain-1", created: created, location: "fsn1", prices: [fsn1], backupWindow: "22-02")
+        let p = Self.pricing(serverTypes: [PricingServerType(id: 22, name: "cx22", prices: [fsn1])], backupPercentage: "20")
+
+        let items = CostItemBuilder.items(servers: [overridden, plain], pricing: p, overrides: [1: Decimal(string: "9.99")!])
+
+        // Overridden server: just the flat item, no backup.
+        let overriddenItems = items.filter { $0.id == "server-1" || $0.id == "backup-1" }
+        #expect(overriddenItems.count == 1)
+        guard case .monthlyFlat(let net) = overriddenItems[0].pricing else {
+            Issue.record("expected monthlyFlat pricing for overridden server")
+            return
+        }
+        #expect(net == Decimal(string: "9.99")!)
+
+        // Untouched server: hourly item + its backup surcharge, unaffected.
+        let plainItems = items.filter { $0.id == "server-2" || $0.id == "backup-2" }
+        #expect(plainItems.count == 2)
+        #expect(plainItems.contains { $0.kind == .backup })
+
+        #expect(items.count == 3)
+    }
+
     @Test func buildsFeedIntoCostEngineEndToEnd() {
         // Sanity check: builder output is a valid CostEngine input and
         // produces a non-trivial summary.

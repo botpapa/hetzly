@@ -322,12 +322,22 @@ final class DashboardViewModel {
         var itemsByProject: [UUID: [CostItem]] = [:]
         var resolvedCurrency = currency
 
+        // Cloud server "what I pay" overrides (see `CloudServerPriceStore`)
+        // — read fresh each pass rather than cached on `self`, so a price
+        // edited from Costs (or the server detail page) is reflected on the
+        // very next dashboard load/refresh without any shared DI plumbing.
+        // Cheap: it's a small UserDefaults-backed JSON blob, not a network
+        // call.
+        let overrides = Dictionary(
+            uniqueKeysWithValues: CloudServerPriceStore(defaults: .standard).entries.map { ($0.serverNumber, $0.monthlyPrice) }
+        )
+
         for project in container.projectsStore.projects {
             guard let servers = serversByProject[project.id], !servers.isEmpty else { continue }
             guard let client = container.cloudClient(for: project.id) else { continue }
             guard let projectPricing = await pricing(for: project.id, client: client) else { continue }
             resolvedCurrency = projectPricing.currency
-            let projectItems = CostItemBuilder.items(servers: servers, pricing: projectPricing)
+            let projectItems = CostItemBuilder.items(servers: servers, pricing: projectPricing, overrides: overrides)
             items.append(contentsOf: projectItems)
             itemsByProject[project.id] = projectItems
         }

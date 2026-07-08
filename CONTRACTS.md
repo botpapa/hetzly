@@ -404,6 +404,43 @@ Restructure `ServerDetailView` into a segmented **Control / Analytics** layout (
 - Add a **Credentials** section/row in Control: if `ServerCredentialsVault.rootPassword(serverID:)` exists, show it via `SensitiveSecretCard` (biometric-gated reveal), with Delete. Wire vault SAVES at the reset-root-password and enable-rescue result points (both already produce a password in ServerDetailViewModel).
 - Keep every existing action + test working; keep the A1/A2 credential-vault + error-recovery code intact.
 
+## Pricing-accuracy + server-data wave
+
+Root cause (confirmed live, see memory hetzner-no-per-server-price): the Hetzner API exposes NO
+actual/grandfathered per-server price — `/servers/{id}` has no price field; `/pricing` is current
+list price only. So grandfathered servers over-report. Fix = manual per-server override, mirroring
+the existing `DedicatedPriceStore`.
+
+### Binding shared type — worker PA owns the file, PB consumes
+`Hetzly/Features/Costs/CloudServerPriceStore.swift` (mirror `DedicatedPriceStore.swift` exactly):
+```swift
+struct CloudServerPriceEntry: Codable, Identifiable, Sendable, Equatable { var serverNumber: Int; var monthlyPrice: Decimal; var note: String?; var id: Int { serverNumber } }
+@MainActor @Observable final class CloudServerPriceStore {
+    init(defaults: UserDefaults = .standard)   // key "com.hetzly.costs.cloudServerPrices"
+    private(set) var entries: [CloudServerPriceEntry]
+    func price(for serverNumber: Int) -> Decimal?
+    func setPrice(serverNumber: Int, monthlyPrice: Decimal, note: String?)
+    func removePrice(for serverNumber: Int)
+}
+```
+
+### Cost integration — worker PA
+- `CostItemBuilder.items(servers:pricing:overrides:)` — add `overrides: [Int: Decimal] = [:]` (serverID→user monthly). When an override exists for a server, emit `CostItem(.server, .monthlyFlat(net: override))` instead of the list-price hourly item (skip the backup surcharge recalculation? keep backups off the overridden base — document). Default empty = current behavior, so all existing call sites/tests compile unchanged.
+- Thread the overrides dict (from `CloudServerPriceStore.entries`) through `CostsViewModel`, `DashboardViewModel` (perProjectBurn + combined + widget snapshot stays LIST price? NO — use override for accuracy), and `ProjectDetailViewModel`.
+- Costs UI: in the per-project cost rows / breakdown, add an "edit price" affordance per Cloud server (like the dedicated "Set price"), presenting a `CloudServerPriceSheet` (net €/mo + note + "Clear override"). Show list-vs-your-price when an override is set.
+
+### Server-page data — worker PB (`Hetzly/Features/Servers/`)
+On the server detail Control tab / hero (`ServerHeroCard` + `ServerDetailViewModel`):
+- **Price row**: effective monthly (override if set else list price from `/pricing` for the server's type+location — `ServerDetailViewModel` loads `pricing()` cached). If an override is set and differs from list, show both ("You pay €25.49 · list €69.49"). Tap → `CloudServerPriceSheet` (reuse PA's sheet if it's shared, else a local one — coordinate: PA puts the sheet in Costs/; PB may need its own presentation — a small shared `CloudServerPriceSheet` in Costs/ referenced from both is cleanest; if PA hasn't landed, PB defines a minimal local editor and notes it).
+- **Traffic usage row**: `server.outgoingTraffic`/`ingoingTraffic`/`includedTraffic` (bytes, may be nil) → "1.2 TB out · 340 GB in · 20 TB included" with a thin usage bar (out vs included); omit gracefully if nil.
+- **IPv6 copy**: `ServerHeroCard` currently copies IPv4 — add the IPv6 address (`server.publicNet.ipv6?.ip`, a CIDR) as a second tap-to-copy row with the same checkmark/haptic pattern. Keep IPv4.
+
+## Wave B (systemic) contracts — spawned after the pricing wave integrates
+- B1 accent discipline: `Assets.xcassets/AccentColor.colorset` → neutral (textPrimary gray); explicit `.tint(HetzlyColors.accent)` only on true CTAs; shared `SheetHeaderBadge`; chart primary series → monochrome (accent reserved for threshold/attention). DesignSystem + sweep.
+- B2 offline parity: generalize `SnapshotStore` into a `DiskCache<T>` behind `ResourceListModel` + Dedicated/Costs/StorageBoxes load states (stale-while-revalidate + stale chip), reusing Dashboard's freshness pattern.
+- B3 notifications: `UNUserNotificationCenter` local notification when a tracked `ActionTracker` action completes while backgrounded; permission ask; no background polling.
+- B4 deep links + picker unity: `hetzly://` URL scheme + `onOpenURL` routing to ServerRoute/ProjectRoute; widget `widgetURL`; reuse `ProjectFilterBar` in Resources (retire the divergent `ProjectPickerChip` behavior).
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

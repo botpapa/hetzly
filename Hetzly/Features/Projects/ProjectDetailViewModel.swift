@@ -213,8 +213,16 @@ final class ProjectDetailViewModel {
             return
         }
 
+        // Cloud server "what I pay" overrides (see `CloudServerPriceStore`)
+        // — read fresh each pass, mirroring `DashboardViewModel`, so a price
+        // edited elsewhere (Costs, or the server detail page) is reflected
+        // on this project's next load/refresh with no shared DI plumbing.
+        let overrides = Dictionary(
+            uniqueKeysWithValues: CloudServerPriceStore(defaults: .standard).entries.map { ($0.serverNumber, $0.monthlyPrice) }
+        )
+
         var items: [CostItem] = []
-        items.append(contentsOf: CostItemBuilder.items(servers: servers, pricing: pricing))
+        items.append(contentsOf: CostItemBuilder.items(servers: servers, pricing: pricing, overrides: overrides))
         items.append(contentsOf: CostItemBuilder.items(volumes: volumes, pricing: pricing))
         items.append(contentsOf: CostItemBuilder.items(primaryIPs: primaryIPs, pricing: pricing))
         items.append(contentsOf: CostItemBuilder.items(loadBalancers: loadBalancers, pricing: pricing))

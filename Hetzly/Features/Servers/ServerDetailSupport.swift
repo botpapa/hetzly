@@ -48,6 +48,31 @@ enum ServerDetailSupport {
         return true
     }
 
+    /// Summarizes a server's billing-period traffic usage for the Control
+    /// tab's Traffic row: outgoing/ingoing formatted via `bytes(_:)`, plus
+    /// how far outgoing traffic is through the included quota (when Hetzner
+    /// reported one). Returns `nil` when Hetzner hasn't reported ANY traffic
+    /// yet (`outgoing`/`ingoing` both `nil` — e.g. a brand-new server), so
+    /// the whole row can omit itself rather than showing a misleading "0 B".
+    static func trafficUsage(outgoing: Int64?, ingoing: Int64?, included: Int64?) -> ServerTrafficUsage? {
+        guard outgoing != nil || ingoing != nil else { return nil }
+        let usageLine = "\(bytes(Double(outgoing ?? 0))) out · \(bytes(Double(ingoing ?? 0))) in"
+
+        var includedLine: String?
+        var fraction: Double?
+        if let included, included > 0 {
+            includedLine = "of \(bytes(Double(included))) included"
+            fraction = Double(outgoing ?? 0) / Double(included)
+        }
+
+        return ServerTrafficUsage(
+            usageLine: usageLine,
+            includedLine: includedLine,
+            fraction: fraction,
+            percentText: fraction.map { String(format: "%.0f%%", $0 * 100) }
+        )
+    }
+
     /// "up 3 weeks" style uptime string, relative to `now`. Deliberately
     /// coarse — a single largest unit, matching the mascot-y, casual tone of
     /// the rest of the UI.
@@ -153,6 +178,24 @@ enum MetricsSeriesLookup {
             .map { ChartPoint(date: $0.timestamp, value: $0.value) }
             .sorted { $0.date < $1.date }
     }
+}
+
+/// See `ServerDetailSupport.trafficUsage(outgoing:ingoing:included:)`.
+struct ServerTrafficUsage: Sendable, Equatable {
+    /// e.g. `"1.2 TB out · 340 GB in"`.
+    let usageLine: String
+    /// e.g. `"of 20 TB included"` — `nil` when Hetzner didn't report an
+    /// included quota for this server.
+    let includedLine: String?
+    /// Outgoing ÷ included, only when both are known and `included > 0`.
+    /// Can exceed `1.0` — billed overage is a real, expected state worth
+    /// showing clearly, not clamping away.
+    let fraction: Double?
+    /// `fraction` formatted as a whole-number percentage, e.g. `"34%"` or
+    /// `"154%"`. Computed independently of `ServerDetailSupport.percent(_:)`
+    /// since that helper auto-detects 0–1 vs. 0–100 input and would
+    /// misread an over-100%-as-fraction value like `1.54`.
+    let percentText: String?
 }
 
 /// Everything the Resources section can show using only fields guaranteed

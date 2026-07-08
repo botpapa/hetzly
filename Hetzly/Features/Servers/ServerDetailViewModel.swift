@@ -117,7 +117,30 @@ final class ServerDetailViewModel {
 
     private(set) var serverTypes: [ServerType] = []
     private(set) var serverTypesState: LoadState = .idle
+    /// Fetched by both `loadPricing()` (a lightweight `/pricing`-only load,
+    /// fired alongside `load()`/`loadMetrics()` in the initial `.task` so
+    /// the Control tab's Price row has data as soon as possible) and
+    /// `loadServerTypesAndPricing()` (the heavier load scoped to the
+    /// Rescale sheet, which also needs the full server-type catalog) —
+    /// whichever finishes last wins, which is fine since both fetch the
+    /// same `/pricing` endpoint.
     private(set) var pricing: Pricing?
+
+    /// This server's list monthly price at its own location, matched the
+    /// same way `CostItemBuilder.matchingPrice` does in the Pricing module
+    /// (that helper is `internal` there, so this re-implements the same
+    /// three-step lookup: `serverType.id` → its price list → the server's
+    /// own location, falling back to the first listed price when the exact
+    /// location isn't present). `nil` until both `server` and `pricing`
+    /// have loaded, or if pricing genuinely has no entry for this type.
+    var listPriceMonthly: Decimal? {
+        guard let server, let pricing else { return nil }
+        let prices = pricing.serverTypes.first { $0.id == server.serverType.id }?.prices
+            ?? server.serverType.prices
+        guard !prices.isEmpty else { return nil }
+        let match = prices.first { $0.location == server.datacenter.location.name } ?? prices.first
+        return match?.monthly.netDecimal
+    }
 
     // MARK: - Rename / labels (not Action-tracked — plain PUT requests)
 
@@ -196,6 +219,24 @@ final class ServerDetailViewModel {
             metrics = nil
             metricsState = .failed(Self.message(for: error))
         }
+    }
+
+    /// Fetches `/pricing` alone (no server-type catalog) for the Control
+    /// tab's Price row — a lighter load than `loadServerTypesAndPricing()`,
+    /// which is scoped to the Rescale sheet and additionally lists every
+    /// server type. Errors are swallowed: pricing isn't primary content, so
+    /// a failed fetch just leaves the Price row showing an override (if
+    /// any) or "Price unavailable" rather than surfacing a banner for a
+    /// non-critical background load.
+    ///
+    /// No cross-screen cache: this view model is recreated per visit to
+    /// Server Detail (see `ServerDetailView`'s `.task`), so there's nowhere
+    /// durable to keep a hit within `Hetzly/Features/Servers/`'s scope — a
+    /// shared `ResponseCache` instance would need to live on `AppContainer`,
+    /// which this wave doesn't touch.
+    func loadPricing() async {
+        guard let client else { return }
+        pricing = try? await client.pricing()
     }
 
     // MARK: - Actions

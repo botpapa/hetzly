@@ -5,11 +5,37 @@ import Foundation
 /// module that knows about CloudAPI shapes — the rest of the engine is fed
 /// generic `CostItem`s and stays independent of them.
 public enum CostItemBuilder {
-    public static func items(servers: [Server], pricing: Pricing) -> [CostItem] {
+    /// - Parameter overrides: User-entered "what I actually pay" monthly
+    ///   prices, keyed by `Server.id` (see `CloudServerPriceStore` in the app
+    ///   target). Hetzner's API exposes no per-server real price — `/servers`
+    ///   has no price field, and `/pricing` is always *current list* pricing,
+    ///   so a server on a grandfathered/legacy rate over-reports its cost
+    ///   using list-price math alone. When a server has an override, it wins
+    ///   outright: the item becomes a flat monthly charge at the override
+    ///   amount instead of the list-price hourly item, `matchingPrice` isn't
+    ///   even consulted (so an override still works for a server type/location
+    ///   Hetzner's current price list no longer has), and — since an
+    ///   overridden "what I pay" figure is assumed to already be all-in — no
+    ///   separate backup surcharge item is added for that server. Defaults to
+    ///   empty so every existing call site/test is unaffected.
+    public static func items(servers: [Server], pricing: Pricing, overrides: [Int: Decimal] = [:]) -> [CostItem] {
         var result: [CostItem] = []
         result.reserveCapacity(servers.count * 2)
 
         for server in servers {
+            if let override = overrides[server.id] {
+                result.append(
+                    CostItem(
+                        id: "server-\(server.id)",
+                        name: server.name,
+                        kind: .server,
+                        pricing: .monthlyFlat(net: override),
+                        createdAt: server.created
+                    )
+                )
+                continue
+            }
+
             guard let price = matchingPrice(for: server, pricing: pricing) else { continue }
             guard let hourlyNet = price.hourly.netDecimal else { continue }
             let monthlyNet = price.monthly.netDecimal

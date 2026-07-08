@@ -118,6 +118,21 @@ final class CostsViewModel {
     /// error, mirroring `DedicatedListViewModel`'s Robot-side recovery copy.
     private(set) var dedicatedIsAuthError = false
 
+    /// Cloud server "what I pay" overrides currently in effect, keyed by
+    /// `Server.id` — the same dict handed to
+    /// `CostItemBuilder.items(servers:pricing:overrides:)` for every
+    /// project's fetch this pass. Exposed so `CostProjectSectionView` can
+    /// tell, per row, whether a server's price is a user override or
+    /// Hetzner's list price (the "custom" chip).
+    private(set) var cloudServerOverrides: [Int: Decimal] = [:]
+
+    /// Hetzner's current list-price monthly equivalent for every Cloud
+    /// server across every project, keyed by `Server.id` — computed
+    /// alongside `cloudServerOverrides` regardless of whether a server has
+    /// an override, so `CloudServerPriceSheet` can show "List price: €X" as
+    /// a hint even while editing an existing override.
+    private(set) var cloudServerListPrices: [Int: Decimal] = [:]
+
     /// Per-project pricing memo (TTL 24h), mirroring
     /// `DashboardViewModel.pricingCache`: this view model is its own
     /// single-consumer, `@MainActor`-serialized surface, so a plain
@@ -137,7 +152,9 @@ final class CostsViewModel {
         kindShares: [KindShare] = [],
         monthElapsedFraction: Double = 0,
         dedicatedServers: [DedicatedServerRow] = [],
-        dedicatedErrorMessage: String? = nil
+        dedicatedErrorMessage: String? = nil,
+        cloudServerOverrides: [Int: Decimal] = [:],
+        cloudServerListPrices: [Int: Decimal] = [:]
     ) {
         self.projectSections = projectSections
         self.combinedMonthToDate = combinedMonthToDate
@@ -147,6 +164,8 @@ final class CostsViewModel {
         self.monthElapsedFraction = monthElapsedFraction
         self.dedicatedServers = dedicatedServers
         self.dedicatedErrorMessage = dedicatedErrorMessage
+        self.cloudServerOverrides = cloudServerOverrides
+        self.cloudServerListPrices = cloudServerListPrices
     }
 
     /// True once we know for certain there is nothing to show: no project
@@ -172,13 +191,19 @@ final class CostsViewModel {
 
     // MARK: - Lifecycle
 
-    func load(container: AppContainer, manualEntries: [ManualCostEntry], dedicatedPrices: [DedicatedPriceEntry]) async {
+    func load(
+        container: AppContainer, manualEntries: [ManualCostEntry], dedicatedPrices: [DedicatedPriceEntry],
+        cloudServerPrices: [CloudServerPriceEntry] = []
+    ) async {
         isLoading = true
-        await refresh(container: container, manualEntries: manualEntries, dedicatedPrices: dedicatedPrices)
+        await refresh(container: container, manualEntries: manualEntries, dedicatedPrices: dedicatedPrices, cloudServerPrices: cloudServerPrices)
         isLoading = false
     }
 
-    func refresh(container: AppContainer, manualEntries: [ManualCostEntry], dedicatedPrices: [DedicatedPriceEntry]) async {
+    func refresh(
+        container: AppContainer, manualEntries: [ManualCostEntry], dedicatedPrices: [DedicatedPriceEntry],
+        cloudServerPrices: [CloudServerPriceEntry] = []
+    ) async {
         isRefreshing = true
         defer { isRefreshing = false }
 
@@ -195,9 +220,17 @@ final class CostsViewModel {
             )
         }
 
+        // Cloud server "what I pay" overrides — a single flat dict applied
+        // across every project's fetch, keyed by `Server.id`. Not scoped per
+        // project, mirroring `applyRobotFetches`'s own flat
+        // `priceByServerNumber` lookup below: Hetzner Cloud server ids are
+        // unique across the whole platform, not just within one project.
+        let overrides = Dictionary(uniqueKeysWithValues: cloudServerPrices.map { ($0.serverNumber, $0.monthlyPrice) })
+        cloudServerOverrides = overrides
+
         // Cloud projects and Robot accounts are fetched concurrently with
         // each other (not just internally) — neither waits on the other.
-        async let fetchesTask = Self.fetchAllProjects(targets)
+        async let fetchesTask = Self.fetchAllProjects(targets, overrides: overrides)
         async let robotFetchesTask = Self.fetchAllRobotAccounts(container: container)
         let fetches = await fetchesTask
         let robotFetches = await robotFetchesTask
@@ -207,6 +240,12 @@ final class CostsViewModel {
                 pricingCache[fetch.projectID] = (freshPricing, now)
             }
         }
+
+        var listPrices: [Int: Decimal] = [:]
+        for fetch in fetches {
+            listPrices.merge(fetch.cloudServerListPrices) { _, new in new }
+        }
+        cloudServerListPrices = listPrices
 
         let priceByServerNumber = Dictionary(uniqueKeysWithValues: dedicatedPrices.map { ($0.serverNumber, $0) })
         applyRobotFetches(robotFetches, priceByServerNumber: priceByServerNumber)
@@ -239,15 +278,20 @@ final class CostsViewModel {
         /// pricing (i.e. the cache was cold) — signals the caller to write
         /// it back into `pricingCache`.
         let freshPricing: Pricing?
+        /// Hetzner's list-price monthly equivalent for every Cloud server in
+        /// this project, keyed by `Server.id` — computed independent of any
+        /// override, purely for `CloudServerPriceSheet`'s "List price: €X"
+        /// hint. Empty on a failed fetch (no servers means nothing to key).
+        let cloudServerListPrices: [Int: Decimal]
         let error: DisplayableError?
     }
 
     /// Fetches every project concurrently with every other project.
-    private static func fetchAllProjects(_ targets: [FetchTarget]) async -> [ProjectFetch] {
+    private static func fetchAllProjects(_ targets: [FetchTarget], overrides: [Int: Decimal]) async -> [ProjectFetch] {
         guard !targets.isEmpty else { return [] }
         return await withTaskGroup(of: ProjectFetch.self) { group in
             for target in targets {
-                group.addTask { await Self.fetchProject(target) }
+                group.addTask { await Self.fetchProject(target, overrides: overrides) }
             }
             var results: [ProjectFetch] = []
             results.reserveCapacity(targets.count)
@@ -262,11 +306,11 @@ final class CostsViewModel {
     /// pricing, then adapts everything into `CostItem`s. Never throws out to
     /// the caller: any failure becomes this project's isolated
     /// `errorMessage` instead.
-    private static func fetchProject(_ target: FetchTarget) async -> ProjectFetch {
+    private static func fetchProject(_ target: FetchTarget, overrides: [Int: Decimal]) async -> ProjectFetch {
         guard let client = target.client else {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
-                items: [], currency: nil, freshPricing: nil,
+                items: [], currency: nil, freshPricing: nil, cloudServerListPrices: [:],
                 error: DisplayableError(message: "No token configured for this project.")
             )
         }
@@ -295,29 +339,56 @@ final class CostsViewModel {
             }
 
             var items: [CostItem] = []
-            items.append(contentsOf: CostItemBuilder.items(servers: servers, pricing: pricing))
+            items.append(contentsOf: CostItemBuilder.items(servers: servers, pricing: pricing, overrides: overrides))
             items.append(contentsOf: CostItemBuilder.items(volumes: volumes, pricing: pricing))
             items.append(contentsOf: CostItemBuilder.items(primaryIPs: primaryIPs, pricing: pricing))
             items.append(contentsOf: CostItemBuilder.items(loadBalancers: loadBalancers, pricing: pricing))
             items.append(contentsOf: floatingIPCostItems(floatingIPs, pricing: pricing))
 
+            // List-price lookup for the sheet's hint — computed
+            // independently of `overrides` (i.e. always Hetzner's current
+            // list price), even for a server that already has an override.
+            let listItems = CostItemBuilder.items(servers: servers, pricing: pricing)
+            let listPrices = Self.cloudServerListPrices(from: listItems)
+
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
                 items: items, currency: pricing.currency, freshPricing: freshPricing,
-                error: nil
+                cloudServerListPrices: listPrices, error: nil
             )
         } catch let apiError as HetznerAPIError {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
-                items: [], currency: nil, freshPricing: nil, error: DisplayableError(apiError)
+                items: [], currency: nil, freshPricing: nil, cloudServerListPrices: [:],
+                error: DisplayableError(apiError)
             )
         } catch {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
-                items: [], currency: nil, freshPricing: nil,
+                items: [], currency: nil, freshPricing: nil, cloudServerListPrices: [:],
                 error: DisplayableError(message: "Couldn't reach Hetzner right now. Check your connection and try again.")
             )
         }
+    }
+
+    /// Extracts `Server.id → list monthly price` from a set of un-overridden
+    /// `CostItem`s built by `CostItemBuilder`, parsing back the `"server-<id>"`
+    /// id scheme that builder uses. `.hourly` items use their `monthlyCap`
+    /// (Hetzner's own advertised monthly-equivalent price); `.monthlyFlat`
+    /// is handled too even though a plain (no-override) server item is
+    /// always `.hourly` today, so this stays correct if that ever changes.
+    private static func cloudServerListPrices(from items: [CostItem]) -> [Int: Decimal] {
+        var result: [Int: Decimal] = [:]
+        for item in items where item.kind == .server {
+            guard item.id.hasPrefix("server-"), let serverID = Int(item.id.dropFirst("server-".count)) else { continue }
+            switch item.pricing {
+            case .hourly(_, let monthlyCap):
+                if let monthlyCap { result[serverID] = monthlyCap }
+            case .monthlyFlat(let net):
+                result[serverID] = net
+            }
+        }
+        return result
     }
 
     /// Adapts Floating IPs into `CostItem`s. Hetzner's `/pricing` response

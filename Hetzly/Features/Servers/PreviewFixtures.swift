@@ -106,6 +106,136 @@ enum PreviewFixtures {
         ingoingTraffic: 0
     )
 
+    /// Same type/location/labels shape as `server`, but with traffic pushed
+    /// past its included quota — drives `ServerTrafficSection`'s "over
+    /// quota" preview (clearly-flagged billed overage, not just a warning).
+    static let serverOverTrafficQuota = Server(
+        id: 44,
+        name: "hetzi-heavy-01",
+        status: .running,
+        created: now.addingTimeInterval(-45 * 24 * 3_600),
+        publicNet: PublicNet(
+            ipv4: PublicNetIPv4(ip: "95.216.3.172"),
+            ipv6: PublicNetIPv6(ip: "2a01:4f9:c012:4a2c::/64")
+        ),
+        serverType: ServerType(
+            id: 22,
+            name: "cx22",
+            description: "CX22",
+            cores: 2,
+            memory: 4,
+            disk: 40,
+            cpuType: .shared,
+            architecture: .x86,
+            deprecated: false,
+            prices: []
+        ),
+        datacenter: Datacenter(
+            id: 3,
+            name: "nbg1-dc3",
+            description: "Nuremberg DC Park 1",
+            location: Location(
+                id: 1,
+                name: "nbg1",
+                description: "Nuremberg DC Park 1",
+                country: "DE",
+                city: "Nuremberg",
+                latitude: 49.452102,
+                longitude: 11.076665,
+                networkZone: "eu-central"
+            )
+        ),
+        labels: [:],
+        locked: false,
+        protection: ServerProtection(delete: false, rebuild: false),
+        backupWindow: nil,
+        rescueEnabled: false,
+        primaryDiskSize: 40,
+        includedTraffic: 21_990_232_555_520,
+        outgoingTraffic: 26_388_279_066_624, // ~24 TB, over the ~20 TB included quota
+        ingoingTraffic: 3_298_534_883_328 // ~3 TB
+    )
+
+    /// Same shape as `server`, but with no traffic reported at all yet
+    /// (`outgoingTraffic`/`ingoingTraffic` both `nil`, as Hetzner returns
+    /// for a server that hasn't been up long enough) — drives
+    /// `ServerTrafficSection`'s "omit the row entirely" preview.
+    static let serverWithoutTrafficData = Server(
+        id: 45,
+        name: "hetzi-fresh-01",
+        status: .running,
+        created: now.addingTimeInterval(-300),
+        publicNet: PublicNet(
+            ipv4: PublicNetIPv4(ip: "95.216.3.173"),
+            ipv6: nil
+        ),
+        serverType: ServerType(
+            id: 22,
+            name: "cx22",
+            description: "CX22",
+            cores: 2,
+            memory: 4,
+            disk: 40,
+            cpuType: .shared,
+            architecture: .x86,
+            deprecated: false,
+            prices: []
+        ),
+        datacenter: Datacenter(
+            id: 3,
+            name: "nbg1-dc3",
+            description: "Nuremberg DC Park 1",
+            location: Location(
+                id: 1,
+                name: "nbg1",
+                description: "Nuremberg DC Park 1",
+                country: "DE",
+                city: "Nuremberg",
+                latitude: 49.452102,
+                longitude: 11.076665,
+                networkZone: "eu-central"
+            )
+        ),
+        labels: [:],
+        locked: false,
+        protection: ServerProtection(delete: false, rebuild: false),
+        backupWindow: nil,
+        rescueEnabled: false,
+        primaryDiskSize: 40,
+        includedTraffic: 21_990_232_555_520,
+        outgoingTraffic: nil,
+        ingoingTraffic: nil
+    )
+
+    /// `/pricing` fixture matching `server`'s type (`cx22`, id 22) and
+    /// location (`nbg1`) — drives the Price row's "list price" previews and
+    /// `ServerDetailViewModel.listPriceMonthly` when a preview injects a
+    /// view model seeded with this.
+    static let pricing = Pricing(
+        currency: "EUR",
+        vatRate: "19.00",
+        serverTypes: [
+            PricingServerType(
+                id: 22,
+                name: "cx22",
+                prices: [
+                    ServerTypePrice(
+                        location: "nbg1",
+                        hourly: PriceValue(net: "0.0060", gross: "0.0071"),
+                        monthly: PriceValue(net: "3.79", gross: "4.51")
+                    )
+                ]
+            )
+        ],
+        primaryIPs: [],
+        volumePerGBMonth: nil,
+        serverBackupPercentage: "20.00"
+    )
+
+    /// A user-entered override for `server`, distinct from `pricing`'s list
+    /// price above — drives the Price row's "you pay X, list Y" preview.
+    static let priceOverride = Decimal(string: "25.49") ?? 0
+
     static let metrics: ServerMetrics = {
         let step: TimeInterval = 60
         let start = now.addingTimeInterval(-3_600)

@@ -1,5 +1,15 @@
 import SwiftUI
 
+/// Identifies the Cloud server `CloudServerPriceSheet` is currently editing —
+/// `settingPriceForCloudServer`'s `.sheet(item:)` needs an `Identifiable`,
+/// and a plain `Int` (the server id) can't carry the display name/list price
+/// the sheet also needs alongside it.
+private struct CloudServerPriceTarget: Identifiable {
+    let id: Int
+    let name: String
+    let listPriceMonthly: Decimal?
+}
+
 /// The Costs tab: month-to-date and projected spend across every project,
 /// computed 100% on-device from live inventory × Hetzner pricing (no
 /// third-party service ever sees a token or a number). Binding entry point
@@ -10,9 +20,11 @@ struct CostsView: View {
     @State private var viewModel: CostsViewModel
     @State private var manualStore = ManualCostStore()
     @State private var dedicatedPriceStore = DedicatedPriceStore()
+    @State private var cloudServerPriceStore = CloudServerPriceStore()
     @State private var isPresentingAddManual = false
     @State private var editingManualEntry: ManualCostEntry?
     @State private var settingPriceForServer: CostsViewModel.DedicatedServerRow?
+    @State private var settingPriceForCloudServer: CloudServerPriceTarget?
     @State private var shareImage: Image?
     @State private var csvExportURL: URL?
     @State private var isPresentingAddProject = false
@@ -78,7 +90,15 @@ struct CostsView: View {
                             }
 
                             ForEach(visibleProjectSections) { section in
-                                CostProjectSectionView(section: section, currency: viewModel.currency)
+                                CostProjectSectionView(
+                                    section: section,
+                                    currency: viewModel.currency,
+                                    cloudServerListPrices: viewModel.cloudServerListPrices,
+                                    cloudServerOverrides: viewModel.cloudServerOverrides,
+                                    onEditCloudServerPrice: { id, name, listPrice in
+                                        settingPriceForCloudServer = CloudServerPriceTarget(id: id, name: name, listPriceMonthly: listPrice)
+                                    }
+                                )
                             }
                         }
 
@@ -113,10 +133,14 @@ struct CostsView: View {
                     .padding(.vertical, Spacing.screenMargin)
                     .animation(.smooth, value: manualStore.entries)
                     .animation(.smooth, value: dedicatedPriceStore.entries)
+                    .animation(.smooth, value: cloudServerPriceStore.entries)
                     .animation(.snappy, value: scopedProjectID)
                 }
                 .refreshable {
-                    await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
+                    await viewModel.refresh(
+                        container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries,
+                        cloudServerPrices: cloudServerPriceStore.entries
+                    )
                 }
             }
             .navigationTitle("Costs")
@@ -157,7 +181,10 @@ struct CostsView: View {
             }
         }
         .task {
-            await viewModel.load(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
+            await viewModel.load(
+                container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries,
+                cloudServerPrices: cloudServerPriceStore.entries
+            )
         }
         .task(id: shareRenderKey) {
             await renderShareCard()
@@ -179,7 +206,10 @@ struct CostsView: View {
             // surface, so refresh (per-project pricing is memoized, so this
             // is cheap in practice).
             Task {
-                await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
+                await viewModel.refresh(
+                    container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries,
+                    cloudServerPrices: cloudServerPriceStore.entries
+                )
             }
         }
         .onChange(of: dedicatedPriceStore.entries) {
@@ -187,7 +217,21 @@ struct CostsView: View {
             // own 5-minute response cache means re-fetching Robot servers
             // right after a local price edit doesn't cost a real request.
             Task {
-                await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
+                await viewModel.refresh(
+                    container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries,
+                    cloudServerPrices: cloudServerPriceStore.entries
+                )
+            }
+        }
+        .onChange(of: cloudServerPriceStore.entries) {
+            // Same rationale as the two stores above — a Cloud server price
+            // override is purely a local recompute (no new network calls
+            // needed for pricing/servers, both already cached this pass).
+            Task {
+                await viewModel.refresh(
+                    container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries,
+                    cloudServerPrices: cloudServerPriceStore.entries
+                )
             }
         }
         .sheet(isPresented: $isPresentingAddManual) {
@@ -203,6 +247,15 @@ struct CostsView: View {
                 serverNumber: server.serverNumber,
                 serverName: server.name,
                 existing: dedicatedPriceStore.price(for: server.serverNumber)
+            )
+        }
+        .sheet(item: $settingPriceForCloudServer) { target in
+            CloudServerPriceSheet(
+                store: cloudServerPriceStore,
+                currency: viewModel.currency,
+                serverNumber: target.id,
+                serverName: target.name,
+                listPriceMonthly: target.listPriceMonthly
             )
         }
         .sheet(isPresented: $isPresentingAddProject) {

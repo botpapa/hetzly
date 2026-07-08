@@ -4,7 +4,10 @@ import SwiftUI
 /// Server Detail: a pinned hero card (status, IP, type, DC, uptime) above a
 /// glass Control/Analytics segmented control.
 ///
-/// - **Control** — everything that acts on the server, grouped: the
+/// - **Control** — everything that acts on the server, grouped: PRICE (the
+///   effective monthly cost — an override from `CloudServerPriceStore` if
+///   set, else the list price from `/pricing`) and TRAFFIC (this billing
+///   period's usage against the included quota) at the top, then the
 ///   circular power-action row plus "More" management sheet, a Terminal
 ///   entry point, PROTECTION, a light Resources summary, BACKUPS &
 ///   SNAPSHOTS, RESCUE MODE, CREDENTIALS (the saved root password, if any),
@@ -40,6 +43,14 @@ struct ServerDetailView: View {
     /// acts on the server" panel.
     @State private var selectedTab: ServerDetailTab = .control
     @State private var isTerminalPresented = false
+    /// User-entered monthly price overrides, keyed by server id — mirrors
+    /// how `CostsView` instantiates `DedicatedPriceStore` directly rather
+    /// than threading it through `AppContainer` (it's a small
+    /// `UserDefaults`-backed store, not a network client). Owned by worker
+    /// PA (`Hetzly/Features/Costs/CloudServerPriceStore.swift`); consumed
+    /// here for the Control tab's Price row.
+    @State private var priceStore = CloudServerPriceStore()
+    @State private var isPriceSheetPresented = false
     /// Biometric failure surfaced outside a confirm sheet (rescale flow).
     @State private var gateError: String?
     @State private var showSuccessToast = false
@@ -101,7 +112,10 @@ struct ServerDetailView: View {
             // locally-generated private key whose name matches one of this
             // project's registered SSH keys.
             async let sshKeysLoad: Void = model.loadSSHKeys()
-            _ = await (serverLoad, metricsLoad, snapshotsLoad, sshKeysLoad)
+            // Lightweight `/pricing`-only load for the Control tab's Price
+            // row — see `ServerDetailViewModel.loadPricing()`.
+            async let pricingLoad: Void = model.loadPricing()
+            _ = await (serverLoad, metricsLoad, snapshotsLoad, sshKeysLoad, pricingLoad)
         }
         .sheet(item: $pendingAction) { action in
             ServerActionConfirmSheet(
@@ -145,6 +159,17 @@ struct ServerDetailView: View {
                     viewModel?.clearManagementActionError()
                     Task { await viewModel?.load() }
                 }
+        }
+        .sheet(isPresented: $isPriceSheetPresented) {
+            if let server = viewModel?.server {
+                CloudServerPriceSheet(
+                    store: priceStore,
+                    currency: viewModel?.pricing?.currency ?? "EUR",
+                    serverNumber: server.id,
+                    serverName: server.name,
+                    listPriceMonthly: viewModel?.listPriceMonthly
+                )
+            }
         }
         .fullScreenCover(isPresented: $isTerminalPresented) {
             if let server = viewModel?.server,
@@ -300,6 +325,15 @@ struct ServerDetailView: View {
     /// header area, so they aren't duplicated as separate cards here.)
     @ViewBuilder
     private func controlTabContent(_ viewModel: ServerDetailViewModel, server: Server) -> some View {
+        ServerPriceSection(
+            listPriceMonthly: viewModel.listPriceMonthly,
+            currency: viewModel.pricing?.currency ?? "EUR",
+            override: priceStore.price(for: server.id),
+            onTap: { isPriceSheetPresented = true }
+        )
+
+        ServerTrafficSection(server: server)
+
         VStack(alignment: .leading, spacing: Spacing.unit * 4) {
             ServerActionRow(
                 server: server,

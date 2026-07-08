@@ -25,10 +25,7 @@ struct VSwitchDeleteConfirmSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 4) {
             HStack(spacing: Spacing.unit * 3) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(HetzlyColors.destructive)
-                    .frame(width: 36, height: 36)
+                SheetHeaderBadge(systemImage: "exclamationmark.triangle.fill", tint: HetzlyColors.destructive)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Delete vSwitch")
                         .bodyPrimary()

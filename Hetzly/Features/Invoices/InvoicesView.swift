@@ -55,7 +55,7 @@ struct InvoicesView: View {
                     } else {
                         Image(systemName: "doc.text.magnifyingglass")
                             .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(HetzlyColors.accent)
+                            .foregroundStyle(HetzlyColors.textSecondary)
                     }
 
                     Spacer()
@@ -96,11 +96,11 @@ struct InvoicesView: View {
                 HStack(spacing: Spacing.unit * 3) {
                     Image(systemName: "doc.plaintext")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(HetzlyColors.accent)
+                        .foregroundStyle(HetzlyColors.textSecondary)
                         .frame(width: 40, height: 40)
                         .background(
                             RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
-                                .fill(HetzlyColors.accent.opacity(0.12))
+                                .fill(Color.white.opacity(0.06))
                         )
 
                     VStack(alignment: .leading, spacing: 2) {

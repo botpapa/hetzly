@@ -4,5 +4,24 @@
 <dict>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<!-- `hetzly://` deep-link scheme — widgets, Shortcuts, and automations
+	     open a specific server/project via `Hetzly/App/DeepLink.swift` +
+	     `AppRouter`, handled in `HetzlyApp`'s `.onOpenURL`. Declared here
+	     rather than via an `INFOPLIST_KEY_*` build setting in project.yml
+	     because `CFBundleURLTypes` (an array of dicts) has no such
+	     shorthand — same reasoning as `UILaunchScreen` above. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.hetzly.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hetzly</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

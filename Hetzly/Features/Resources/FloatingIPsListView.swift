@@ -18,6 +18,7 @@ struct FloatingIPsListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No Floating IPs",
                 emptyMessage: "Floating IPs move with your traffic — reassign one to a new server for zero-downtime failover.",
                 emptyCTA: "Create Floating IP",
@@ -105,11 +106,11 @@ struct FloatingIPsListView: View {
     }
 
     private func reload() async {
-        guard let client = client() else {
+        guard let projectID = selection.projectID, let client = client() else {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listFloatingIPs() })
+        model = ResourceListModel(load: { try await client.listFloatingIPs() }, cacheKey: "floatingIPs#\(projectID)")
         await model.loadIfNeeded()
     }
 

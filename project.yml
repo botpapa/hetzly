@@ -49,6 +49,12 @@ targets:
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
         GENERATE_INFOPLIST_FILE: true
+        # `Hetzly/Resources/Info.plist` also declares CFBundleURLTypes for
+        # the `hetzly://` deep-link scheme (widgets/Shortcuts/automations —
+        # see `Hetzly/App/DeepLink.swift`) — there's no INFOPLIST_KEY_*
+        # shorthand for an array-of-dicts key, so it's a manual plist entry
+        # merged in via GENERATE_INFOPLIST_FILE + INFOPLIST_FILE below, same
+        # as the existing UILaunchScreen entry.
         INFOPLIST_FILE: Hetzly/Resources/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: Hetzly
         INFOPLIST_KEY_NSFaceIDUsageDescription: "Unlock Hetzly and confirm destructive actions."

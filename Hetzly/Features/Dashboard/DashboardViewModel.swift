@@ -522,6 +522,13 @@ final class DashboardViewModel {
         rowActionInFlight.insert(item.id)
         defer { rowActionInFlight.remove(item.id) }
 
+        // Same "notify only if backgrounded" contract as Server Detail's
+        // power/management actions — see `NotificationService`. The row
+        // spinner (not a toast) covers the foreground case here, so the
+        // background-only notification is this row action's only
+        // completion signal when the user has already moved on.
+        let notification = container.notificationService.notifyOnCompletion(actionTitle: action.title, serverName: item.name)
+        var succeeded = false
         do {
             let started = try await fireRowAction(action, serverID: item.serverID, client: client)
             let tracker = ActionTracker(client: client)
@@ -531,12 +538,14 @@ final class DashboardViewModel {
             // row showing its last-known (refreshed below) state.
             for await update in await tracker.track(actionID: started.id) {
                 if case .progress = update { continue }
+                if case .finished = update { succeeded = true }
                 break
             }
         } catch {
             // Same rationale: no dashboard-row inline error UI. The refresh
             // below still runs so the row reflects reality either way.
         }
+        container.notificationService.finish(notification, success: succeeded)
 
         await refreshLiveProject(item.projectID, container: container)
     }

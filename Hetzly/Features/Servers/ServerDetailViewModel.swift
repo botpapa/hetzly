@@ -263,6 +263,16 @@ final class ServerDetailViewModel {
 
     private func track(_ kind: PowerAction, using client: CloudClient) async {
         activeAction = ActiveAction(kind: kind, progress: 0)
+        // Registers this action with `NotificationService` before the
+        // request even fires: if the app backgrounds partway through, its
+        // `beginBackgroundTask` reservation is already open, and whichever
+        // terminal branch below runs calls `finish(_:success:)` exactly
+        // once to post a "backgrounded only" local notification (a
+        // foreground completion is already covered by the in-app success
+        // toast/haptic `lastActionSucceeded` drives).
+        let notification = container.notificationService.notifyOnCompletion(
+            actionTitle: kind.title, serverName: server?.name ?? "Server #\(route.serverID)"
+        )
         do {
             let action = try await perform(kind, on: client)
             activeAction = ActiveAction(kind: kind, progress: action.progress)
@@ -275,6 +285,7 @@ final class ServerDetailViewModel {
                     activeAction = nil
                     lastActionSucceeded = true
                     lastSucceededAction = kind
+                    container.notificationService.finish(notification, success: true)
                     if kind == .delete {
                         didDeleteServer = true
                     } else {
@@ -291,16 +302,23 @@ final class ServerDetailViewModel {
                     // comment above), so no conditional cast is needed here
                     // unlike the generic `Error` catch clauses below.
                     actionErrorIsPermissionError = underlying.isPermissionError
+                    container.notificationService.finish(notification, success: false)
                 case .timedOut:
                     activeAction = nil
                     actionError = "This is taking longer than expected. Check back shortly."
                     actionErrorIsPermissionError = false
+                    // Treated as a failure for notification purposes too —
+                    // there's no further terminal update to wait for, and
+                    // "taking longer than expected" is the same bucket the
+                    // inline error card already shows.
+                    container.notificationService.finish(notification, success: false)
                 }
             }
         } catch {
             activeAction = nil
             actionError = Self.message(for: error)
             actionErrorIsPermissionError = (error as? HetznerAPIError)?.isPermissionError ?? false
+            container.notificationService.finish(notification, success: false)
         }
     }
 
@@ -351,6 +369,9 @@ final class ServerDetailViewModel {
 
     private func trackManagement(_ kind: ServerManagementAction, using client: CloudClient) async {
         managementActiveAction = ManagementActiveAction(stepLabel: kind.progressVerb, progress: 0)
+        let notification = container.notificationService.notifyOnCompletion(
+            actionTitle: kind.title, serverName: server?.name ?? "Server #\(route.serverID)"
+        )
         do {
             let action = try await performManagement(kind, on: client)
             managementActiveAction = ManagementActiveAction(stepLabel: kind.progressVerb, progress: action.progress)
@@ -360,6 +381,7 @@ final class ServerDetailViewModel {
             managementActiveAction = nil
             lastManagementActionSucceeded = true
             lastManagementSuccessText = kind.successText
+            container.notificationService.finish(notification, success: true)
             switch kind {
             case .attachISO(let iso): locallyAttachedISO = iso
             case .detachISO: locallyAttachedISO = nil
@@ -371,6 +393,7 @@ final class ServerDetailViewModel {
             managementActiveAction = nil
             managementActionError = Self.message(for: error)
             managementActionErrorIsPermissionError = (error as? HetznerAPIError)?.isPermissionError ?? false
+            container.notificationService.finish(notification, success: false)
         }
     }
 
@@ -462,6 +485,12 @@ final class ServerDetailViewModel {
     private func trackRescale(
         serverType: ServerType, upgradeDisk: Bool, powerOnAfter: Bool, using client: CloudClient
     ) async {
+        // One notification for the whole chained flow (shutdown → resize →
+        // optional power-on), not one per step — matches how
+        // `lastManagementSuccessText` only fires once, at the very end.
+        let notification = container.notificationService.notifyOnCompletion(
+            actionTitle: "Resize", serverName: server?.name ?? "Server #\(route.serverID)"
+        )
         do {
             let serverID = route.serverID
             let wasRunning = server?.status == .running
@@ -487,11 +516,13 @@ final class ServerDetailViewModel {
             managementActiveAction = nil
             lastManagementActionSucceeded = true
             lastManagementSuccessText = "Resized to \(serverType.name)."
+            container.notificationService.finish(notification, success: true)
             await load()
         } catch {
             managementActiveAction = nil
             managementActionError = Self.message(for: error)
             managementActionErrorIsPermissionError = (error as? HetznerAPIError)?.isPermissionError ?? false
+            container.notificationService.finish(notification, success: false)
         }
     }
 

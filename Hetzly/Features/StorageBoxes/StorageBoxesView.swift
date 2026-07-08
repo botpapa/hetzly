@@ -153,12 +153,18 @@ struct StorageBoxesView: View {
     private var boxList: some View {
         if let accountID = selectedAccountID {
             ScrollView {
-                LazyVStack(spacing: Spacing.unit * 3) {
-                    ForEach(viewModel.boxes) { box in
-                        NavigationLink(value: StorageBoxRoute(accountID: accountID, storageBoxID: box.id)) {
-                            StorageBoxRow(box: box)
+                VStack(alignment: .leading, spacing: Spacing.unit * 3) {
+                    if viewModel.freshnessBanner != .none {
+                        listFreshnessChip(viewModel.freshnessBanner)
+                    }
+
+                    LazyVStack(spacing: Spacing.unit * 3) {
+                        ForEach(viewModel.boxes) { box in
+                            NavigationLink(value: StorageBoxRoute(accountID: accountID, storageBoxID: box.id)) {
+                                StorageBoxRow(box: box)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, Spacing.screenMargin)

@@ -3,8 +3,10 @@ import SwiftUI
 /// A `GlassChip` showing the currently-selected Robot account's label plus a
 /// chevron; tapping opens a `Menu` listing every account so the user can
 /// switch. Local to `Dedicated/` per the module contract — only `DedicatedView`
-/// needs an account picker (`ProjectPickerChip` in `Resources/` is the
-/// project-scoped equivalent for the Cloud side).
+/// needs an account picker (`ProjectFilterBar` in `Dashboard/` is the
+/// project-scoped equivalent for the Cloud side — Dashboard/Costs/Resources
+/// all use it; Robot accounts aren't Cloud projects, so Dedicated keeps its
+/// own small chip here rather than reusing that component).
 struct RobotAccountPickerChip: View {
     let accounts: [RobotAccountRecord]
     @Binding var selection: UUID?

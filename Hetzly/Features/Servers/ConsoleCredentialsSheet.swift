@@ -11,10 +11,7 @@ struct ConsoleCredentialsSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.unit * 4) {
                 HStack(spacing: Spacing.unit * 3) {
-                    Image(systemName: "terminal")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(HetzlyColors.accent)
-                        .frame(width: 36, height: 36)
+                    SheetHeaderBadge(systemImage: "terminal")
                     Text("Console Session")
                         .bodyPrimary()
                         .fontWeight(.semibold)

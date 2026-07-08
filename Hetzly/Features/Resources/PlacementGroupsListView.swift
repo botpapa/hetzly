@@ -18,6 +18,7 @@ struct PlacementGroupsListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No Placement Groups",
                 emptyMessage: "Spread placement groups keep servers on separate physical hosts, so one host failure can't take them all down.",
                 emptyCTA: "Create Placement Group",
@@ -73,7 +74,7 @@ struct PlacementGroupsListView: View {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listPlacementGroups() })
+        model = ResourceListModel(load: { try await client.listPlacementGroups() }, cacheKey: "placementGroups#\(projectID)")
         await model.loadIfNeeded()
     }
 

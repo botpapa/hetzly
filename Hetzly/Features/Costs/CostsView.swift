@@ -64,69 +64,9 @@ struct CostsView: View {
                             selection: selectedProjectID,
                             onAddProject: { isPresentingAddProject = true }
                         )
-
-                        let hero = viewModel.heroSummary(forProjectID: scopedProjectID)
-                        CostsHeroCard(
-                            monthToDate: hero.monthToDate,
-                            projected: hero.projected,
-                            currency: viewModel.currency,
-                            monthElapsedFraction: viewModel.monthElapsedFraction
-                        )
-
-                        if viewModel.isEmpty && !viewModel.isLoading {
-                            emptyState
-                        } else {
-                            if visibleKindShares.count > 1 {
-                                GlassCard {
-                                    VStack(alignment: .leading, spacing: Spacing.unit * 4) {
-                                        SectionLabel("Spend by kind")
-                                        CostKindDonutChart(
-                                            shares: visibleKindShares,
-                                            currency: viewModel.currency
-                                        )
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                }
-                            }
-
-                            ForEach(visibleProjectSections) { section in
-                                CostProjectSectionView(
-                                    section: section,
-                                    currency: viewModel.currency,
-                                    cloudServerListPrices: viewModel.cloudServerListPrices,
-                                    cloudServerOverrides: viewModel.cloudServerOverrides,
-                                    onEditCloudServerPrice: { id, name, listPrice in
-                                        settingPriceForCloudServer = CloudServerPriceTarget(id: id, name: name, listPriceMonthly: listPrice)
-                                    }
-                                )
-                            }
-                        }
-
-                        // Dedicated servers and manual entries aren't tied to
-                        // any Cloud project, so they only make sense in the
-                        // combined "All" view — scoping to one project would
-                        // otherwise show costs that don't belong to it.
-                        if scopedProjectID == nil {
-                            DedicatedCostSection(
-                                dedicatedServers: viewModel.dedicatedServers,
-                                dedicatedErrorMessage: viewModel.dedicatedErrorMessage,
-                                dedicatedIsAuthError: viewModel.dedicatedIsAuthError,
-                                manualEntries: manualStore.entries,
-                                currency: viewModel.currency,
-                                onSetPrice: { settingPriceForServer = $0 },
-                                onAddManual: { isPresentingAddManual = true },
-                                onEditManual: { editingManualEntry = $0 },
-                                onDeleteManual: { removeManualEntry($0) }
-                            )
-                        } else if hasScopedHiddenCosts {
-                            // Dedicated servers and manual entries aren't tied
-                            // to a project, so scoping hides them entirely —
-                            // a quiet pointer back to "All" keeps that from
-                            // reading as "my costs disappeared."
-                            Text("Dedicated & manual costs are shown under All")
-                                .caption()
-                        }
-
+                        heroCard
+                        breakdownSection
+                        dedicatedAndManualSection
                         invoicesRow
                     }
                     .padding(.horizontal, Spacing.screenMargin)
@@ -181,10 +121,14 @@ struct CostsView: View {
             }
         }
         .task {
+            resetScopeIfProjectMissing()
             await viewModel.load(
                 container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries,
                 cloudServerPrices: cloudServerPriceStore.entries
             )
+        }
+        .onChange(of: container.projectsStore.projects.map(\.id)) { _, _ in
+            resetScopeIfProjectMissing()
         }
         .task(id: shareRenderKey) {
             await renderShareCard()
@@ -263,10 +207,83 @@ struct CostsView: View {
         }
     }
 
+    // MARK: - Body sections (split out to keep the type-checker fast)
+
+    private var heroCard: some View {
+        let hero = viewModel.heroSummary(forProjectID: scopedProjectID)
+        return CostsHeroCard(
+            monthToDate: hero.monthToDate,
+            projected: hero.projected,
+            currency: viewModel.currency,
+            monthElapsedFraction: viewModel.monthElapsedFraction
+        )
+    }
+
+    @ViewBuilder
+    private var breakdownSection: some View {
+        if viewModel.isEmpty && !viewModel.isLoading {
+            emptyState
+        } else {
+            if visibleKindShares.count > 1 {
+                GlassCard {
+                    VStack(alignment: .leading, spacing: Spacing.unit * 4) {
+                        SectionLabel("Spend by kind")
+                        CostKindDonutChart(shares: visibleKindShares, currency: viewModel.currency)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+
+            ForEach(visibleProjectSections) { section in
+                CostProjectSectionView(
+                    section: section,
+                    currency: viewModel.currency,
+                    cloudServerListPrices: viewModel.cloudServerListPrices,
+                    cloudServerOverrides: viewModel.cloudServerOverrides,
+                    onEditCloudServerPrice: { id, name, listPrice in
+                        settingPriceForCloudServer = CloudServerPriceTarget(id: id, name: name, listPriceMonthly: listPrice)
+                    }
+                )
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var dedicatedAndManualSection: some View {
+        // Dedicated servers and manual entries aren't tied to any Cloud
+        // project, so they only make sense in the combined "All" view.
+        if scopedProjectID == nil {
+            DedicatedCostSection(
+                dedicatedServers: viewModel.dedicatedServers,
+                dedicatedErrorMessage: viewModel.dedicatedErrorMessage,
+                dedicatedIsAuthError: viewModel.dedicatedIsAuthError,
+                manualEntries: manualStore.entries,
+                currency: viewModel.currency,
+                onSetPrice: { settingPriceForServer = $0 },
+                onAddManual: { isPresentingAddManual = true },
+                onEditManual: { editingManualEntry = $0 },
+                onDeleteManual: { removeManualEntry($0) }
+            )
+        } else if hasScopedHiddenCosts {
+            Text("Dedicated & manual costs are shown under All")
+                .caption()
+        }
+    }
+
     // MARK: - Project scope
 
     private var scopedProjectID: UUID? {
         selectedProjectID.wrappedValue
+    }
+
+    /// Clears the persisted scope back to "All" when it points at a project
+    /// that no longer exists, so Costs never renders a blank/underreporting
+    /// screen (mirrors the Dashboard/Resources fallback).
+    private func resetScopeIfProjectMissing() {
+        guard let scoped = scopedProjectID else { return }
+        if !container.projectsStore.projects.contains(where: { $0.id == scoped }) {
+            selectedProjectIDStorage = ""
+        }
     }
 
     /// `viewModel.projectSections` narrowed to the scoped project, or every

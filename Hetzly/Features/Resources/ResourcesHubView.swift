@@ -8,15 +8,29 @@ import SwiftUI
 /// Owns the single `ResourcesProjectSelection` instance for this tab and
 /// injects it via `.environment` so every pushed screen (including Worker
 /// B3's Firewalls/Load Balancers/DNS screens) reads the same selection.
+///
+/// Project picker: uses `ProjectFilterBar` — the same chips-with-"All"
+/// widget Dashboard and Costs scope themselves with (>6 projects collapses
+/// into the same menu chip on all three tabs) — in place of the old
+/// `ProjectPickerChip` toolbar chip, per the Wave B "picker unity" contract.
+/// Resources fundamentally needs ONE project to list resources for (there's
+/// no such thing as an "All-projects" volumes list), so unlike Dashboard/
+/// Costs, tapping "All" here doesn't aggregate anything — it shows
+/// `selectProjectState` instead of the category list. That keeps the visual
+/// chrome and interaction model identical across all three tabs (same
+/// component, same collapse behavior) while staying honest that Resources
+/// is still single-select underneath.
 struct ResourcesHubView: View {
     @Environment(AppContainer.self) private var container
     @State private var selection = ResourcesProjectSelection()
     @State private var viewModel = ResourcesHubViewModel()
+    @State private var isAddProjectPresented = false
 
     /// Remembers the scoped project across launches (stored as a `String`
     /// since `AppStorage` has no native `UUID?` support). Read once on
     /// appear to seed `selection.projectID`; written back whenever the user
-    /// switches projects via `ProjectPickerChip`.
+    /// switches projects via `ProjectFilterBar`. Deliberately never
+    /// persists "All" (`nil`) — see `resolvedInitialProjectID()`.
     @AppStorage("resources.selectedProject") private var persistedProjectIDStorage = ""
 
     var body: some View {
@@ -29,14 +43,24 @@ struct ResourcesHubView: View {
                 } else {
                     ScrollView {
                         VStack(alignment: .leading, spacing: Spacing.unit * 5) {
-                            if let errorMessage = viewModel.errorMessage {
-                                ResourceErrorBanner(message: errorMessage)
-                            }
+                            ProjectFilterBar(
+                                projects: container.projectsStore.projects,
+                                selection: $selection.projectID,
+                                onAddProject: { isAddProjectPresented = true }
+                            )
 
-                            infrastructureSection
-                            networkingSection
-                            accessSection
-                            storageSection
+                            if selection.projectID == nil {
+                                selectProjectState
+                            } else {
+                                if let errorMessage = viewModel.errorMessage {
+                                    ResourceErrorBanner(message: errorMessage)
+                                }
+
+                                infrastructureSection
+                                networkingSection
+                                accessSection
+                                storageSection
+                            }
                         }
                         .padding(.horizontal, Spacing.screenMargin)
                         .padding(.vertical, Spacing.screenMargin)
@@ -47,13 +71,11 @@ struct ResourcesHubView: View {
                 }
             }
             .navigationTitle("Resources")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    ProjectPickerChip(projects: container.projectsStore.projects, selection: $selection.projectID)
-                }
-            }
         }
         .environment(selection)
+        .sheet(isPresented: $isAddProjectPresented) {
+            AddProjectSheet()
+        }
         .task {
             if selection.projectID == nil {
                 selection.projectID = resolvedInitialProjectID()
@@ -106,6 +128,35 @@ struct ResourcesHubView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.top, Spacing.unit * 16)
+    }
+
+    // MARK: - "All" selected
+
+    /// Shown instead of the category list when `ProjectFilterBar`'s "All"
+    /// chip is selected. Unlike Dashboard/Costs, Resources has no
+    /// combined-across-projects view to fall back to — every category list
+    /// (volumes, networks, SSH keys, …) is inherently scoped to one
+    /// project's `CloudClient` — so this is a deliberate prompt rather than
+    /// an aggregation.
+    private var selectProjectState: some View {
+        VStack(spacing: Spacing.unit * 5) {
+            if container.settings.mascotEnabled {
+                MascotView(state: .peek, scale: 4)
+            } else {
+                Image(systemName: "cube.box")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
+            VStack(spacing: Spacing.unit * 2) {
+                SectionLabel("Select a Project")
+                Text("Resources are scoped to one project at a time — choose one above to see its volumes, networks, and more.")
+                    .bodySecondary()
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: 280)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, Spacing.unit * 10)
     }
 
     // MARK: - Sections

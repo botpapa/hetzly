@@ -99,10 +99,10 @@ struct ServerActionConfirmSheet: View {
 
     private var header: some View {
         HStack(spacing: Spacing.unit * 3) {
-            Image(systemName: action.systemImage)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(action.isDestructive ? HetzlyColors.destructive : HetzlyColors.accent)
-                .frame(width: 36, height: 36)
+            SheetHeaderBadge(
+                systemImage: action.systemImage,
+                tint: action.isDestructive ? HetzlyColors.destructive : HetzlyColors.textSecondary
+            )
             VStack(alignment: .leading, spacing: 2) {
                 Text(action.title)
                     .bodyPrimary()

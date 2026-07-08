@@ -18,6 +18,7 @@ struct CertificatesListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No Certificates",
                 emptyMessage: "Request a managed Let's Encrypt certificate or upload your own for load balancers.",
                 emptyCTA: "Create Certificate",
@@ -77,7 +78,7 @@ struct CertificatesListView: View {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listCertificates() })
+        model = ResourceListModel(load: { try await client.listCertificates() }, cacheKey: "certificates#\(projectID)")
         await model.loadIfNeeded()
     }
 

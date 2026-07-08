@@ -28,5 +28,6 @@ struct RootView: View {
 #Preview {
     RootView()
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.dark)
 }

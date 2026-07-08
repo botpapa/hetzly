@@ -1,6 +1,37 @@
 import HetznerKit
 import SwiftUI
 
+// MARK: - Freshness / stale-cache chip
+
+/// Shared stale-while-revalidate freshness state for any `DiskCache`-backed
+/// list screen — `ResourceListModel<T>`, `DedicatedListViewModel`, and
+/// `StorageBoxListViewModel` all expose a `freshnessBanner` of this type so
+/// every list (Resources, Dedicated, Storage Boxes) renders the exact same
+/// chip. Deliberately not nested inside `ResourceListModel` so the two
+/// non-generic view models can share it too.
+enum ListFreshness: Equatable {
+    case none
+    case refreshingCache
+    case offlineCache
+}
+
+/// The visual language for `ListFreshness`, copied from
+/// `DashboardView.freshnessBanner` (not imported — Dashboard is out of
+/// scope here) so every offline-capable list reads the same way as the
+/// Dashboard's own cached-data chip.
+@MainActor
+@ViewBuilder
+func listFreshnessChip(_ freshness: ListFreshness) -> some View {
+    switch freshness {
+    case .none:
+        EmptyView()
+    case .refreshingCache:
+        GlassChip("Showing cached data — refreshing…", systemImage: "arrow.triangle.2.circlepath")
+    case .offlineCache:
+        GlassChip("Offline — showing cached data", systemImage: "wifi.slash")
+    }
+}
+
 // MARK: - Error / offline banners
 
 /// Inline error banner matching the Dashboard's per-section error style:
@@ -282,9 +313,10 @@ private struct ResourceErrorRecovery: View {
 /// hand-rolling the same four-way switch.
 @MainActor
 @ViewBuilder
-func resourceListBody<T: Identifiable & Sendable, Row: View>(
+func resourceListBody<T: Identifiable & Sendable & Codable, Row: View>(
     state: ResourceListModel<T>.LoadState,
     items: [T],
+    freshness: ListFreshness = .none,
     emptyTitle: String,
     emptyMessage: String,
     emptyCTA: String,
@@ -298,7 +330,7 @@ func resourceListBody<T: Identifiable & Sendable, Row: View>(
         if items.isEmpty {
             ResourceLoadingState()
         } else {
-            resourceList(items: items, bannerError: nil, onRefresh: onRefresh, row: row)
+            resourceList(items: items, freshness: freshness, bannerError: nil, onRefresh: onRefresh, row: row)
         }
     case .failed(let error):
         if items.isEmpty {
@@ -315,13 +347,13 @@ func resourceListBody<T: Identifiable & Sendable, Row: View>(
             .frame(maxWidth: .infinity)
             .padding(.top, Spacing.unit * 16)
         } else {
-            resourceList(items: items, bannerError: error, onRefresh: onRefresh, row: row)
+            resourceList(items: items, freshness: freshness, bannerError: error, onRefresh: onRefresh, row: row)
         }
     case .loaded:
         if items.isEmpty {
             ResourceEmptyState(title: emptyTitle, message: emptyMessage, ctaTitle: emptyCTA, onCreate: onCreate)
         } else {
-            resourceList(items: items, bannerError: nil, onRefresh: onRefresh, row: row)
+            resourceList(items: items, freshness: freshness, bannerError: nil, onRefresh: onRefresh, row: row)
         }
     }
 }
@@ -330,11 +362,20 @@ func resourceListBody<T: Identifiable & Sendable, Row: View>(
 @ViewBuilder
 private func resourceList<T: Identifiable & Sendable, Row: View>(
     items: [T],
+    freshness: ListFreshness,
     bannerError: DisplayableError?,
     onRefresh: @escaping @Sendable () async -> Void,
     @ViewBuilder row: @escaping (T) -> Row
 ) -> some View {
     List {
+        if freshness != .none {
+            HStack {
+                listFreshnessChip(freshness)
+                Spacer(minLength: 0)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+        }
         if let bannerError {
             VStack(alignment: .leading, spacing: Spacing.unit * 2) {
                 ResourceErrorBanner(message: bannerError.message)

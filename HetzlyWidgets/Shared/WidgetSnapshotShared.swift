@@ -14,6 +14,25 @@ struct WidgetSnapshot: Codable, Sendable, Equatable {
         let name: String
         let statusRaw: String
         let cpuSamples: [Double]
+
+        /// Identity for deep-linking this row straight to `ServerDetailView`
+        /// via `hetzly://server/<projectID>/<serverID>` (see
+        /// `TopServersWidgetEntryView`'s per-row `Link`). Both default to
+        /// `nil` — as of this wave, `Hetzly/Store/WidgetSnapshotWriter.swift`
+        /// (the only writer, out of scope for this worker) doesn't populate
+        /// them yet, so every existing/decoded snapshot still round-trips
+        /// fine and every row falls back to `hetzly://dashboard` until the
+        /// writer is updated to fill these in.
+        let projectID: UUID?
+        let serverID: Int?
+
+        init(name: String, statusRaw: String, cpuSamples: [Double], projectID: UUID? = nil, serverID: Int? = nil) {
+            self.name = name
+            self.statusRaw = statusRaw
+            self.cpuSamples = cpuSamples
+            self.projectID = projectID
+            self.serverID = serverID
+        }
     }
 
     let updatedAt: Date

@@ -46,10 +46,7 @@ struct VSwitchAddServerSheet: View {
 
     private var header: some View {
         HStack(spacing: Spacing.unit * 3) {
-            Image(systemName: "plus.rectangle.on.folder")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(HetzlyColors.accent)
-                .frame(width: 36, height: 36)
+            SheetHeaderBadge(systemImage: "plus.rectangle.on.folder")
             Text("Add Servers")
                 .bodyPrimary()
                 .fontWeight(.semibold)

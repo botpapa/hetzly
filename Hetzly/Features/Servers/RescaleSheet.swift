@@ -73,10 +73,7 @@ struct RescaleSheet: View {
 
     private var header: some View {
         HStack(spacing: Spacing.unit * 3) {
-            Image(systemName: "arrow.up.left.and.arrow.down.right")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(HetzlyColors.accent)
-                .frame(width: 36, height: 36)
+            SheetHeaderBadge(systemImage: "arrow.up.left.and.arrow.down.right")
             VStack(alignment: .leading, spacing: 2) {
                 Text("Rescale Server")
                     .bodyPrimary()

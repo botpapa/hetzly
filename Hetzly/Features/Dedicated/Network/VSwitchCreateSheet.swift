@@ -98,10 +98,7 @@ struct VSwitchCreateSheet: View {
 
     private var header: some View {
         HStack(spacing: Spacing.unit * 3) {
-            Image(systemName: "square.split.2x2")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(HetzlyColors.accent)
-                .frame(width: 36, height: 36)
+            SheetHeaderBadge(systemImage: "square.split.2x2")
             Text("New vSwitch")
                 .bodyPrimary()
                 .fontWeight(.semibold)

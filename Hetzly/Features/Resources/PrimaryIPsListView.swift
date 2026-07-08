@@ -18,6 +18,7 @@ struct PrimaryIPsListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No Primary IPs",
                 emptyMessage: "Primary IPs are usually created alongside a server, but you can also reserve one standalone.",
                 emptyCTA: "Create Primary IP",
@@ -108,11 +109,11 @@ struct PrimaryIPsListView: View {
     }
 
     private func reload() async {
-        guard let client = client() else {
+        guard let projectID = selection.projectID, let client = client() else {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listPrimaryIPs() })
+        model = ResourceListModel(load: { try await client.listPrimaryIPs() }, cacheKey: "primaryIPs#\(projectID)")
         await model.loadIfNeeded()
     }
 

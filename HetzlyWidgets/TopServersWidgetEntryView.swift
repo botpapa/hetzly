@@ -16,16 +16,24 @@ struct TopServersWidgetEntryView: View {
                         .foregroundStyle(WidgetColors.textTertiary)
 
                     ForEach(Array(snapshot.topServers.prefix(3).enumerated()), id: \.offset) { _, server in
-                        HStack(spacing: 8) {
-                            Circle()
-                                .fill(WidgetColors.statusColor(forRaw: server.statusRaw))
-                                .frame(width: 8, height: 8)
-                            Text(server.name)
-                                .font(.system(.footnote, design: .monospaced))
-                                .foregroundStyle(WidgetColors.textPrimary)
-                                .lineLimit(1)
-                            Spacer(minLength: 8)
-                            WidgetSparklineView(values: server.cpuSamples)
+                        // Per-row tap target (supported in widgets since
+                        // iOS 17 without needing an interactive App Intent —
+                        // `Link` just opens the URL): deep-links straight to
+                        // that server's detail screen when the snapshot
+                        // carries ids, otherwise falls back to the dashboard
+                        // like the rest of the widget's background.
+                        Link(destination: rowDestination(for: server)) {
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(WidgetColors.statusColor(forRaw: server.statusRaw))
+                                    .frame(width: 8, height: 8)
+                                Text(server.name)
+                                    .font(.system(.footnote, design: .monospaced))
+                                    .foregroundStyle(WidgetColors.textPrimary)
+                                    .lineLimit(1)
+                                Spacer(minLength: 8)
+                                WidgetSparklineView(values: server.cpuSamples)
+                            }
                         }
                     }
 
@@ -37,6 +45,16 @@ struct TopServersWidgetEntryView: View {
             }
         }
         .containerBackground(for: .widget) { WidgetColors.canvas }
+        // Fallback tap target for anywhere outside the per-row `Link`s
+        // (the "TOP SERVERS" header, inter-row padding, the empty state).
+        .widgetURL(WidgetDeepLink.dashboard)
+    }
+
+    private func rowDestination(for server: WidgetSnapshot.ServerSummary) -> URL {
+        guard let projectID = server.projectID, let serverID = server.serverID else {
+            return WidgetDeepLink.dashboard
+        }
+        return WidgetDeepLink.server(projectID: projectID, serverID: serverID)
     }
 }
 

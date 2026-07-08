@@ -16,6 +16,7 @@ final class AppContainer {
     let robotAccountsStore: RobotAccountsStore
     let storageBoxAccountsStore: StorageBoxAccountsStore
     let biometricGate: BiometricGate
+    let notificationService: NotificationService
     var settings: AppSettings
 
     @ObservationIgnored
@@ -47,6 +48,7 @@ final class AppContainer {
         self.storageBoxAccountsStore = StorageBoxAccountsStore(context: context)
         self.sharedSnapshotStore = SnapshotStore(context: context)
         self.biometricGate = BiometricGate()
+        self.notificationService = NotificationService()
         self.settings = AppSettings()
     }
 

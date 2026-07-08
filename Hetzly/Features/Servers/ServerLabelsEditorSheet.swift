@@ -44,10 +44,7 @@ struct ServerLabelsEditorSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 4) {
             HStack(spacing: Spacing.unit * 3) {
-                Image(systemName: "tag")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(HetzlyColors.accent)
-                    .frame(width: 36, height: 36)
+                SheetHeaderBadge(systemImage: "tag")
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Edit Labels")
                         .bodyPrimary()
@@ -68,7 +65,7 @@ struct ServerLabelsEditorSheet: View {
                         withAnimation(.snappy) { rows.append(LabelRow(key: "", value: "")) }
                     } label: {
                         Label("Add Label", systemImage: "plus.circle.fill")
-                            .foregroundStyle(HetzlyColors.accent)
+                            .foregroundStyle(HetzlyColors.textSecondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, Spacing.unit * 2)
                     }

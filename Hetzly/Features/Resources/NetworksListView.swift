@@ -17,6 +17,7 @@ struct NetworksListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No Networks",
                 emptyMessage: "Create a private network to connect servers over an internal, unmetered link.",
                 emptyCTA: "Create Network",
@@ -76,7 +77,7 @@ struct NetworksListView: View {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listNetworks() })
+        model = ResourceListModel(load: { try await client.listNetworks() }, cacheKey: "networks#\(projectID)")
         await model.loadIfNeeded()
     }
 

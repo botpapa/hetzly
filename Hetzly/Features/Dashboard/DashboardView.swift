@@ -7,6 +7,12 @@ import UIKit
 /// `AppContainer` from the environment per the module contract.
 struct DashboardView: View {
     @Environment(AppContainer.self) private var container
+    /// Deep-link routing (`hetzly://server/…`, `hetzly://project/…`,
+    /// `hetzly://dashboard`) — see `AppRouter.pendingRoute`. Dashboard is
+    /// the tab that owns both `.navigationDestination(for: ServerRoute.self)`
+    /// and `.navigationDestination(for: ProjectRoute.self)`, so it's the one
+    /// that consumes a pending route once it arrives.
+    @Environment(AppRouter.self) private var router
     @State private var viewModel: DashboardViewModel
     @State private var idleTimerTask: Task<Void, Never>?
     @State private var mascotIsAsleep = false
@@ -283,8 +289,47 @@ struct DashboardView: View {
             .searchable(text: $searchText, prompt: "Search servers")
         }
         .task {
+            resetScopeIfProjectMissing()
             await viewModel.load(container: container)
             resetIdleTimer()
+        }
+        .onChange(of: container.projectsStore.projects.map(\.id)) { _, _ in
+            // The scoped project may have been removed (Settings) — or, in
+            // UI-test seeding, the demo project gets a fresh UUID each launch
+            // while the persisted scope survives. Either way, a scope that
+            // matches no existing project would render a blank dashboard, so
+            // fall back to "All".
+            resetScopeIfProjectMissing()
+        }
+        // Consumes a deep link's pending route once `AppRouter` has already
+        // switched to this tab. Resets to a fresh path first (a `.server`/
+        // `.project`/`.dashboard` deep link always means "go here", not
+        // "push onto whatever was already on screen") and clears
+        // `pendingRoute` so this doesn't refire on the next unrelated
+        // observable change on `router`.
+        //
+        // `initial: true` is load-bearing: a launch-time deep link (widget
+        // tap / Shortcut) sets `pendingRoute` from `HetzlyApp`'s `.task`,
+        // which can land before this `.onChange` starts observing — a plain
+        // `onChange` never fires for a value that's already set when the
+        // observer attaches, so the route would be silently dropped. Firing
+        // once on appear with the current value closes that race (and is a
+        // harmless no-op via the `guard` when nothing is pending).
+        .onChange(of: router.pendingRoute, initial: true) { _, newValue in
+            guard let newValue else { return }
+            switch newValue {
+            case .server(let route):
+                navigationPath = NavigationPath()
+                navigationPath.append(route)
+            case .project(let route):
+                navigationPath = NavigationPath()
+                navigationPath.append(route)
+            case .dashboard:
+                navigationPath = NavigationPath()
+            case .costs:
+                break
+            }
+            router.pendingRoute = nil
         }
     }
 
@@ -372,6 +417,15 @@ struct DashboardView: View {
     private var idleMascotState: MascotState? {
         guard container.settings.mascotEnabled, viewModel.isHealthy, !viewModel.isRefreshing else { return nil }
         return mascotIsAsleep ? .sleep : .idle
+    }
+
+    /// Clears the persisted project scope back to "All" when it points at a
+    /// project that no longer exists, so the dashboard never renders blank.
+    private func resetScopeIfProjectMissing() {
+        guard let selectedProjectID else { return }
+        if !container.projectsStore.projects.contains(where: { $0.id == selectedProjectID }) {
+            selectedProjectIDRaw = ""
+        }
     }
 
     private func resetIdleTimer() {
@@ -657,24 +711,28 @@ struct DashboardView: View {
 #Preview("Healthy") {
     DashboardView(previewViewModel: .previewHealthy)
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Attention") {
     DashboardView(previewViewModel: .previewAttention)
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Stale / offline") {
     DashboardView(previewViewModel: .previewStaleOffline)
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Empty project") {
     DashboardView(previewViewModel: .previewEmptyProject)
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.dark)
 }
 
@@ -689,11 +747,13 @@ struct DashboardView: View {
     // create-server toolbar menu already has.
     DashboardView(previewViewModel: .previewMultiProject)
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.dark)
 }
 
 #Preview("Appearance: Light") {
     DashboardView(previewViewModel: .previewHealthy)
         .environment(AppContainer.makeDefault())
+        .environment(AppRouter())
         .preferredColorScheme(.light)
 }

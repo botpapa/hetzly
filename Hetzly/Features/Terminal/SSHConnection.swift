@@ -88,7 +88,12 @@ actor SSHConnection {
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         eventLoopGroup = group
 
-        let authDelegate: NIOSSHClientUserAuthenticationDelegate
+        // nonisolated(unsafe): the concrete auth delegates are internally
+        // thread-safe (NSLock-guarded, @unchecked Sendable) — see
+        // SSHConnectionAuthDelegates. The existential protocol type isn't
+        // Sendable, so this rebinding documents that capturing it in the
+        // channelInitializer's @Sendable closure is deliberate and safe.
+        nonisolated(unsafe) let authDelegate: NIOSSHClientUserAuthenticationDelegate
         let didExhaustAuthentication: @Sendable () -> Bool
         do {
             (authDelegate, didExhaustAuthentication) = try Self.makeAuthDelegate(configuration: configuration)

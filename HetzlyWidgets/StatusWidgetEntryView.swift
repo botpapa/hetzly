@@ -20,6 +20,9 @@ struct StatusWidgetEntryView: View {
         .containerBackground(for: .widget) {
             family == .accessoryCircular ? Color.clear : WidgetColors.canvas
         }
+        // Tapping either family opens the app straight to the dashboard —
+        // there's no single server/project this widget is "about".
+        .widgetURL(WidgetDeepLink.dashboard)
     }
 
     @ViewBuilder

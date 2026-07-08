@@ -19,6 +19,7 @@ struct SSHKeysListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No SSH Keys",
                 emptyMessage: "Add a public key — or generate one right on this device — to log into new servers without passwords.",
                 emptyCTA: "Add SSH Key",
@@ -96,7 +97,7 @@ struct SSHKeysListView: View {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listSSHKeys() })
+        model = ResourceListModel(load: { try await client.listSSHKeys() }, cacheKey: "sshKeys#\(projectID)")
         await model.loadIfNeeded()
     }
 

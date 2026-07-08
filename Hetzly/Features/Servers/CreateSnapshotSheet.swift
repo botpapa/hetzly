@@ -14,10 +14,7 @@ struct CreateSnapshotSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 4) {
             HStack(spacing: Spacing.unit * 3) {
-                Image(systemName: "camera")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(HetzlyColors.accent)
-                    .frame(width: 36, height: 36)
+                SheetHeaderBadge(systemImage: "camera")
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Create Snapshot")
                         .bodyPrimary()

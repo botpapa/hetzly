@@ -31,10 +31,7 @@ struct FailoverSwitchRoutingSheet: View {
 
     private var header: some View {
         HStack(spacing: Spacing.unit * 3) {
-            Image(systemName: "arrow.triangle.swap")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(HetzlyColors.accent)
-                .frame(width: 36, height: 36)
+            SheetHeaderBadge(systemImage: "arrow.triangle.swap")
             VStack(alignment: .leading, spacing: 2) {
                 Text("Switch Routing")
                     .bodyPrimary()
@@ -121,10 +118,7 @@ struct FailoverRerouteConfirmSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 4) {
             HStack(spacing: Spacing.unit * 3) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(HetzlyColors.accent)
-                    .frame(width: 36, height: 36)
+                SheetHeaderBadge(systemImage: "exclamationmark.triangle.fill")
                 Text("Confirm Reroute")
                     .bodyPrimary()
                     .fontWeight(.semibold)

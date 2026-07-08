@@ -196,6 +196,10 @@ struct DedicatedView: View {
         if let accountID = selectedAccountID {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.unit * 8) {
+                    if viewModel.freshnessBanner != .none {
+                        listFreshnessChip(viewModel.freshnessBanner)
+                    }
+
                     LazyVStack(spacing: Spacing.unit * 3) {
                         ForEach(viewModel.servers, id: \.serverNumber) { server in
                             NavigationLink(value: RobotServerRoute(accountID: accountID, serverNumber: server.serverNumber)) {

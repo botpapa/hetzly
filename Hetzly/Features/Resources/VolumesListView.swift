@@ -18,6 +18,7 @@ struct VolumesListView: View {
             resourceListBody(
                 state: model.state,
                 items: model.items,
+                freshness: model.freshnessBanner,
                 emptyTitle: "No Volumes",
                 emptyMessage: "Attach extra Block Storage to any server for more disk space.",
                 emptyCTA: "Create Volume",
@@ -77,7 +78,7 @@ struct VolumesListView: View {
             model = ResourceListModel(load: { [] })
             return
         }
-        model = ResourceListModel(load: { try await client.listVolumes() })
+        model = ResourceListModel(load: { try await client.listVolumes() }, cacheKey: "volumes#\(projectID)")
         await model.loadIfNeeded()
     }
 

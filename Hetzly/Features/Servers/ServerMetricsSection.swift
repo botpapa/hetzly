@@ -50,6 +50,12 @@ struct ServerMetricsSection: View {
             .frame(maxWidth: .infinity, minHeight: 100, alignment: .center)
     }
 
+    // Chart colors are deliberately monochrome (`textPrimary`/`textSecondary`)
+    // per CONTRACTS.md's accent-discipline rule: `HetzlyColors.accent` is
+    // reserved for the primary CTA and running/status dots, not decorative
+    // chart strokes. `HetzlyColors.accent` is reserved here for a future
+    // threshold/attention state (e.g. a series crossing a configured alert
+    // line) — none of these charts have that concept yet.
     @ViewBuilder
     private func charts(for metrics: ServerMetrics) -> some View {
         let cpu = MetricsSeriesLookup.points(named: ["cpu"], in: metrics)
@@ -60,7 +66,7 @@ struct ServerMetricsSection: View {
 
         ServerMetricsChart(
             title: "CPU",
-            series: [MetricsChartSeries(name: "CPU", color: HetzlyColors.accent, points: cpu)],
+            series: [MetricsChartSeries(name: "CPU", color: HetzlyColors.textPrimary, points: cpu)],
             showAreaFill: true,
             valueFormatter: { ServerDetailSupport.percent($0) },
             range: range
@@ -69,7 +75,7 @@ struct ServerMetricsSection: View {
         ServerMetricsChart(
             title: "Network",
             series: [
-                MetricsChartSeries(name: "In", color: HetzlyColors.accent, points: netIn),
+                MetricsChartSeries(name: "In", color: HetzlyColors.textPrimary, points: netIn),
                 MetricsChartSeries(name: "Out", color: HetzlyColors.textSecondary, points: netOut),
             ],
             valueFormatter: { ServerDetailSupport.bytes($0, perSecond: true) },
@@ -79,7 +85,7 @@ struct ServerMetricsSection: View {
         ServerMetricsChart(
             title: "Disk IO",
             series: [
-                MetricsChartSeries(name: "Read", color: HetzlyColors.accent, points: diskRead),
+                MetricsChartSeries(name: "Read", color: HetzlyColors.textPrimary, points: diskRead),
                 MetricsChartSeries(name: "Write", color: HetzlyColors.textSecondary, points: diskWrite),
             ],
             valueFormatter: { ServerDetailSupport.bytes($0, perSecond: true) },

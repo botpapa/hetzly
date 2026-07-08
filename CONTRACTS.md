@@ -264,7 +264,7 @@ App-target (M2 Wave A worker 5):
 
 - Wave-B workers do NOT touch `Hetzly/App/` — tab wiring happens at integration. Binding view entry points: `CreateServerFlow(projectID: UUID, onCreated: @escaping (Server) -> Void)` (sheet), `ResourcesHubView()` (reads AppContainer env, own NavigationStack), `CostsView()`, `InvoicesView()` (SafariView wrapper + explainer card).
 - Server Detail M2 surface stays in `Hetzly/Features/Servers/` (same worker family owns it).
-- Shared per-project selection for Resources/Costs: each view exposes its own project picker via a `ProjectPickerChip` — implemented once in `Hetzly/Features/Resources/ProjectPickerChip.swift`, reused by Costs via `import` (same target).
+- Shared per-project selection for Resources/Costs: ~~each view exposes its own project picker via a `ProjectPickerChip` — implemented once in `Hetzly/Features/Resources/ProjectPickerChip.swift`, reused by Costs via `import` (same target).~~ **Superseded by Wave B B4 (picker unity):** all of Dashboard, Costs, and Resources now use `ProjectFilterBar` (`Hetzly/Features/Dashboard/ProjectFilterBar.swift`) for project scoping — identical chips-with-"All" behavior and >6-project collapse across all three tabs. `ProjectPickerChip` was retired/deleted. Resources still needs one project to list resources, so its "All" chip shows a "Select a Project" prompt rather than aggregating (single-select underneath, same component/behavior on the surface). Dedicated keeps its own `RobotAccountPickerChip` (Robot accounts aren't Cloud projects).
 
 ## M3 contracts (Robot / dedicated servers)
 

@@ -50,6 +50,12 @@ struct LBMetricsSection: View {
             .frame(maxWidth: .infinity, minHeight: 100, alignment: .center)
     }
 
+    // Chart colors are deliberately monochrome (`textPrimary`/`textSecondary`)
+    // per CONTRACTS.md's accent-discipline rule: `HetzlyColors.accent` is
+    // reserved for the primary CTA and running/status dots, not decorative
+    // chart strokes. `HetzlyColors.accent` is reserved here for a future
+    // threshold/attention state (e.g. a series crossing a configured alert
+    // line) — none of these charts have that concept yet.
     @ViewBuilder
     private func charts(for metrics: ServerMetrics) -> some View {
         let openConnections = MetricsSeriesLookup.points(named: ["open_connections"], in: metrics)
@@ -60,7 +66,7 @@ struct LBMetricsSection: View {
 
         ServerMetricsChart(
             title: "Open Connections",
-            series: [MetricsChartSeries(name: "Open", color: HetzlyColors.accent, points: openConnections)],
+            series: [MetricsChartSeries(name: "Open", color: HetzlyColors.textPrimary, points: openConnections)],
             showAreaFill: true,
             valueFormatter: { String(format: "%.0f", $0) },
             range: range
@@ -68,7 +74,7 @@ struct LBMetricsSection: View {
 
         ServerMetricsChart(
             title: "Connections / s",
-            series: [MetricsChartSeries(name: "Conn/s", color: HetzlyColors.accent, points: connectionsPerSecond)],
+            series: [MetricsChartSeries(name: "Conn/s", color: HetzlyColors.textPrimary, points: connectionsPerSecond)],
             showAreaFill: true,
             valueFormatter: { String(format: "%.1f", $0) },
             range: range
@@ -76,7 +82,7 @@ struct LBMetricsSection: View {
 
         ServerMetricsChart(
             title: "Requests / s",
-            series: [MetricsChartSeries(name: "Req/s", color: HetzlyColors.accent, points: requestsPerSecond)],
+            series: [MetricsChartSeries(name: "Req/s", color: HetzlyColors.textPrimary, points: requestsPerSecond)],
             showAreaFill: true,
             valueFormatter: { String(format: "%.1f", $0) },
             range: range
@@ -85,7 +91,7 @@ struct LBMetricsSection: View {
         ServerMetricsChart(
             title: "Bandwidth",
             series: [
-                MetricsChartSeries(name: "In", color: HetzlyColors.accent, points: bandwidthIn),
+                MetricsChartSeries(name: "In", color: HetzlyColors.textPrimary, points: bandwidthIn),
                 MetricsChartSeries(name: "Out", color: HetzlyColors.textSecondary, points: bandwidthOut),
             ],
             valueFormatter: { ServerDetailSupport.bytes($0, perSecond: true) },

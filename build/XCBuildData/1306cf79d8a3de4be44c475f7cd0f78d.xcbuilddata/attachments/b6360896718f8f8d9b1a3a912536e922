@@ -1,0 +1,129 @@
+{
+  "" : {
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgets-primary.dia",
+    "emit-module-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgets-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgets-primary-emit-module.dia",
+    "pch" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgets-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgets-primary.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/EmptyStateView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/EmptyStateView~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/HetzlyWidgetsBundle.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/HetzlyWidgetsBundle~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/Shared/WidgetSnapshotShared.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotShared~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/SnapshotProvider.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/SnapshotProvider~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/StatusWidget.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidget~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/StatusWidgetEntryView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/StatusWidgetEntryView~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/TopServersWidget.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidget~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/TopServersWidgetEntryView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/TopServersWidgetEntryView~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/WidgetColors.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetColors~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/WidgetDeepLink.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetDeepLink~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/WidgetSnapshotPreviewFixtures.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSnapshotPreviewFixtures~partial.swiftmodule"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/HetzlyWidgets/WidgetSparklineView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.dia",
+    "index-unit-output-path" : "/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.o",
+    "llvm-bc" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.bc",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView.swiftdeps",
+    "swiftmodule" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Hetzly.build/Debug-iphoneos/HetzlyWidgets.build/Objects-normal/arm64/WidgetSparklineView~partial.swiftmodule"
+  }
+}

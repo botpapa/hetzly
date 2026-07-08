@@ -3,6 +3,15 @@ import SwiftUI
 
 /// One plotted series in a `ServerMetricsChart` (e.g. "In"/"Out" for the
 /// network chart, or a single "CPU" series with an area-fill gradient).
+///
+/// `color` is caller-supplied on purpose — this component stays palette-
+/// agnostic — but every call site (`ServerMetricsSection`,
+/// `LBMetricsSection`) deliberately passes monochrome tones
+/// (`HetzlyColors.textPrimary`/`textSecondary`), never `HetzlyColors.accent`:
+/// per CONTRACTS.md's accent-discipline rule, accent is reserved for the
+/// primary CTA and running/status dots. It's earmarked for a future
+/// threshold/attention series (e.g. a line crossing a configured alert
+/// value), not routine chart strokes.
 struct MetricsChartSeries: Identifiable {
     let id = UUID()
     let name: String
@@ -246,7 +255,7 @@ struct ServerMetricsChart: View {
                 series: [
                     MetricsChartSeries(
                         name: "CPU",
-                        color: HetzlyColors.accent,
+                        color: HetzlyColors.textPrimary,
                         points: PreviewFixtures.metrics.series[0].points.map {
                             ChartPoint(date: $0.timestamp, value: $0.value)
                         }
@@ -262,7 +271,7 @@ struct ServerMetricsChart: View {
                 series: [
                     MetricsChartSeries(
                         name: "In",
-                        color: HetzlyColors.accent,
+                        color: HetzlyColors.textPrimary,
                         points: PreviewFixtures.metrics.series[1].points.map {
                             ChartPoint(date: $0.timestamp, value: $0.value)
                         }

@@ -53,7 +53,7 @@ struct HoldToScrubOverlay: UIViewRepresentable {
             self.onEnd = onEnd
         }
 
-        @objc func handle(_ recognizer: UILongPressGestureRecognizer) {
+        @objc @MainActor func handle(_ recognizer: UILongPressGestureRecognizer) {
             switch recognizer.state {
             case .began, .changed:
                 onChange(recognizer.location(in: recognizer.view))

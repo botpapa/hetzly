@@ -21,10 +21,7 @@ struct EnableRescueSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 4) {
             HStack(spacing: Spacing.unit * 3) {
-                Image(systemName: "lifepreserver")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(HetzlyColors.accent)
-                    .frame(width: 36, height: 36)
+                SheetHeaderBadge(systemImage: "lifepreserver")
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Enable Rescue Mode")
                         .bodyPrimary()

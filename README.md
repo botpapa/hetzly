@@ -11,6 +11,11 @@ A premium, open-source iOS client for Hetzner Cloud & Robot — zero backend, ze
 <!-- screenshot: cost-dashboard-dark.png -->
 <!-- screenshot: widgets-dark.png -->
 
+<p>
+  <img src="docs/screenshots/dashboard.png" width="270" alt="Hetzly Dashboard — multi-project view">
+  <img src="docs/screenshots/single-project.png" width="270" alt="Hetzly Dashboard — single-project view">
+</p>
+
 See [Screenshots](#screenshots) below for exactly how these are generated.
 
 ## Why
@@ -140,7 +145,24 @@ every PR and push to `main`.
 
 ## Screenshots
 
-Screenshots referenced above are captured from the iOS Simulator, not staged mockups. To regenerate:
+Screenshots referenced above are captured from the iOS Simulator, not staged mockups.
+
+The two Dashboard screenshots embedded at the top of this README (`docs/screenshots/dashboard.png`,
+`docs/screenshots/single-project.png`) are captured automatically by
+[`scripts/capture_screenshots.sh`](scripts/capture_screenshots.sh) — it boots the iPhone 17 Pro (iOS
+26.5) simulator, builds and installs a Debug build, and launches it twice with the same
+`HETZLY_UITEST_MULTI`/`HETZLY_UITEST` fixture-seed flags `HetzlyUITests` uses (see
+`Hetzly/App/UITestSupport.swift`), landing on the Dashboard tab both times with no manual navigation
+needed:
+
+```sh
+./scripts/capture_screenshots.sh
+```
+
+Deeper screens (server detail, create-server wizard, cost dashboard, dedicated servers, widgets) need
+either manual navigation in the simulator or a dedicated XCUITest driving `XCUIScreen.main.screenshot()`
+— neither is wired up by that script, and remain a manual/App-Store-pipeline step below. To regenerate
+those (the `fastlane/screenshots/en-US/*-dark.png` set used for App Store submission):
 
 ```sh
 # Boot a clean iPhone 17 Pro simulator at the target OS

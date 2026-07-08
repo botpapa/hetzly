@@ -14,13 +14,19 @@ struct SafariView: UIViewControllerRepresentable {
 
         let controller = SFSafariViewController(url: url, configuration: configuration)
         // iOS 26 deprecates bar/control tinting (it fights the system's
-        // glass background effects) — dark override is enough to fit in.
-        controller.overrideUserInterfaceStyle = .dark
+        // glass background effects) — match the app's own current
+        // appearance (dark by default, or the live system scheme when the
+        // user has picked "System" in Settings) rather than always forcing
+        // dark, so a light-mode user doesn't get a jarring dark browser
+        // chrome around Hetzner's own (light) accounts portal.
+        controller.overrideUserInterfaceStyle = context.environment.colorScheme == .light ? .light : .dark
         controller.dismissButtonStyle = .done
         return controller
     }
 
-    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {
+        uiViewController.overrideUserInterfaceStyle = context.environment.colorScheme == .light ? .light : .dark
+    }
 }
 
 #Preview {

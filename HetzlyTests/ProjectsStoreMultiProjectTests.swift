@@ -36,7 +36,11 @@ final class ProjectsStoreMultiProjectTests: XCTestCase {
     /// with `EXC_BREAKPOINT`/`SIGTRAP`, not a catchable Swift error) — this
     /// property is what keeps the container alive for as long as the test
     /// needs its context.
-    private var container: ModelContainer!
+    ///
+    /// nonisolated(unsafe): written only from @MainActor test methods; the
+    /// nonisolated tearDown override merely nils it out, which cannot race
+    /// the (already finished) test body.
+    private nonisolated(unsafe) var container: ModelContainer!
 
     override func tearDown() {
         container = nil

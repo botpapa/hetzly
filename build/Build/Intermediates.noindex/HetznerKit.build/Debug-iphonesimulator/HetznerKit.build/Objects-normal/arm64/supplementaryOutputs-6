@@ -1,0 +1,65 @@
+{
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostEngine.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostEngine.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostEngine.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostEngine.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostEngine.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostEngine.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostItem.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItem.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItem.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItem.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItem.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItem.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostItemBuilder+Resources.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder+Resources.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder+Resources.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder+Resources.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder+Resources.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder+Resources.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostItemBuilder.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostItemBuilder.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostKind.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostKind.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostKind.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostKind.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostKind.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostKind.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostPricing.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostPricing.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostPricing.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostPricing.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostPricing.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostPricing.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/Pricing/CostSummary.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostSummary.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostSummary.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostSummary.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostSummary.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CostSummary.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/RobotAPI/FailoverModels.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FailoverModels.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FailoverModels.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FailoverModels.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FailoverModels.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FailoverModels.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/RobotAPI/OrderingModels.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/OrderingModels.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/OrderingModels.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/OrderingModels.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/OrderingModels.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/OrderingModels.swiftdeps"
+  }
+}

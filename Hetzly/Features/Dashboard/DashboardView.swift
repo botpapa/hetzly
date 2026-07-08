@@ -433,3 +433,9 @@ struct DashboardView: View {
         .environment(AppContainer.makeDefault())
         .preferredColorScheme(.dark)
 }
+
+#Preview("Appearance: Light") {
+    DashboardView(previewViewModel: .previewHealthy)
+        .environment(AppContainer.makeDefault())
+        .preferredColorScheme(.light)
+}

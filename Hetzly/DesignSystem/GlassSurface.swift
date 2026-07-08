@@ -18,8 +18,8 @@ struct GlassSurfaceModifier<S: InsettableShape>: ViewModifier {
         if reduceTransparency {
             content.background {
                 shape
-                    .fill(Color(white: 0.12))
-                    .overlay { shape.strokeBorder(Color.white.opacity(0.08), lineWidth: 1) }
+                    .fill(HetzlyColors.glassFallbackFill)
+                    .overlay { shape.strokeBorder(HetzlyColors.glassFallbackStroke, lineWidth: 1) }
             }
         } else {
             content.glassEffect(interactive ? Glass.regular.interactive() : .regular, in: shape)
@@ -47,7 +47,7 @@ private struct GlassFooterBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.background {
             if reduceTransparency {
-                Color(white: 0.09).ignoresSafeArea(edges: .bottom)
+                HetzlyColors.glassFallbackFillDeep.ignoresSafeArea(edges: .bottom)
             } else {
                 Color.clear.glassEffect(.regular, in: .rect(cornerRadius: 0)).ignoresSafeArea(edges: .bottom)
             }

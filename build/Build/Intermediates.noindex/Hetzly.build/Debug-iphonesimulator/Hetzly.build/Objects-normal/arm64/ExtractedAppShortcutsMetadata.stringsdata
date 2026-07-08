@@ -1,0 +1,92 @@
+{
+  "tables" : {
+    "Localizable" : [
+      {
+        "key" : "Check status of ${server}"
+      },
+      {
+        "key" : "Reboot ${server}"
+      }
+    ],
+    "AppShortcuts" : [
+      {
+        "appShortcutMetadata" : [
+          {
+            "title" : "Reboot Server",
+            "index" : 0,
+            "actionIdentifier" : "RebootServerIntent",
+            "parameterDisplayRepresentations" : {
+              "ServerEntity" : [
+                "Hetzner Server"
+              ]
+            },
+            "parameterTypes" : {
+              "server" : "ServerEntity"
+            }
+          }
+        ],
+        "location" : {
+          "startingLine" : 8,
+          "startingColumn" : 0
+        },
+        "values" : [
+          "Reboot ${server} with ${applicationName}",
+          "Restart ${server} with ${applicationName}"
+        ],
+        "key" : "Reboot ${server} with ${applicationName}"
+      },
+      {
+        "appShortcutMetadata" : [
+          {
+            "title" : "Server Status",
+            "index" : 1,
+            "actionIdentifier" : "ServerStatusIntent",
+            "parameterDisplayRepresentations" : {
+              "ServerEntity" : [
+                "Hetzner Server"
+              ]
+            },
+            "parameterTypes" : {
+              "server" : "ServerEntity"
+            }
+          }
+        ],
+        "location" : {
+          "startingLine" : 8,
+          "startingColumn" : 0
+        },
+        "values" : [
+          "${applicationName} server status",
+          "Check server status in ${applicationName}"
+        ],
+        "key" : "${applicationName} server status"
+      },
+      {
+        "appShortcutMetadata" : [
+          {
+            "title" : "Monthly Hetzner Cost",
+            "index" : 2,
+            "actionIdentifier" : "MonthlyCostIntent",
+            "parameterDisplayRepresentations" : {
+
+            },
+            "parameterTypes" : {
+
+            }
+          }
+        ],
+        "location" : {
+          "startingLine" : 8,
+          "startingColumn" : 0
+        },
+        "values" : [
+          "What's my ${applicationName} bill",
+          "${applicationName} monthly cost"
+        ],
+        "key" : "What's my ${applicationName} bill"
+      }
+    ]
+  },
+  "source" : "\/Users\/andrew\/Development\/stuff\/hetzner-control-app\/Hetzly\/Intents\/HetzlyShortcuts.swift",
+  "version" : 2
+}

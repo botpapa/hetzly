@@ -1,0 +1,170 @@
+{
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/DNS/RecordEditSheet.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RecordEditSheet.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RecordEditSheet.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RecordEditSheet.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RecordEditSheet.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RecordEditSheet.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Dashboard/ProjectFilterBar.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectFilterBar.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectFilterBar.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectFilterBar.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectFilterBar.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectFilterBar.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Dedicated/Ordering/OrderServerFlow.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/OrderServerFlow.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/OrderServerFlow.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/OrderServerFlow.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/OrderServerFlow.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/OrderServerFlow.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Dedicated/Ordering/PriceBreakdownCard.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PriceBreakdownCard.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PriceBreakdownCard.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PriceBreakdownCard.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PriceBreakdownCard.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PriceBreakdownCard.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Dedicated/ResetServerSheet.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResetServerSheet.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResetServerSheet.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResetServerSheet.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResetServerSheet.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResetServerSheet.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectCostsSection.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectCostsSection.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectCostsSection.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectCostsSection.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectCostsSection.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectCostsSection.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectDetailView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailView.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailView.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectDetailViewModel.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailViewModel.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailViewModel.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailViewModel.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailViewModel.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectDetailViewModel.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectManageSection.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectManageSection.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectManageSection.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectManageSection.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectManageSection.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectManageSection.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectResourcesSection.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectResourcesSection.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectResourcesSection.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectResourcesSection.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectResourcesSection.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectResourcesSection.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectRoute.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRoute.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRoute.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRoute.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRoute.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRoute.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Projects/ProjectsPreviewFixtures.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsPreviewFixtures.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsPreviewFixtures.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsPreviewFixtures.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsPreviewFixtures.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsPreviewFixtures.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Resources/PlacementGroupsListView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PlacementGroupsListView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PlacementGroupsListView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PlacementGroupsListView.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PlacementGroupsListView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PlacementGroupsListView.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Resources/PrimaryIPsListView.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrimaryIPsListView.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrimaryIPsListView.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrimaryIPsListView.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrimaryIPsListView.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrimaryIPsListView.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Resources/ProjectPickerChip.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectPickerChip.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectPickerChip.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectPickerChip.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectPickerChip.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectPickerChip.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Resources/ResourceListModel.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResourceListModel.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResourceListModel.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResourceListModel.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResourceListModel.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ResourceListModel.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Servers/PowerAction.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PowerAction.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PowerAction.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PowerAction.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PowerAction.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PowerAction.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Servers/PreviewFixtures.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PreviewFixtures.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PreviewFixtures.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PreviewFixtures.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PreviewFixtures.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PreviewFixtures.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Servers/RebuildSheet.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebuildSheet.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebuildSheet.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebuildSheet.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebuildSheet.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebuildSheet.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Features/Servers/RescaleSheet.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RescaleSheet.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RescaleSheet.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RescaleSheet.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RescaleSheet.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RescaleSheet.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebootServerIntent.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebootServerIntent.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebootServerIntent.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebootServerIntent.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/RebootServerIntent.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Security/PrivacyOverlay.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrivacyOverlay.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrivacyOverlay.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrivacyOverlay.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrivacyOverlay.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/PrivacyOverlay.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Store/ProjectRecord.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRecord.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRecord.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRecord.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRecord.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectRecord.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Store/ProjectsStore.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsStore.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsStore.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsStore.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsStore.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/Hetzly.build/Debug-iphonesimulator/Hetzly.build/Objects-normal/arm64/ProjectsStore.swiftdeps"
+  }
+}

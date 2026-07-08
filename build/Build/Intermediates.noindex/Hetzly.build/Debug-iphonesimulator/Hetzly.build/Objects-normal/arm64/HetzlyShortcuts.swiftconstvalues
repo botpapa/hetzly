@@ -1,0 +1,328 @@
+[
+  {
+    "typeName": "Hetzly.HetzlyShortcuts",
+    "mangledTypeName": "6Hetzly0A9ShortcutsV",
+    "kind": "struct",
+    "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/HetzlyShortcuts.swift",
+    "line": 7,
+    "conformances": [
+      "AppIntents.AppShortcutsProvider",
+      "Swift.Sendable",
+      "Swift.SendableMetatype",
+      "Swift.BitwiseCopyable"
+    ],
+    "allConformances": [
+      {
+        "protocolName": "AppIntents.AppShortcutsProvider",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.Sendable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.SendableMetatype",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.BitwiseCopyable",
+        "conformanceDefiningModule": "Hetzly"
+      }
+    ],
+    "associatedTypeAliases": [],
+    "properties": [
+      {
+        "label": "appShortcuts",
+        "type": "Swift.Array<AppIntents.AppShortcut>",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/HetzlyShortcuts.swift",
+        "line": 8,
+        "valueKind": "Builder",
+        "value": {
+          "type": "AppIntents.AppShortcutsBuilder",
+          "members": [
+            {
+              "kind": "buildExpression",
+              "element": {
+                "valueKind": "InitCall",
+                "value": {
+                  "type": "AppIntents.AppShortcut",
+                  "arguments": [
+                    {
+                      "label": "intent",
+                      "type": "Hetzly.RebootServerIntent",
+                      "valueKind": "InitCall",
+                      "value": {
+                        "type": "Hetzly.RebootServerIntent",
+                        "arguments": []
+                      }
+                    },
+                    {
+                      "label": "phrases",
+                      "type": "Swift.Array<AppIntents.AppShortcutPhrase<Hetzly.RebootServerIntent>>",
+                      "valueKind": "Array",
+                      "value": [
+                        {
+                          "valueKind": "InterpolatedStringLiteral",
+                          "value": {
+                            "segments": [
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": "Reboot "
+                              },
+                              {
+                                "valueKind": "KeyPath",
+                                "value": {
+                                  "path": "$server",
+                                  "rootType": "Hetzly.RebootServerIntent",
+                                  "components": [
+                                    {
+                                      "label": "$server",
+                                      "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": " with "
+                              },
+                              {
+                                "valueKind": "Enum",
+                                "value": {
+                                  "name": "applicationName"
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": ""
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "valueKind": "InterpolatedStringLiteral",
+                          "value": {
+                            "segments": [
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": "Restart "
+                              },
+                              {
+                                "valueKind": "KeyPath",
+                                "value": {
+                                  "path": "$server",
+                                  "rootType": "Hetzly.RebootServerIntent",
+                                  "components": [
+                                    {
+                                      "label": "$server",
+                                      "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>"
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": " with "
+                              },
+                              {
+                                "valueKind": "Enum",
+                                "value": {
+                                  "name": "applicationName"
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": ""
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "shortTitle",
+                      "type": "Foundation.LocalizedStringResource",
+                      "valueKind": "RawLiteral",
+                      "value": "Reboot Server"
+                    },
+                    {
+                      "label": "systemImageName",
+                      "type": "Swift.String",
+                      "valueKind": "RawLiteral",
+                      "value": "arrow.clockwise.circle"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "buildExpression",
+              "element": {
+                "valueKind": "InitCall",
+                "value": {
+                  "type": "AppIntents.AppShortcut",
+                  "arguments": [
+                    {
+                      "label": "intent",
+                      "type": "Hetzly.ServerStatusIntent",
+                      "valueKind": "InitCall",
+                      "value": {
+                        "type": "Hetzly.ServerStatusIntent",
+                        "arguments": []
+                      }
+                    },
+                    {
+                      "label": "phrases",
+                      "type": "Swift.Array<AppIntents.AppShortcutPhrase<Hetzly.ServerStatusIntent>>",
+                      "valueKind": "Array",
+                      "value": [
+                        {
+                          "valueKind": "InterpolatedStringLiteral",
+                          "value": {
+                            "segments": [
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": ""
+                              },
+                              {
+                                "valueKind": "Enum",
+                                "value": {
+                                  "name": "applicationName"
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": " server status"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "valueKind": "InterpolatedStringLiteral",
+                          "value": {
+                            "segments": [
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": "Check server status in "
+                              },
+                              {
+                                "valueKind": "Enum",
+                                "value": {
+                                  "name": "applicationName"
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": ""
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "shortTitle",
+                      "type": "Foundation.LocalizedStringResource",
+                      "valueKind": "RawLiteral",
+                      "value": "Server Status"
+                    },
+                    {
+                      "label": "systemImageName",
+                      "type": "Swift.String",
+                      "valueKind": "RawLiteral",
+                      "value": "server.rack"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "buildExpression",
+              "element": {
+                "valueKind": "InitCall",
+                "value": {
+                  "type": "AppIntents.AppShortcut",
+                  "arguments": [
+                    {
+                      "label": "intent",
+                      "type": "Hetzly.MonthlyCostIntent",
+                      "valueKind": "InitCall",
+                      "value": {
+                        "type": "Hetzly.MonthlyCostIntent",
+                        "arguments": []
+                      }
+                    },
+                    {
+                      "label": "phrases",
+                      "type": "Swift.Array<AppIntents.AppShortcutPhrase<Hetzly.MonthlyCostIntent>>",
+                      "valueKind": "Array",
+                      "value": [
+                        {
+                          "valueKind": "InterpolatedStringLiteral",
+                          "value": {
+                            "segments": [
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": "What's my "
+                              },
+                              {
+                                "valueKind": "Enum",
+                                "value": {
+                                  "name": "applicationName"
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": " bill"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "valueKind": "InterpolatedStringLiteral",
+                          "value": {
+                            "segments": [
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": ""
+                              },
+                              {
+                                "valueKind": "Enum",
+                                "value": {
+                                  "name": "applicationName"
+                                }
+                              },
+                              {
+                                "valueKind": "RawLiteral",
+                                "value": " monthly cost"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "shortTitle",
+                      "type": "Foundation.LocalizedStringResource",
+                      "valueKind": "RawLiteral",
+                      "value": "Monthly Cost"
+                    },
+                    {
+                      "label": "systemImageName",
+                      "type": "Swift.String",
+                      "valueKind": "RawLiteral",
+                      "value": "eurosign.circle"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

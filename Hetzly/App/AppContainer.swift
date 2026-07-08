@@ -14,6 +14,7 @@ final class AppContainer {
     let modelContainer: ModelContainer
     let projectsStore: ProjectsStore
     let robotAccountsStore: RobotAccountsStore
+    let storageBoxAccountsStore: StorageBoxAccountsStore
     let biometricGate: BiometricGate
     var settings: AppSettings
 
@@ -33,11 +34,17 @@ final class AppContainer {
     @ObservationIgnored
     private var robotClients: [UUID: RobotClient] = [:]
 
+    /// Per-account `StorageBoxClient` cache, keyed by
+    /// `StorageBoxAccountRecord.id`. Mirrors `cloudClients`/`robotClients`.
+    @ObservationIgnored
+    private var storageBoxClients: [UUID: StorageBoxClient] = [:]
+
     private init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
         let context = modelContainer.mainContext
         self.projectsStore = ProjectsStore(context: context)
         self.robotAccountsStore = RobotAccountsStore(context: context)
+        self.storageBoxAccountsStore = StorageBoxAccountsStore(context: context)
         self.sharedSnapshotStore = SnapshotStore(context: context)
         self.biometricGate = BiometricGate()
         self.settings = AppSettings()
@@ -65,7 +72,7 @@ final class AppContainer {
         // "nothing persists this launch" instead of a crash.
         let fallbackConfiguration = ModelConfiguration(isStoredInMemoryOnly: true)
         if let container = try? ModelContainer(
-            for: ProjectRecord.self, ServerSnapshotRecord.self, RobotAccountRecord.self,
+            for: ProjectRecord.self, ServerSnapshotRecord.self, RobotAccountRecord.self, StorageBoxAccountRecord.self,
             configurations: fallbackConfiguration
         ) {
             return container
@@ -86,7 +93,7 @@ final class AppContainer {
         // review, not silent policy-breaking.
         // swiftlint:disable:next force_try
         return try! ModelContainer(
-            for: ProjectRecord.self, ServerSnapshotRecord.self, RobotAccountRecord.self,
+            for: ProjectRecord.self, ServerSnapshotRecord.self, RobotAccountRecord.self, StorageBoxAccountRecord.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
     }
@@ -138,6 +145,24 @@ final class AppContainer {
         }
         let client = RobotClient(username: credentials.username, password: credentials.password)
         robotClients[accountID] = client
+        return client
+    }
+
+    /// Returns a cached `StorageBoxClient` for `accountID`, building one
+    /// from the account's Keychain-stored token on first access. `nil` if
+    /// the account doesn't exist or has no stored token.
+    func storageBoxClient(for accountID: UUID) -> StorageBoxClient? {
+        if let cached = storageBoxClients[accountID] {
+            return cached
+        }
+        guard let account = storageBoxAccountsStore.accounts.first(where: { $0.id == accountID }) else {
+            return nil
+        }
+        guard let token = (try? storageBoxAccountsStore.token(for: account)) ?? nil else {
+            return nil
+        }
+        let client = StorageBoxClient(token: token)
+        storageBoxClients[accountID] = client
         return client
     }
 

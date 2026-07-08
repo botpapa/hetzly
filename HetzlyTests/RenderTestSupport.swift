@@ -19,9 +19,34 @@ enum RenderTestSupport {
     /// Renders `view` at a fixed `size` (points), pinned via `.frame`, so the
     /// resulting `CGImage`'s pixel dimensions are deterministic:
     /// `size * scale`.
+    ///
+    /// `ImageRenderer` renders a bare `View` off-screen, with no host window
+    /// to inherit a real `UITraitCollection` from — so `\.colorScheme` (and
+    /// therefore any trait-adaptive `Color(uiColor:)`, e.g. `HetzlyColors`)
+    /// falls back to SwiftUI's own environment default, `.light`, regardless
+    /// of the simulator's actual system appearance. That would silently flip
+    /// every dark-mode render test (all of `SnapshotLiteTests`, written
+    /// before light mode existed) to light. Since Hetzly itself defaults to
+    /// dark (`AppSettings.appearance == "dark"` unless the user opts into
+    /// "system"), seed the renderer's base environment with `.dark` here so
+    /// callers that render bare — matching the app's real default — get
+    /// dark, while callers that explicitly apply `.environment(\.colorScheme,
+    /// .light)` on `view` itself (as `LightModeRenderTests` does) still win:
+    /// a view's own environment modifiers always override an ancestor's.
     @MainActor
     static func renderCGImage<V: View>(_ view: V, size: CGSize, scale: CGFloat = 2) -> CGImage? {
-        let renderer = ImageRenderer(content: view.frame(width: size.width, height: size.height))
+        // `.environment(\.colorScheme, .dark)` here sets the *ambient*
+        // default entering the subtree; if `view` itself already applies
+        // its own `.environment(\.colorScheme, .light)` further down (as
+        // `LightModeRenderTests` does), that inner, more-specific modifier
+        // still wins for everything below it — this only supplies the
+        // fallback for callers (like `SnapshotLiteTests`) that never set a
+        // scheme at all.
+        let renderer = ImageRenderer(
+            content: view
+                .environment(\.colorScheme, .dark)
+                .frame(width: size.width, height: size.height)
+        )
         renderer.scale = scale
         renderer.isOpaque = false
         return renderer.cgImage

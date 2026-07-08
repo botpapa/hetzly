@@ -59,3 +59,9 @@ struct OnboardingView: View {
         .environment(AppContainer.makeDefault())
         .preferredColorScheme(.dark)
 }
+
+#Preview("Appearance: Light") {
+    OnboardingView()
+        .environment(AppContainer.makeDefault())
+        .preferredColorScheme(.light)
+}

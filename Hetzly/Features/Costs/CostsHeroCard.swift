@@ -91,3 +91,17 @@ struct CostsHeroCard: View {
     }
     .preferredColorScheme(.dark)
 }
+
+#Preview("Appearance: Light") {
+    ZStack {
+        CanvasBackground()
+        CostsHeroCard(
+            monthToDate: Decimal(string: "38.62") ?? 0,
+            projected: Decimal(string: "154.90") ?? 0,
+            currency: "EUR",
+            monthElapsedFraction: 0.26
+        )
+        .padding(Spacing.screenMargin)
+    }
+    .preferredColorScheme(.light)
+}

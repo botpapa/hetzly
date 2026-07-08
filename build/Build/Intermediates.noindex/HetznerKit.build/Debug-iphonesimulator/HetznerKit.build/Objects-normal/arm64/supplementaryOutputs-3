@@ -1,0 +1,65 @@
+{
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Datacenter.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Datacenter.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Datacenter.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Datacenter.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Datacenter.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Datacenter.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Firewall.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Firewall.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Firewall.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Firewall.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Firewall.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Firewall.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/FloatingIP.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FloatingIP.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FloatingIP.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FloatingIP.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FloatingIP.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/FloatingIP.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/ISO.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ISO.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ISO.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ISO.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ISO.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ISO.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Image.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Image.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Image.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Image.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Image.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Image.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/LoadBalancer.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/LoadBalancer.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/LoadBalancer.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/LoadBalancer.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/LoadBalancer.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/LoadBalancer.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Metrics.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Metrics.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Metrics.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Metrics.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Metrics.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Metrics.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Network.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Network.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Network.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Network.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Network.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Network.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/PlacementGroup.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/PlacementGroup.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/PlacementGroup.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/PlacementGroup.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/PlacementGroup.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/PlacementGroup.swiftdeps"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Action.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Action.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Action.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Action.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Action.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Action.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/ActionTracker.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ActionTracker.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ActionTracker.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ActionTracker.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ActionTracker.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/ActionTracker.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/Certificate.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Certificate.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Certificate.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Certificate.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Certificate.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/Certificate.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudAPICompat.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudAPICompat.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudAPICompat.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudAPICompat.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudAPICompat.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudAPICompat.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudClient+Catalog.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Catalog.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Catalog.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Catalog.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Catalog.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Catalog.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudClient+Certificates.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Certificates.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Certificates.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Certificates.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Certificates.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Certificates.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudClient+DNS.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+DNS.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+DNS.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+DNS.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+DNS.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+DNS.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudClient+Firewalls.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Firewalls.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Firewalls.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Firewalls.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Firewalls.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Firewalls.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudClient+FloatingIPs.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+FloatingIPs.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+FloatingIPs.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+FloatingIPs.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+FloatingIPs.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+FloatingIPs.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/CloudAPI/CloudClient+Images.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Images.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Images.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Images.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Images.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/CloudClient+Images.swiftdeps"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/RobotAPI/RobotServer.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/RobotServer.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/RobotServer.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/RobotServer.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/RobotServer.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/RobotServer.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/RobotAPI/VSwitchModels.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/VSwitchModels.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/VSwitchModels.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/VSwitchModels.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/VSwitchModels.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/VSwitchModels.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBox.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBox.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBox.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBox.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBox.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBox.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBoxClient+Snapshots.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Snapshots.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Snapshots.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Snapshots.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Snapshots.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Snapshots.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBoxClient+Subaccounts.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Subaccounts.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Subaccounts.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Subaccounts.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Subaccounts.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient+Subaccounts.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBoxClient.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxClient.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBoxSnapshot.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSnapshot.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSnapshot.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSnapshot.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSnapshot.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSnapshot.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBoxSubaccount.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSubaccount.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSubaccount.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSubaccount.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSubaccount.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxSubaccount.swiftdeps"
+  },
+  "/Users/andrew/Development/stuff/hetzner-control-app/Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/StorageBoxType.swift" : {
+    "const-values" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxType.swiftconstvalues",
+    "dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxType.d",
+    "diagnostics" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxType.dia",
+    "object" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxType.o",
+    "swift-dependencies" : "/Users/andrew/Development/stuff/hetzner-control-app/build/Build/Intermediates.noindex/HetznerKit.build/Debug-iphonesimulator/HetznerKit.build/Objects-normal/arm64/StorageBoxType.swiftdeps"
+  }
+}

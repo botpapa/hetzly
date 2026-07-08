@@ -1,0 +1,8 @@
+Target dependency graph (4 targets)
+Target 'Hetzly' in project 'Hetzly'
+➜ Explicit dependency on target 'HetzlyWidgets' in project 'Hetzly'
+➜ Explicit dependency on target 'HetznerKit' in project 'HetznerKit'
+Target 'HetznerKit' in project 'HetznerKit'
+➜ Explicit dependency on target 'HetznerKit' in project 'HetznerKit'
+Target 'HetznerKit' in project 'HetznerKit' (no dependencies)
+Target 'HetzlyWidgets' in project 'Hetzly' (no dependencies)

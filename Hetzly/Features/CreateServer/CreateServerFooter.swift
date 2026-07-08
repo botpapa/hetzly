@@ -42,7 +42,7 @@ struct CreateServerFooter: View {
     @ViewBuilder
     private var background: some View {
         if reduceTransparency {
-            Color(white: 0.12).ignoresSafeArea(edges: .bottom)
+            HetzlyColors.glassFallbackFill.ignoresSafeArea(edges: .bottom)
         } else {
             Color.clear
                 .glassEffect(.regular, in: .rect(cornerRadius: 0))

@@ -122,9 +122,9 @@ private struct ChipStyle: ViewModifier {
             .background {
                 if reduceTransparency {
                     capsule
-                        .fill(isSelected ? HetzlyColors.accent.opacity(0.35) : Color(white: 0.12))
+                        .fill(isSelected ? HetzlyColors.accent.opacity(0.35) : HetzlyColors.glassFallbackFill)
                         .overlay {
-                            capsule.strokeBorder(isSelected ? HetzlyColors.accent : Color.white.opacity(0.08), lineWidth: 1)
+                            capsule.strokeBorder(isSelected ? HetzlyColors.accent : HetzlyColors.glassFallbackStroke, lineWidth: 1)
                         }
                 } else {
                     Color.clear

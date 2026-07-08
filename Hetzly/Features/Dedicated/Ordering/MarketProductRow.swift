@@ -79,7 +79,7 @@ private struct MonoSpecChip: View {
         .padding(.vertical, Spacing.unit * 1.5)
         .background {
             if reduceTransparency {
-                capsule.fill(Color(white: 0.12)).overlay { capsule.strokeBorder(Color.white.opacity(0.08), lineWidth: 1) }
+                capsule.fill(HetzlyColors.glassFallbackFill).overlay { capsule.strokeBorder(HetzlyColors.glassFallbackStroke, lineWidth: 1) }
             } else {
                 capsule.fill(Color.white.opacity(0.06))
             }

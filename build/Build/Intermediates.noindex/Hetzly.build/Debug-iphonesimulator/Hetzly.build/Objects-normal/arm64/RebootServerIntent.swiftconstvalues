@@ -1,0 +1,249 @@
+[
+  {
+    "typeName": "Hetzly.RebootServerIntent",
+    "mangledTypeName": "6Hetzly18RebootServerIntentV",
+    "kind": "struct",
+    "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+    "line": 10,
+    "conformances": [
+      "AppIntents.AppIntent",
+      "AppIntents.PersistentlyIdentifiable",
+      "AppIntents._SupportsAppDependencies",
+      "Swift.Sendable",
+      "Swift.SendableMetatype"
+    ],
+    "allConformances": [
+      {
+        "protocolName": "AppIntents.AppIntent",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.PersistentlyIdentifiable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents._SupportsAppDependencies",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.Sendable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.SendableMetatype",
+        "conformanceDefiningModule": "Hetzly"
+      }
+    ],
+    "associatedTypeAliases": [
+      {
+        "typeAliasName": "PerformResult",
+        "substitutedTypeName": "some AppIntents.ProvidesDialog",
+        "substitutedMangledTypeName": "6Hetzly18RebootServerIntentV7performQryYaKFQOy_Qo_",
+        "opaqueTypeProtocolRequirements": [
+          "AppIntents.ProvidesDialog"
+        ],
+        "opaqueTypeSameTypeRequirements": []
+      },
+      {
+        "typeAliasName": "SummaryContent",
+        "substitutedTypeName": "some AppIntents.ParameterSummary",
+        "substitutedMangledTypeName": "6Hetzly18RebootServerIntentV16parameterSummaryQrvpZQOy_Qo_",
+        "opaqueTypeProtocolRequirements": [
+          "AppIntents.ParameterSummary"
+        ],
+        "opaqueTypeSameTypeRequirements": []
+      }
+    ],
+    "properties": [
+      {
+        "label": "_server",
+        "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+        "line": 15,
+        "valueKind": "InitCall",
+        "value": {
+          "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>",
+          "arguments": [
+            {
+              "label": "title",
+              "type": "Foundation.LocalizedStringResource",
+              "valueKind": "RawLiteral",
+              "value": "Server"
+            },
+            {
+              "label": "description",
+              "type": "Swift.Optional<Foundation.LocalizedStringResource>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "default",
+              "type": "Swift.Optional<Hetzly.ServerEntity>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "requestValueDialog",
+              "type": "Swift.Optional<AppIntents.IntentDialog>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "requestDisambiguationDialog",
+              "type": "Swift.Optional<AppIntents.IntentDialog>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "inputConnectionBehavior",
+              "type": "AppIntents.InputConnectionBehavior",
+              "valueKind": "Runtime"
+            }
+          ]
+        }
+      },
+      {
+        "label": "title",
+        "type": "Foundation.LocalizedStringResource",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+        "line": 11,
+        "valueKind": "RawLiteral",
+        "value": "Reboot Server"
+      },
+      {
+        "label": "description",
+        "type": "AppIntents.IntentDescription",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+        "line": 12,
+        "valueKind": "RawLiteral",
+        "value": "Soft-reboots a Hetzner Cloud server, after confirming."
+      },
+      {
+        "label": "server",
+        "type": "Hetzly.ServerEntity",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+        "line": 15,
+        "valueKind": "InitCall",
+        "value": {
+          "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>",
+          "arguments": [
+            {
+              "label": "title",
+              "type": "Foundation.LocalizedStringResource",
+              "valueKind": "RawLiteral",
+              "value": "Server"
+            },
+            {
+              "label": "description",
+              "type": "Swift.Optional<Foundation.LocalizedStringResource>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "default",
+              "type": "Swift.Optional<Hetzly.ServerEntity>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "requestValueDialog",
+              "type": "Swift.Optional<AppIntents.IntentDialog>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "requestDisambiguationDialog",
+              "type": "Swift.Optional<AppIntents.IntentDialog>",
+              "valueKind": "NilLiteral"
+            },
+            {
+              "label": "inputConnectionBehavior",
+              "type": "AppIntents.InputConnectionBehavior",
+              "valueKind": "Runtime"
+            }
+          ]
+        },
+        "propertyWrappers": [
+          {
+            "type": "AppIntents.IntentParameter",
+            "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+            "line": 14,
+            "arguments": [
+              {
+                "label": "title",
+                "type": "Foundation.LocalizedStringResource",
+                "valueKind": "RawLiteral",
+                "value": "Server"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "label": "$server",
+        "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+        "line": 15,
+        "valueKind": "Runtime"
+      },
+      {
+        "label": "parameterSummary",
+        "type": "some AppIntents.ParameterSummary",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/RebootServerIntent.swift",
+        "line": 17,
+        "valueKind": "InitCall",
+        "value": {
+          "type": "AppIntents.IntentParameterSummary<Hetzly.RebootServerIntent>",
+          "arguments": [
+            {
+              "label": "",
+              "type": "AppIntents.ParameterSummaryString<Hetzly.RebootServerIntent>",
+              "valueKind": "InterpolatedStringLiteral",
+              "value": {
+                "segments": [
+                  {
+                    "valueKind": "RawLiteral",
+                    "value": "Reboot "
+                  },
+                  {
+                    "valueKind": "KeyPath",
+                    "value": {
+                      "path": "$server",
+                      "rootType": "Hetzly.RebootServerIntent",
+                      "components": [
+                        {
+                          "label": "$server",
+                          "type": "AppIntents.IntentParameter<Hetzly.ServerEntity>"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "valueKind": "RawLiteral",
+                    "value": ""
+                  }
+                ]
+              }
+            },
+            {
+              "label": "table",
+              "type": "Swift.Optional<Swift.String>",
+              "valueKind": "NilLiteral"
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

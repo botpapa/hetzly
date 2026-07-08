@@ -24,9 +24,9 @@ struct GlassCard<Content: View>: View {
             .background {
                 if reduceTransparency {
                     shape
-                        .fill(Color(white: 0.12))
+                        .fill(HetzlyColors.glassFallbackFill)
                         .overlay {
-                            shape.strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                            shape.strokeBorder(HetzlyColors.glassFallbackStroke, lineWidth: 1)
                         }
                 } else {
                     Color.clear

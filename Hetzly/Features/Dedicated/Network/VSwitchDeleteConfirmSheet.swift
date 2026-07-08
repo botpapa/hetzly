@@ -1,0 +1,98 @@
+import HetznerKit
+import SwiftUI
+
+/// Type-to-confirm sheet for vSwitch deletion. Robot doesn't cancel a
+/// vSwitch immediately — it's removed "at the next possible date" — so the
+/// copy here sets that expectation rather than implying an instant delete.
+/// Mirrors `DeleteZoneConfirmSheet`'s shape; the caller
+/// (`VSwitchDetailView`) owns biometric gating (gated by the
+/// destructive-actions setting, unlike failover routing changes, which are
+/// always gated) and the actual `deleteVSwitch` call.
+struct VSwitchDeleteConfirmSheet: View {
+    let vSwitch: RobotVSwitch
+    var isAuthenticating: Bool = false
+    var onConfirm: () -> Void
+    var onCancel: () -> Void
+
+    @State private var typedName = ""
+    @State private var warningTrigger = false
+    @FocusState private var isFieldFocused: Bool
+
+    private var isArmed: Bool {
+        typedName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == vSwitch.name.lowercased()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.unit * 4) {
+            HStack(spacing: Spacing.unit * 3) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(HetzlyColors.destructive)
+                    .frame(width: 36, height: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Delete vSwitch")
+                        .bodyPrimary()
+                        .fontWeight(.semibold)
+                    Text(vSwitch.name)
+                        .font(.system(size: 13, design: .monospaced))
+                        .foregroundStyle(HetzlyColors.textTertiary)
+                }
+                Spacer()
+            }
+
+            Text(
+                "The vSwitch is removed at the next possible date. Every server attached to it loses this "
+                    + "private VLAN connection once that happens. This cannot be undone."
+            )
+            .bodySecondary()
+            .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                Text("Type \(vSwitch.name) to confirm").caption()
+                GlassCard {
+                    TextField(vSwitch.name, text: $typedName)
+                        .textFieldStyle(.plain)
+                        .font(.system(.body, design: .monospaced))
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .focused($isFieldFocused)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: Spacing.unit * 3) {
+                Button("Cancel", action: onCancel)
+                    .secondaryCTAStyle()
+                    .frame(maxWidth: .infinity)
+                    .disabled(isAuthenticating)
+
+                DestructiveCTA(title: isAuthenticating ? "Verifying…" : "Delete vSwitch", action: onConfirm)
+                    .frame(maxWidth: .infinity)
+                    .disabled(!isArmed || isAuthenticating)
+                    .opacity(isArmed ? 1 : 0.5)
+            }
+        }
+        .padding(Spacing.screenMargin)
+        .padding(.top, Spacing.unit * 2)
+        .presentationDetents([.height(400)])
+        .presentationDragIndicator(.visible)
+        .presentationBackground { CanvasBackground() }
+        .presentationCornerRadius(Radius.card)
+        .sensoryFeedback(.warning, trigger: warningTrigger)
+        .onAppear {
+            warningTrigger.toggle()
+            isFieldFocused = true
+        }
+    }
+}
+
+#Preview {
+    ZStack {
+        CanvasBackground()
+    }
+    .preferredColorScheme(.dark)
+    .sheet(isPresented: .constant(true)) {
+        VSwitchDeleteConfirmSheet(vSwitch: NetworkPreviewFixtures.vSwitch, onConfirm: {}, onCancel: {})
+    }
+}

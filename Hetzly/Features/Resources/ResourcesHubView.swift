@@ -36,6 +36,7 @@ struct ResourcesHubView: View {
                             infrastructureSection
                             networkingSection
                             accessSection
+                            storageSection
                         }
                         .padding(.horizontal, Spacing.screenMargin)
                         .padding(.vertical, Spacing.screenMargin)
@@ -192,6 +193,22 @@ struct ResourcesHubView: View {
                 CertificatesListView()
             } label: {
                 ResourceHubRow(title: "Certificates", systemImage: "checkmark.seal", count: viewModel.counts.certificates)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    /// Storage Boxes are account-scoped (Hetzner's separate api.hetzner.com
+    /// platform), not project-scoped — the row lives here for discoverability
+    /// but the screen manages its own account selection.
+    private var storageSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.unit * 3) {
+            SectionLabel("Storage")
+
+            NavigationLink {
+                StorageBoxesView()
+            } label: {
+                ResourceHubRow(title: "Storage Boxes", systemImage: "externaldrive", count: nil)
             }
             .buttonStyle(.plain)
         }

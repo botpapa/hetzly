@@ -115,3 +115,12 @@ struct ServerHeroCard: View {
     }
     .preferredColorScheme(.dark)
 }
+
+#Preview("Appearance: Light") {
+    ZStack {
+        CanvasBackground()
+        ServerHeroCard(server: PreviewFixtures.server)
+            .padding(Spacing.screenMargin)
+    }
+    .preferredColorScheme(.light)
+}

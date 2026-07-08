@@ -350,6 +350,34 @@ to `ProjectRoute`; each NavigationStack owner registers `.navigationDestination(
 Token-revoked UX: a 401-failing project section shows an "Update token" affordance that presents the
 token-update sheet (Worker P4's `UpdateTokenSheet(project:)` in Features/Settings/, reusable).
 
+## Final-features wave contracts
+
+### StorageBoxAPI (`Packages/HetznerKit/Sources/HetznerKit/StorageBoxAPI/`) — worker F1
+```swift
+public actor StorageBoxClient {
+    public init(token: String, transport: HTTPTransport = URLSessionTransport())
+    // base https://api.hetzner.com/v1 — VERIFY against current docs before building; Bearer auth
+    public func validateToken() async throws
+    public func listStorageBoxes() async throws -> [StorageBox]
+    public func storageBox(id: Int) async throws -> StorageBox
+    // + folders/usage/snapshots/subaccounts/settings/resetPassword per current docs — match real API, contract defers to docs
+}
+```
+Models per real docs (unknown-tolerant enums, lenient labels via CloudAPICompat helpers, explicit CodingKeys).
+
+### Storage Boxes app layer — worker F3
+- `StorageBoxAccountRecord` (@Model: id UUID, label, createdAt; token in Keychain service "com.hetzly.storagebox-token", account = id) + `StorageBoxAccountsStore` (mirror RobotAccountsStore) in Hetzly/Store/; register in schema + AppContainer (`storageBoxAccountsStore`, `storageBoxClient(for:)`).
+- `StorageBoxesView()` (Hetzly/Features/StorageBoxes/) — entry row added at integration to ResourcesHubView (account-scoped, not project-scoped). Settings gains a "Storage Box accounts" section (mirror Robot accounts UX).
+
+### Robot vSwitch + failover (`RobotAPI/`) — worker F2
+`extension RobotClient`: listVSwitches/vSwitch(id:)/createVSwitch(name:vlan:)/updateVSwitch/deleteVSwitch(id:)/addVSwitchServers/removeVSwitchServers; listFailoverIPs/failoverIP(ip:)/switchFailover(ip:to:) — per robot docs (form-encoded, wrapped JSON). UI (worker F4): sections in Dedicated tab.
+
+### CSV export — worker F4
+`CostsCSVExporter` (Hetzly/Features/Costs/): builds CSV (project, name, kind, monthly projected, MTD, currency) from CostsViewModel state → ShareLink file export (CSV via `FileRepresentation`/temp file). Toolbar menu on CostsView: Share image / Export CSV.
+
+### Adaptive colors (light mode) — worker F5
+`HetzlyColors` entries become adaptive `Color(uiColor: UIColor { trait ... })` — dark values UNCHANGED (current hex), light variants: canvas #F5F5F7, textPrimary #1D1D1F, textSecondary #6E6E73, textTertiary #AEAEB2, accent unchanged, destructive unchanged, status colors unchanged. CanvasBackground + GlassCard/GlassChip fallback fills adapt via trait too. Mascot palette stays fixed (sprite art). Every #Preview keeps .dark; add a handful of light previews on key screens.
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

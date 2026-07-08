@@ -33,6 +33,12 @@ struct DedicatedView: View {
             .navigationDestination(for: RobotServerRoute.self) { route in
                 DedicatedServerDetailView(route: route)
             }
+            .navigationDestination(for: VSwitchRoute.self) { route in
+                VSwitchDetailView(route: route)
+            }
+            .navigationDestination(for: FailoverRoute.self) { route in
+                FailoverDetailView(route: route)
+            }
             .navigationDestination(isPresented: $isPresentingOrderFlow) {
                 // Worker R4's binding entry point (Dedicated/Ordering/), per
                 // CONTRACTS.md's M3 "App layer" section. Pass the currently
@@ -178,13 +184,17 @@ struct DedicatedView: View {
     private var serverList: some View {
         if let accountID = selectedAccountID {
             ScrollView {
-                LazyVStack(spacing: Spacing.unit * 3) {
-                    ForEach(viewModel.servers, id: \.serverNumber) { server in
-                        NavigationLink(value: RobotServerRoute(accountID: accountID, serverNumber: server.serverNumber)) {
-                            DedicatedServerRow(server: server)
+                VStack(alignment: .leading, spacing: Spacing.unit * 8) {
+                    LazyVStack(spacing: Spacing.unit * 3) {
+                        ForEach(viewModel.servers, id: \.serverNumber) { server in
+                            NavigationLink(value: RobotServerRoute(accountID: accountID, serverNumber: server.serverNumber)) {
+                                DedicatedServerRow(server: server)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
+
+                    networkSection(accountID: accountID)
                 }
                 .padding(.horizontal, Spacing.screenMargin)
                 .padding(.vertical, Spacing.screenMargin)
@@ -193,6 +203,56 @@ struct DedicatedView: View {
                 await viewModel.load(accountID: accountID, container: container, forceRefresh: true)
             }
         }
+    }
+
+    /// vSwitch + Failover IP management — account-scoped, not tied to any
+    /// particular dedicated server, so it lives below the server list rather
+    /// than inside any one server's detail screen. Per CONTRACTS.md's
+    /// "Robot vSwitch + failover (worker F2)" entry, the UI lives here in
+    /// `Dedicated/Network/`.
+    private func networkSection(accountID: UUID) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.unit * 3) {
+            SectionLabel("Network")
+
+            NavigationLink {
+                VSwitchListView(accountID: accountID)
+            } label: {
+                networkRow(title: "vSwitches", systemImage: "square.split.2x2", subtitle: "Bridge servers onto a private VLAN")
+            }
+            .buttonStyle(.plain)
+
+            NavigationLink {
+                FailoverListView(accountID: accountID)
+            } label: {
+                networkRow(title: "Failover IPs", systemImage: "arrow.triangle.swap", subtitle: "Reroute an IP between servers")
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func networkRow(title: String, systemImage: String, subtitle: String) -> some View {
+        GlassCard(interactive: true) {
+            HStack(spacing: Spacing.unit * 3) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(HetzlyColors.accent)
+                    .frame(width: 28)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(HetzlyColors.textPrimary)
+                    Text(subtitle)
+                        .bodySecondary()
+                }
+
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

@@ -19,6 +19,11 @@ struct SettingsView: View {
     @State private var renameRobotAccountText = ""
     @State private var pendingRobotAccountDeletion: RobotAccountRecord?
 
+    @State private var isPresentingAddStorageBoxAccount = false
+    @State private var renamingStorageBoxAccount: StorageBoxAccountRecord?
+    @State private var renameStorageBoxAccountText = ""
+    @State private var pendingStorageBoxAccountDeletion: StorageBoxAccountRecord?
+
     var body: some View {
         @Bindable var settings = container.settings
 
@@ -29,6 +34,7 @@ struct SettingsView: View {
                 List {
                     accountsSection
                     robotAccountsSection
+                    storageBoxAccountsSection
                     securitySection(requireBiometrics: $settings.requireBiometricsForDestructive)
                     appearanceSection(appearance: $settings.appearance)
                     mascotSection(mascotEnabled: $settings.mascotEnabled)
@@ -51,6 +57,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $isPresentingAddRobotAccount) {
                 AddRobotAccountSheet()
+            }
+            .sheet(isPresented: $isPresentingAddStorageBoxAccount) {
+                AddStorageBoxAccountSheet()
             }
             .sheet(isPresented: $isPresentingAppIconPicker) {
                 AppIconPickerSheet()
@@ -85,6 +94,24 @@ struct SettingsView: View {
             } message: {
                 Text(
                     "This only removes \"\(pendingRobotAccountDeletion?.label ?? "")\" from Hetzly. "
+                        + "Nothing is deleted on Hetzner."
+                )
+            }
+            .alert("Rename Storage Box Account", isPresented: renameStorageBoxAccountAlertBinding) {
+                TextField("Label", text: $renameStorageBoxAccountText)
+                Button("Cancel", role: .cancel) {}
+                Button("Save") { commitRenameStorageBoxAccount() }
+            }
+            .confirmationDialog(
+                "Remove Storage Box Account",
+                isPresented: pendingStorageBoxAccountDeletionBinding,
+                titleVisibility: .visible
+            ) {
+                Button("Remove from Hetzly", role: .destructive) { commitStorageBoxAccountDeletion() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(
+                    "This only removes \"\(pendingStorageBoxAccountDeletion?.label ?? "")\" from Hetzly. "
                         + "Nothing is deleted on Hetzner."
                 )
             }
@@ -193,6 +220,43 @@ struct SettingsView: View {
             SectionLabel("Robot Accounts")
         } footer: {
             Text("For dedicated servers via Hetzner Robot. Uses a separate webservice login, not your main Hetzner account.")
+                .caption()
+        }
+    }
+
+    // MARK: - Storage Box accounts
+
+    private var storageBoxAccountsSection: some View {
+        Section {
+            ForEach(container.storageBoxAccountsStore.accounts) { account in
+                StorageBoxAccountRow(account: account)
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            pendingStorageBoxAccountDeletion = account
+                        } label: {
+                            Label("Remove", systemImage: "trash")
+                        }
+                        Button {
+                            beginRenameStorageBoxAccount(account)
+                        } label: {
+                            Label("Rename", systemImage: "pencil")
+                        }
+                        .tint(HetzlyColors.textTertiary)
+                    }
+            }
+            .listRowBackground(rowBackground)
+
+            Button {
+                isPresentingAddStorageBoxAccount = true
+            } label: {
+                Label("Add Storage Box Account", systemImage: "externaldrive.fill")
+                    .foregroundStyle(HetzlyColors.accent)
+            }
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("Storage Box Accounts")
+        } footer: {
+            Text("For Storage Boxes via Hetzner's new unified API. Uses its own token, separate from Cloud project tokens.")
                 .caption()
         }
     }
@@ -409,6 +473,56 @@ struct SettingsView: View {
             }
         }
     }
+
+    // MARK: - Storage Box account rename
+
+    private var renameStorageBoxAccountAlertBinding: Binding<Bool> {
+        Binding(
+            get: { renamingStorageBoxAccount != nil },
+            set: { if !$0 { renamingStorageBoxAccount = nil } }
+        )
+    }
+
+    private func beginRenameStorageBoxAccount(_ account: StorageBoxAccountRecord) {
+        renameStorageBoxAccountText = account.label
+        renamingStorageBoxAccount = account
+    }
+
+    private func commitRenameStorageBoxAccount() {
+        guard let account = renamingStorageBoxAccount else { return }
+        let trimmed = renameStorageBoxAccountText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        container.storageBoxAccountsStore.rename(account, to: trimmed)
+        renamingStorageBoxAccount = nil
+    }
+
+    // MARK: - Storage Box account deletion
+
+    private var pendingStorageBoxAccountDeletionBinding: Binding<Bool> {
+        Binding(
+            get: { pendingStorageBoxAccountDeletion != nil },
+            set: { if !$0 { pendingStorageBoxAccountDeletion = nil } }
+        )
+    }
+
+    private func commitStorageBoxAccountDeletion() {
+        guard let account = pendingStorageBoxAccountDeletion else { return }
+        pendingStorageBoxAccountDeletion = nil
+
+        Task {
+            if container.settings.requireBiometricsForDestructive {
+                let authenticated = await container.biometricGate.authenticate(
+                    reason: "Confirm removing \"\(account.label)\" from Hetzly"
+                )
+                guard authenticated else { return }
+            }
+            do {
+                try container.storageBoxAccountsStore.remove(account)
+            } catch {
+                actionError = "Couldn't remove this Storage Box account. Please try again."
+            }
+        }
+    }
 }
 
 /// A single project row: name plus the date it was added. Swipe actions for
@@ -445,6 +559,26 @@ private struct RobotAccountRow: View {
                     .hetzlyMonoNumbers()
                     .font(.system(size: 13, design: .monospaced))
                     .foregroundStyle(HetzlyColors.textTertiary)
+            }
+            Spacer()
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+/// A single Storage Box account row: label plus the date it was added.
+/// Swipe actions for rename/remove are attached by the caller
+/// (`SettingsView.storageBoxAccountsSection`).
+private struct StorageBoxAccountRow: View {
+    let account: StorageBoxAccountRecord
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.unit) {
+                Text(account.label)
+                    .bodyPrimary()
+                Text("Added \(account.createdAt.formatted(date: .abbreviated, time: .omitted))")
+                    .caption()
             }
             Spacer()
         }

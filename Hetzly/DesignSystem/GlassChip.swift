@@ -30,8 +30,8 @@ struct GlassChip: View {
         .background {
             if reduceTransparency {
                 capsule
-                    .fill(Color(white: 0.12))
-                    .overlay { capsule.strokeBorder(Color.white.opacity(0.08), lineWidth: 1) }
+                    .fill(HetzlyColors.glassFallbackFill)
+                    .overlay { capsule.strokeBorder(HetzlyColors.glassFallbackStroke, lineWidth: 1) }
             } else {
                 Color.clear
             }

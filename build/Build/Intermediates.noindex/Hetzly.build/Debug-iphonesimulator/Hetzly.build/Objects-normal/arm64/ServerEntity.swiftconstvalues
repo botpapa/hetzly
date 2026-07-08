@@ -1,0 +1,358 @@
+[
+  {
+    "typeName": "Hetzly.ServerEntity",
+    "mangledTypeName": "6Hetzly12ServerEntityV",
+    "kind": "struct",
+    "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+    "line": 15,
+    "conformances": [
+      "AppIntents.AppEntity",
+      "AppIntents.AppValue",
+      "AppIntents.DisplayRepresentable",
+      "Swift.Identifiable",
+      "AppIntents.PersistentlyIdentifiable",
+      "AppIntents.TypeDisplayRepresentable",
+      "AppIntents._IntentValue",
+      "Swift.Sendable",
+      "AppIntents.InstanceDisplayRepresentable",
+      "Swift.SendableMetatype",
+      "Foundation.CustomLocalizedStringResourceConvertible"
+    ],
+    "allConformances": [
+      {
+        "protocolName": "AppIntents.AppEntity",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.AppValue",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.DisplayRepresentable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.Identifiable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.PersistentlyIdentifiable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.TypeDisplayRepresentable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents._IntentValue",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.Sendable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.InstanceDisplayRepresentable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.SendableMetatype",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Foundation.CustomLocalizedStringResourceConvertible",
+        "conformanceDefiningModule": "Hetzly"
+      }
+    ],
+    "associatedTypeAliases": [
+      {
+        "typeAliasName": "DefaultQuery",
+        "substitutedTypeName": "Hetzly.ServerEntityQuery",
+        "substitutedMangledTypeName": "6Hetzly17ServerEntityQueryV"
+      },
+      {
+        "typeAliasName": "ID",
+        "substitutedTypeName": "Swift.String",
+        "substitutedMangledTypeName": "SS"
+      },
+      {
+        "typeAliasName": "ValueType",
+        "substitutedTypeName": "Hetzly.ServerEntity",
+        "substitutedMangledTypeName": "6Hetzly12ServerEntityV"
+      },
+      {
+        "typeAliasName": "UnwrappedType",
+        "substitutedTypeName": "Hetzly.ServerEntity",
+        "substitutedMangledTypeName": "6Hetzly12ServerEntityV"
+      },
+      {
+        "typeAliasName": "Specification",
+        "substitutedTypeName": "AppIntents.EmptyResolverSpecification<Hetzly.ServerEntity>",
+        "substitutedMangledTypeName": "10AppIntents26EmptyResolverSpecificationVy6Hetzly12ServerEntityVG"
+      }
+    ],
+    "properties": [
+      {
+        "label": "projectID",
+        "type": "Foundation.UUID",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 22,
+        "valueKind": "Runtime"
+      },
+      {
+        "label": "serverID",
+        "type": "Swift.Int",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 23,
+        "valueKind": "Runtime"
+      },
+      {
+        "label": "name",
+        "type": "Swift.String",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 24,
+        "valueKind": "Runtime"
+      },
+      {
+        "label": "status",
+        "type": "HetznerKit.ServerStatus",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 25,
+        "valueKind": "Runtime"
+      },
+      {
+        "label": "ipv4",
+        "type": "Swift.Optional<Swift.String>",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 26,
+        "valueKind": "Runtime"
+      },
+      {
+        "label": "typeDisplayRepresentation",
+        "type": "AppIntents.TypeDisplayRepresentation",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 16,
+        "valueKind": "InitCall",
+        "value": {
+          "type": "AppIntents.TypeDisplayRepresentation",
+          "arguments": [
+            {
+              "label": "name",
+              "type": "Foundation.LocalizedStringResource",
+              "valueKind": "RawLiteral",
+              "value": "Hetzner Server"
+            },
+            {
+              "label": "numericFormat",
+              "type": "Swift.Optional<Foundation.LocalizedStringResource>",
+              "valueKind": "NilLiteral"
+            }
+          ]
+        }
+      },
+      {
+        "label": "defaultQuery",
+        "type": "Hetzly.ServerEntityQuery",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 20,
+        "valueKind": "InitCall",
+        "value": {
+          "type": "Hetzly.ServerEntityQuery",
+          "arguments": []
+        }
+      },
+      {
+        "label": "id",
+        "type": "Swift.String",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 28,
+        "valueKind": "StaticFunctionCall",
+        "value": {
+          "type": "Swift.String",
+          "memberLabel": "makeID",
+          "arguments": [
+            {
+              "label": "projectID",
+              "type": "Foundation.UUID",
+              "valueKind": "Runtime"
+            },
+            {
+              "label": "serverID",
+              "type": "Swift.Int",
+              "valueKind": "Runtime"
+            }
+          ]
+        }
+      },
+      {
+        "label": "displayRepresentation",
+        "type": "AppIntents.DisplayRepresentation",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "false",
+        "isComputed": "true",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+        "line": 30,
+        "valueKind": "InitCall",
+        "value": {
+          "type": "AppIntents.DisplayRepresentation",
+          "arguments": [
+            {
+              "label": "title",
+              "type": "Foundation.LocalizedStringResource",
+              "valueKind": "InterpolatedStringLiteral",
+              "value": {
+                "segments": [
+                  {
+                    "valueKind": "RawLiteral",
+                    "value": ""
+                  },
+                  {
+                    "valueKind": "Runtime"
+                  },
+                  {
+                    "valueKind": "RawLiteral",
+                    "value": ""
+                  }
+                ]
+              }
+            },
+            {
+              "label": "subtitle",
+              "type": "Swift.Optional<Foundation.LocalizedStringResource>",
+              "valueKind": "InterpolatedStringLiteral",
+              "value": {
+                "segments": [
+                  {
+                    "valueKind": "RawLiteral",
+                    "value": ""
+                  },
+                  {
+                    "valueKind": "Runtime"
+                  },
+                  {
+                    "valueKind": "RawLiteral",
+                    "value": ""
+                  }
+                ]
+              }
+            },
+            {
+              "label": "image",
+              "type": "Swift.Optional<AppIntents.DisplayRepresentation.Image>",
+              "valueKind": "InitCall",
+              "value": {
+                "type": "AppIntents.DisplayRepresentation.Image",
+                "arguments": [
+                  {
+                    "label": "systemName",
+                    "type": "Swift.String",
+                    "valueKind": "RawLiteral",
+                    "value": "server.rack"
+                  },
+                  {
+                    "label": "isTemplate",
+                    "type": "Swift.Optional<Swift.Bool>",
+                    "valueKind": "NilLiteral"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "typeName": "Hetzly.ServerEntityQuery",
+    "mangledTypeName": "6Hetzly17ServerEntityQueryV",
+    "kind": "struct",
+    "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/ServerEntity.swift",
+    "line": 63,
+    "conformances": [
+      "AppIntents.EntityQuery",
+      "AppIntents.DynamicOptionsProvider",
+      "AppIntents.PersistentlyIdentifiable",
+      "Swift.Sendable",
+      "AppIntents._SupportsAppDependencies",
+      "Swift.SendableMetatype",
+      "Swift.BitwiseCopyable"
+    ],
+    "allConformances": [
+      {
+        "protocolName": "AppIntents.EntityQuery",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.DynamicOptionsProvider",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.PersistentlyIdentifiable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.Sendable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents._SupportsAppDependencies",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.SendableMetatype",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.BitwiseCopyable",
+        "conformanceDefiningModule": "Hetzly"
+      }
+    ],
+    "associatedTypeAliases": [
+      {
+        "typeAliasName": "Entity",
+        "substitutedTypeName": "Hetzly.ServerEntity",
+        "substitutedMangledTypeName": "6Hetzly12ServerEntityV"
+      },
+      {
+        "typeAliasName": "Result",
+        "substitutedTypeName": "Swift.Array<Hetzly.ServerEntity>",
+        "substitutedMangledTypeName": "Say6Hetzly12ServerEntityVG"
+      },
+      {
+        "typeAliasName": "Result",
+        "substitutedTypeName": "Swift.Array<Hetzly.ServerEntity>",
+        "substitutedMangledTypeName": "Say6Hetzly12ServerEntityVG"
+      },
+      {
+        "typeAliasName": "DefaultValue",
+        "substitutedTypeName": "Hetzly.ServerEntity",
+        "substitutedMangledTypeName": "6Hetzly12ServerEntityV"
+      }
+    ],
+    "properties": []
+  }
+]

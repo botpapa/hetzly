@@ -1,0 +1,94 @@
+[
+  {
+    "typeName": "Hetzly.MonthlyCostIntent",
+    "mangledTypeName": "6Hetzly17MonthlyCostIntentV",
+    "kind": "struct",
+    "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/MonthlyCostIntent.swift",
+    "line": 12,
+    "conformances": [
+      "AppIntents.AppIntent",
+      "AppIntents.PersistentlyIdentifiable",
+      "AppIntents._SupportsAppDependencies",
+      "Swift.Sendable",
+      "Swift.SendableMetatype",
+      "Swift.BitwiseCopyable"
+    ],
+    "allConformances": [
+      {
+        "protocolName": "AppIntents.AppIntent",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents.PersistentlyIdentifiable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "AppIntents._SupportsAppDependencies",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.Sendable",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.SendableMetatype",
+        "conformanceDefiningModule": "Hetzly"
+      },
+      {
+        "protocolName": "Swift.BitwiseCopyable",
+        "conformanceDefiningModule": "Hetzly"
+      }
+    ],
+    "associatedTypeAliases": [
+      {
+        "typeAliasName": "PerformResult",
+        "substitutedTypeName": "some AppIntents.ProvidesDialog & AppIntents.ReturnsValue<Swift.String>",
+        "substitutedMangledTypeName": "6Hetzly17MonthlyCostIntentV7performQryYaKFQOy_Qo_",
+        "opaqueTypeProtocolRequirements": [
+          "AppIntents.ProvidesDialog",
+          "AppIntents.ReturnsValue"
+        ],
+        "opaqueTypeSameTypeRequirements": [
+          {
+            "typeAliasName": "AppIntents.IntentResult.Value",
+            "substitutedTypeName": "Swift.String",
+            "substitutedMangledTypeName": "SS"
+          }
+        ]
+      },
+      {
+        "typeAliasName": "SummaryContent",
+        "substitutedTypeName": "some AppIntents.ParameterSummary",
+        "substitutedMangledTypeName": "10AppIntents0A6IntentPAAE16parameterSummaryQrvpZQOy6Hetzly011MonthlyCostC0V_Qo_",
+        "opaqueTypeProtocolRequirements": [
+          "AppIntents.ParameterSummary"
+        ],
+        "opaqueTypeSameTypeRequirements": []
+      }
+    ],
+    "properties": [
+      {
+        "label": "title",
+        "type": "Foundation.LocalizedStringResource",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/MonthlyCostIntent.swift",
+        "line": 13,
+        "valueKind": "RawLiteral",
+        "value": "Monthly Hetzner Cost"
+      },
+      {
+        "label": "description",
+        "type": "AppIntents.IntentDescription",
+        "mangledTypeName": "n/a - deprecated",
+        "isStatic": "true",
+        "isComputed": "false",
+        "file": "/Users/andrew/Development/stuff/hetzner-control-app/Hetzly/Intents/MonthlyCostIntent.swift",
+        "line": 14,
+        "valueKind": "RawLiteral",
+        "value": "Adds up this month's Hetzner Cloud server spend across every project, live from Hetzner's pricing API."
+      }
+    ]
+  }
+]

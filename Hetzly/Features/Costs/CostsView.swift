@@ -14,6 +14,7 @@ struct CostsView: View {
     @State private var editingManualEntry: ManualCostEntry?
     @State private var settingPriceForServer: CostsViewModel.DedicatedServerRow?
     @State private var shareImage: Image?
+    @State private var csvExportURL: URL?
     @State private var isPresentingAddProject = false
 
     /// The project Costs is currently scoped to; `nil` = "All". Backed by
@@ -121,14 +122,25 @@ struct CostsView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    if let shareImage {
-                        ShareLink(
-                            item: shareImage,
-                            preview: SharePreview("Hetzly — \(monthTitle) costs", image: shareImage)
-                        ) {
+                    if shareImage != nil || csvExportURL != nil {
+                        Menu {
+                            if let shareImage {
+                                ShareLink(
+                                    item: shareImage,
+                                    preview: SharePreview("Hetzly — \(monthTitle) costs", image: shareImage)
+                                ) {
+                                    Label("Share Image", systemImage: "photo")
+                                }
+                            }
+                            if let csvExportURL {
+                                ShareLink(item: csvExportURL) {
+                                    Label("Export CSV", systemImage: "tablecells")
+                                }
+                            }
+                        } label: {
                             Image(systemName: "square.and.arrow.up")
                         }
-                        .accessibilityLabel("Share Costs Summary")
+                        .accessibilityLabel("Share Costs")
                         .tint(HetzlyColors.accent)
                     }
                 }
@@ -139,6 +151,9 @@ struct CostsView: View {
         }
         .task(id: shareRenderKey) {
             await renderShareCard()
+        }
+        .task(id: csvRenderKey) {
+            renderCSV()
         }
         .onChange(of: container.projectsStore.projects.map(\.id)) { _, currentIDs in
             // The scoped project may have been removed (Settings) while
@@ -266,6 +281,31 @@ struct CostsView: View {
             monthTitle: monthTitle,
             projectTotals: projectTotals
         )
+    }
+
+    // MARK: - CSV export
+
+    /// Re-render whenever the numbers the CSV reports change, mirroring
+    /// `shareRenderKey` above.
+    private var csvRenderKey: String {
+        let sections = viewModel.projectSections.map { "\($0.projectName)=\($0.projectedTotal)" }.joined(separator: ",")
+        let dedicated = dedicatedPriceStore.entries.map { "\($0.serverNumber)=\($0.monthlyPrice)" }.joined(separator: ",")
+        let manual = manualStore.entries.map { "\($0.id)=\($0.monthlyPrice)" }.joined(separator: ",")
+        return "\(sections)|\(dedicated)|\(manual)|\(viewModel.currency)"
+    }
+
+    private func renderCSV() {
+        let rows = CostsCSVExporter.rows(
+            projectSections: viewModel.projectSections,
+            manualEntries: manualStore.entries,
+            dedicatedServers: viewModel.dedicatedServers,
+            currency: viewModel.currency
+        )
+        guard !rows.isEmpty else {
+            csvExportURL = nil
+            return
+        }
+        csvExportURL = try? CostsCSVExporter.writeTempFile(rows: rows)
     }
 }
 

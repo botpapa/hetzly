@@ -142,12 +142,17 @@ struct ServerMetricsChart: View {
                     Rectangle()
                         .fill(Color.clear)
                         .contentShape(Rectangle())
+                        // Press-and-hold to scrub. A plain drag gesture here
+                        // swallows every touch, which makes the page
+                        // impossible to scroll when a swipe starts on the
+                        // chart — sequencing behind a long-press leaves
+                        // quick vertical swipes to the ScrollView.
                         .gesture(scrubGesture(proxy: proxy, geometry: geometry))
 
-                    if let scrubDate, let nearest = nearestPoint(to: scrubDate),
-                       let x = proxy.position(forX: nearest.date), let plotFrame = proxy.plotFrame {
+                    if let scrubDate, let anchor = nearestPoint(to: scrubDate),
+                       let x = proxy.position(forX: anchor.date), let plotFrame = proxy.plotFrame {
                         let plotOrigin = geometry[plotFrame].origin
-                        GlassChip("\(valueFormatter(nearest.value)) · \(range.timeLabel(for: nearest.date))")
+                        lollipop(at: anchor.date)
                             .fixedSize()
                             .offset(x: lollipopOffset(x: plotOrigin.x + x, containerWidth: geometry.size.width), y: 0)
                     }
@@ -156,12 +161,47 @@ struct ServerMetricsChart: View {
         }
     }
 
+    /// The scrub tooltip: one row per series (color dot + value at the
+    /// scrubbed time) so multi-series charts show Read AND Write / In AND
+    /// Out, plus the time. Single-series charts collapse to one row.
+    private func lollipop(at date: Date) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.unit / 2) {
+            ForEach(series) { entry in
+                if let point = nearestPoint(in: entry, to: date) {
+                    HStack(spacing: Spacing.unit) {
+                        Circle().fill(entry.color).frame(width: 5, height: 5)
+                        Text(valueFormatter(point.value))
+                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(HetzlyColors.textPrimary)
+                    }
+                }
+            }
+            Text(range.timeLabel(for: date))
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(HetzlyColors.textSecondary)
+        }
+        .padding(.horizontal, Spacing.unit * 2)
+        .padding(.vertical, Spacing.unit)
+        .glassSurface(Capsule())
+    }
+
     private func scrubGesture(proxy: ChartProxy, geometry: GeometryProxy) -> some Gesture {
-        DragGesture(minimumDistance: 0)
+        LongPressGesture(minimumDuration: 0.15)
+            .sequenced(before: DragGesture(minimumDistance: 0))
             .onChanged { value in
+                guard case .second(true, let drag) = value, let drag else {
+                    // Long-press recognized, drag not started yet: anchor the
+                    // scrub where the finger already is (start of the plot
+                    // until the first drag update arrives is avoided by
+                    // waiting for drag values).
+                    return
+                }
                 guard let plotFrame = proxy.plotFrame else { return }
-                let originX = geometry[plotFrame].origin.x
-                let relativeX = value.location.x - originX
+                let plot = geometry[plotFrame]
+                // Ignore touches outside the plot (e.g. on the y-axis
+                // labels) — the axis is not an interactive control.
+                guard plot.insetBy(dx: -Spacing.unit, dy: -Spacing.unit * 2).contains(drag.location) else { return }
+                let relativeX = min(max(drag.location.x - plot.origin.x, 0), plot.width)
                 guard let date = proxy.value(atX: relativeX, as: Date.self) else { return }
                 scrubDate = date
             }
@@ -172,6 +212,12 @@ struct ServerMetricsChart: View {
 
     private func nearestPoint(to date: Date) -> ChartPoint? {
         series.flatMap(\.points).min { lhs, rhs in
+            abs(lhs.date.timeIntervalSince(date)) < abs(rhs.date.timeIntervalSince(date))
+        }
+    }
+
+    private func nearestPoint(in entry: MetricsChartSeries, to date: Date) -> ChartPoint? {
+        entry.points.min { lhs, rhs in
             abs(lhs.date.timeIntervalSince(date)) < abs(rhs.date.timeIntervalSince(date))
         }
     }

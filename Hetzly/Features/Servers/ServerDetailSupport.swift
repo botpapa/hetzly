@@ -24,6 +24,30 @@ enum ServerDetailSupport {
         return String(format: "%.0f%%", normalized)
     }
 
+    /// Formats an image/disk size already expressed in GB, e.g. `12.4 GB`.
+    /// (Distinct from `bytes(_:)`, which takes raw byte counts.)
+    static func gigabytes(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f GB", value)
+        }
+        return String(format: "%.1f GB", value)
+    }
+
+    /// RFC 1123-style hostname validation for the server rename flow:
+    /// dot-separated labels of letters/digits/hyphens, each 1–63 chars, no
+    /// leading/trailing hyphen, 253 chars total.
+    static func isValidHostname(_ name: String) -> Bool {
+        guard !name.isEmpty, name.count <= 253 else { return false }
+        let labels = name.split(separator: ".", omittingEmptySubsequences: false)
+        let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-")
+        for label in labels {
+            guard !label.isEmpty, label.count <= 63 else { return false }
+            guard !label.hasPrefix("-"), !label.hasSuffix("-") else { return false }
+            guard label.unicodeScalars.allSatisfy({ allowed.contains($0) }) else { return false }
+        }
+        return true
+    }
+
     /// "up 3 weeks" style uptime string, relative to `now`. Deliberately
     /// coarse — a single largest unit, matching the mascot-y, casual tone of
     /// the rest of the UI.

@@ -8,6 +8,12 @@ struct DashboardView: View {
     @State private var viewModel: DashboardViewModel
     @State private var idleTimerTask: Task<Void, Never>?
     @State private var mascotIsAsleep = false
+    /// Sheet-item wrapper: the project a new server should be created in.
+    private struct CreateServerTarget: Identifiable {
+        let id: UUID
+    }
+
+    @State private var createServerTarget: CreateServerTarget?
 
     init() {
         _viewModel = State(initialValue: DashboardViewModel())
@@ -63,6 +69,30 @@ struct DashboardView: View {
             .navigationTitle("Dashboard")
             .navigationDestination(for: ServerRoute.self) { route in
                 ServerDetailView(route: route)
+            }
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        ForEach(container.projectsStore.projects) { project in
+                            Button(project.name) {
+                                createServerTarget = CreateServerTarget(id: project.id)
+                            }
+                        }
+                    } label: {
+                        Label("Create Server", systemImage: "plus")
+                    } primaryAction: {
+                        // Single project: skip the picker.
+                        if container.projectsStore.projects.count == 1,
+                           let only = container.projectsStore.projects.first {
+                            createServerTarget = CreateServerTarget(id: only.id)
+                        }
+                    }
+                }
+            }
+            .sheet(item: $createServerTarget) { target in
+                CreateServerFlow(projectID: target.id) { _ in
+                    Task { await viewModel.refresh(container: container) }
+                }
             }
         }
         .task {

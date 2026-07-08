@@ -14,6 +14,9 @@ import SwiftUI
 struct ServerActionRow: View {
     let server: Server
     var onSelect: (PowerAction) -> Void
+    /// Opens the management ("More") sheet. `nil` hides the ellipsis button
+    /// (kept optional so existing call sites/previews stay valid).
+    var onMore: (() -> Void)? = nil
 
     @Namespace private var glassNamespace
     @State private var impactTrigger = false
@@ -29,20 +32,47 @@ struct ServerActionRow: View {
     var body: some View {
         Group {
             if availableActions.isEmpty {
-                Text("\(server.status.displayName)…")
-                    .caption()
-                    .frame(height: 44)
+                HStack(spacing: 16) {
+                    Text("\(server.status.displayName)…")
+                        .caption()
+                        .frame(height: 44)
+                    if onMore != nil {
+                        GlassEffectContainer(spacing: 16) {
+                            moreButton
+                        }
+                    }
+                }
             } else {
                 GlassEffectContainer(spacing: 16) {
                     HStack(spacing: 16) {
                         ForEach(availableActions) { action in
                             actionButton(action)
                         }
+                        if onMore != nil {
+                            moreButton
+                        }
                     }
                 }
             }
         }
         .sensoryFeedback(.impact(weight: .heavy), trigger: impactTrigger)
+    }
+
+    /// Circular ellipsis button opening the management-actions sheet.
+    private var moreButton: some View {
+        Button {
+            impactTrigger.toggle()
+            onMore?()
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(HetzlyColors.textPrimary)
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .glassEffectID("more", in: glassNamespace)
+        .accessibilityLabel("More actions")
     }
 
     private func actionButton(_ action: PowerAction) -> some View {
@@ -66,8 +96,8 @@ struct ServerActionRow: View {
     ZStack {
         CanvasBackground()
         VStack(spacing: Spacing.unit * 8) {
-            ServerActionRow(server: PreviewFixtures.server) { _ in }
-            ServerActionRow(server: PreviewFixtures.offServer) { _ in }
+            ServerActionRow(server: PreviewFixtures.server, onSelect: { _ in }, onMore: {})
+            ServerActionRow(server: PreviewFixtures.offServer, onSelect: { _ in }, onMore: {})
         }
         .padding(Spacing.screenMargin)
     }

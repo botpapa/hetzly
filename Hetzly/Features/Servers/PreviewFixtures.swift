@@ -123,6 +123,119 @@ enum PreviewFixtures {
         )
     }()
 
+    static let snapshot = Image(
+        id: 9_001,
+        type: .snapshot,
+        status: .available,
+        name: nil,
+        description: "pre-upgrade checkpoint",
+        imageSize: 12.4,
+        diskSize: 40,
+        created: now.addingTimeInterval(-5 * 24 * 3_600),
+        createdFrom: ImageCreator(id: 42, name: "hetzi-prod-01"),
+        boundTo: nil,
+        osFlavor: "ubuntu",
+        osVersion: "24.04",
+        architecture: .x86,
+        protection: ImageProtection(delete: false),
+        deprecated: nil,
+        labels: [:]
+    )
+
+    static let systemImage = Image(
+        id: 114_690_387,
+        type: .system,
+        status: .available,
+        name: "ubuntu-24.04",
+        description: "Ubuntu 24.04",
+        imageSize: nil,
+        diskSize: 5,
+        created: now.addingTimeInterval(-300 * 24 * 3_600),
+        createdFrom: nil,
+        boundTo: nil,
+        osFlavor: "ubuntu",
+        osVersion: "24.04",
+        architecture: .x86,
+        protection: ImageProtection(delete: false),
+        deprecated: nil,
+        labels: [:]
+    )
+
+    static let debianImage = Image(
+        id: 114_690_388,
+        type: .system,
+        status: .available,
+        name: "debian-12",
+        description: "Debian 12",
+        imageSize: nil,
+        diskSize: 5,
+        created: now.addingTimeInterval(-400 * 24 * 3_600),
+        createdFrom: nil,
+        boundTo: nil,
+        osFlavor: "debian",
+        osVersion: "12",
+        architecture: .x86,
+        protection: ImageProtection(delete: false),
+        deprecated: nil,
+        labels: [:]
+    )
+
+    static let iso = ISO(
+        id: 12_345,
+        name: "debian-12.5.0-amd64-netinst.iso",
+        description: "Debian 12.5 (netinst)",
+        type: .public,
+        architecture: .x86,
+        deprecation: nil
+    )
+
+    static let sshKey = SSHKey(
+        id: 77,
+        name: "MacBook Pro",
+        fingerprint: "b7:2f:30:a0:2f:6c:58:6c:21:04:58:61:ba:06:3b:2f",
+        publicKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIISKa2ipQfmyoJKMWfvNZa5xATcXJTdrbeZDMBGvzimE hetzi",
+        labels: [:],
+        created: now.addingTimeInterval(-60 * 24 * 3_600)
+    )
+
+    static let biggerServerType = ServerType(
+        id: 23,
+        name: "cx32",
+        description: "CX32",
+        cores: 4,
+        memory: 8,
+        disk: 80,
+        cpuType: .shared,
+        architecture: .x86,
+        deprecated: false,
+        prices: [
+            ServerTypePrice(
+                location: "nbg1",
+                hourly: PriceValue(net: "0.0113", gross: "0.0134"),
+                monthly: PriceValue(net: "6.8", gross: "8.09")
+            )
+        ]
+    )
+
+    static let smallerServerType = ServerType(
+        id: 21,
+        name: "cx12",
+        description: "CX12",
+        cores: 1,
+        memory: 2,
+        disk: 20,
+        cpuType: .shared,
+        architecture: .x86,
+        deprecated: false,
+        prices: [
+            ServerTypePrice(
+                location: "nbg1",
+                hourly: PriceValue(net: "0.0052", gross: "0.0062"),
+                monthly: PriceValue(net: "3.2", gross: "3.81")
+            )
+        ]
+    )
+
     private static func wave(
         start: Date, step: TimeInterval, base: Double, amplitude: Double, count: Int = 60
     ) -> [(timestamp: Date, value: Double)] {

@@ -70,7 +70,7 @@ struct ServerActionRow: View {
                 .frame(width: 44, height: 44)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .glassSurface(Circle(), interactive: true)
         .glassEffectID("more", in: glassNamespace)
         .accessibilityLabel("More actions")
     }
@@ -86,7 +86,7 @@ struct ServerActionRow: View {
                 .frame(width: 44, height: 44)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .glassSurface(Circle(), interactive: true)
         .glassEffectID(action.id, in: glassNamespace)
         .accessibilityLabel(action.title)
     }

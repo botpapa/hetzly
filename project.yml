@@ -17,8 +17,11 @@ targets:
     platform: iOS
     sources:
       - path: Hetzly
+      - path: HetzlyWidgets/Shared/WidgetSnapshotShared.swift
     dependencies:
       - package: HetznerKit
+      - target: HetzlyWidgets
+        embed: true
     settings:
       base:
         SWIFT_VERSION: "6.0"
@@ -36,13 +39,84 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.hetzly.app
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Alternate app icons (Settings > App Icon). Modern asset-catalog
+        # wiring: Xcode's asset catalog compiler injects CFBundleIcons /
+        # CFBundleAlternateIcons into the generated Info.plist itself from
+        # this setting — no manual plist entries needed.
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: "AppIcon-Mono AppIcon-Light AppIcon-Hetzi"
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: true
+        CODE_SIGN_ENTITLEMENTS: Hetzly/Hetzly.entitlements
+
+  HetzlyWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: HetzlyWidgets
+    dependencies: []
+    info:
+      path: HetzlyWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Hetzly
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: false
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_BUNDLE_IDENTIFIER: com.hetzly.app.widgets
+        CODE_SIGN_ENTITLEMENTS: HetzlyWidgets/HetzlyWidgets.entitlements
+
+  # --- S4/M4: app-level unit + UI test targets. Additive only — do not fold
+  # other targets' settings into these blocks. ---
+  HetzlyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: HetzlyTests
+    dependencies:
+      - target: Hetzly
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        GENERATE_INFOPLIST_FILE: true
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_BUNDLE_IDENTIFIER: com.hetzly.app.tests
+
+  HetzlyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: HetzlyUITests
+    dependencies:
+      - target: Hetzly
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        GENERATE_INFOPLIST_FILE: true
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_BUNDLE_IDENTIFIER: com.hetzly.app.uitests
+        TEST_TARGET_NAME: Hetzly
 
 schemes:
   Hetzly:
     build:
       targets:
         Hetzly: all
+        HetzlyWidgets: all
+        HetzlyTests: [test]
+        HetzlyUITests: [test]
     test:
-      targets: []
+      targets:
+        - HetzlyTests
+        - HetzlyUITests
     run:
       config: Debug

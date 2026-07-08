@@ -10,6 +10,8 @@ struct CreateServerResultView: View {
     var onDone: (Server) -> Void
     var onRetry: () -> Void
 
+    @Environment(AppContainer.self) private var container
+
     @State private var ipCopied = false
     @State private var passwordCopied = false
 
@@ -38,7 +40,13 @@ struct CreateServerResultView: View {
 
     private func creatingContent(progress: Int) -> some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .work, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .work, scale: 3)
+            } else {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textSecondary)
+            }
             Text("Creating server… \(progress)%")
                 .hetzlyMonoNumbers()
                 .foregroundStyle(HetzlyColors.textPrimary)
@@ -52,7 +60,13 @@ struct CreateServerResultView: View {
 
     private func succeededContent(_ server: Server) -> some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .celebrate, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .celebrate, scale: 3)
+            } else {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.statusRunning)
+            }
 
             VStack(spacing: Spacing.unit) {
                 Text(server.name)
@@ -72,6 +86,7 @@ struct CreateServerResultView: View {
 
             PrimaryCTA(title: "Done") { onDone(server) }
                 .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("createServer.result.doneButton")
         }
     }
 
@@ -130,7 +145,13 @@ struct CreateServerResultView: View {
 
     private func failedContent(_ message: String) -> some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .alarm, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .alarm, scale: 3)
+            } else {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.statusError)
+            }
             Text("Couldn't create the server")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(HetzlyColors.textPrimary)
@@ -148,6 +169,7 @@ struct CreateServerResultView: View {
         CanvasBackground()
         CreateServerResultView(viewModel: CreateServerPreviewFixtures.creatingViewModel(), onDone: { _ in }, onRetry: {})
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }
 
@@ -160,6 +182,7 @@ struct CreateServerResultView: View {
             onRetry: {}
         )
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }
 
@@ -172,6 +195,7 @@ struct CreateServerResultView: View {
             onRetry: {}
         )
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }
 
@@ -180,5 +204,6 @@ struct CreateServerResultView: View {
         CanvasBackground()
         CreateServerResultView(viewModel: CreateServerPreviewFixtures.failedViewModel(), onDone: { _ in }, onRetry: {})
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }

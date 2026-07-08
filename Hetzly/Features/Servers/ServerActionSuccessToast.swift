@@ -34,14 +34,16 @@ struct ServerActionSuccessToast: View {
             } else {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(HetzlyColors.statusRunning)
+                    .accessibilityHidden(true)
             }
             Text(text)
                 .bodySecondary()
         }
         .padding(.horizontal, Spacing.cardPadding)
         .padding(.vertical, Spacing.unit * 3)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(Capsule(style: .continuous))
         .transition(.move(edge: .top).combined(with: .opacity))
+        .accessibilityElement(children: .combine)
     }
 
     private static func successText(for kind: PowerAction) -> String {

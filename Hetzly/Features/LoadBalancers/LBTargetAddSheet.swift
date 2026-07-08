@@ -3,6 +3,8 @@ import SwiftUI
 
 /// Add-target sheet: pick a server, enter a label selector, or enter an IP.
 struct LBTargetAddSheet: View {
+    @Environment(AppContainer.self) private var container
+
     let servers: [Server]
     let existingTargets: [LBTarget]
     var onAdd: (LBTarget) -> Void
@@ -82,7 +84,13 @@ struct LBTargetAddSheet: View {
     private var serverPicker: some View {
         if servers.isEmpty {
             VStack(spacing: Spacing.unit * 4) {
-                MascotView(state: .peek, scale: 3)
+                if container.settings.mascotEnabled {
+                    MascotView(state: .peek, scale: 3)
+                } else {
+                    Image(systemName: "tray")
+                        .font(.system(size: 40))
+                        .foregroundStyle(HetzlyColors.textTertiary)
+                }
                 Text("No servers in this project.").bodySecondary()
             }
             .frame(maxWidth: .infinity)
@@ -219,5 +227,6 @@ struct LBTargetAddSheet: View {
         onAdd: { _ in },
         onCancel: {}
     )
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }

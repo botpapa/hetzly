@@ -94,9 +94,7 @@ struct MarketProductDetailView: View {
         .padding(.horizontal, Spacing.screenMargin)
         .padding(.top, Spacing.unit * 2)
         .padding(.bottom, Spacing.unit * 3)
-        .background {
-            Color.clear.glassEffect(.regular, in: .rect(cornerRadius: 0)).ignoresSafeArea(edges: .bottom)
-        }
+        .glassFooterBackground()
     }
 }
 

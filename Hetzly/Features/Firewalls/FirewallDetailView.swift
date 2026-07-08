@@ -133,14 +133,24 @@ struct FirewallDetailView: View {
 
     private var loadingState: some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .idle, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .idle, scale: 3)
+            } else {
+                ProgressView().controlSize(.large)
+            }
             Text("Loading firewall…").caption()
         }
     }
 
     private func errorState(_ message: String) -> some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .alarm, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .alarm, scale: 3)
+            } else {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.statusError)
+            }
             Text(message)
                 .bodySecondary()
                 .multilineTextAlignment(.center)

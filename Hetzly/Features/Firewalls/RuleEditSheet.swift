@@ -147,6 +147,7 @@ struct RuleEditSheet: View {
                                 Image(systemName: "xmark.circle.fill")
                                     .font(.system(size: 13))
                             }
+                            .accessibilityLabel("Remove \(cidr)")
                         }
                         .foregroundStyle(HetzlyColors.textPrimary)
                         .padding(.horizontal, Spacing.unit * 2.5)

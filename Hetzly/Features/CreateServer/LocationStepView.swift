@@ -55,6 +55,7 @@ struct LocationStepView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityIdentifier("createServer.locationCard.\(location.name)")
     }
 }
 

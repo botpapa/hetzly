@@ -13,6 +13,7 @@ struct FirewallRowView: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(HetzlyColors.accent)
                     .frame(width: 28)
+                    .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: Spacing.unit) {
                     Text(firewall.name)
@@ -33,8 +34,10 @@ struct FirewallRowView: View {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(HetzlyColors.textTertiary)
+                    .accessibilityHidden(true)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

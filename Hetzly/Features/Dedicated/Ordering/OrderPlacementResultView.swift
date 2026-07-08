@@ -4,6 +4,8 @@ import SwiftUI
 /// form entirely for `.authenticating`/`.placing`/`.succeeded`/`.failed`,
 /// mirroring `CreateServerResultView`'s role for the create-server wizard.
 struct OrderPlacementResultView: View {
+    @Environment(AppContainer.self) private var container
+
     var viewModel: OrderFlowViewModel
     var onDone: () -> Void = {}
 
@@ -32,7 +34,11 @@ struct OrderPlacementResultView: View {
 
     private func statusContent(state: MascotState, title: String) -> some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: state, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: state, scale: 3)
+            } else {
+                mascotFallback(for: state)
+            }
             Text(title)
                 .bodyPrimary()
             ProgressView()
@@ -40,11 +46,41 @@ struct OrderPlacementResultView: View {
         }
     }
 
+    /// SF Symbol substitute shown when the mascot is disabled, matched to the
+    /// same intent as the `MascotState` it replaces.
+    @ViewBuilder
+    private func mascotFallback(for state: MascotState) -> some View {
+        switch state {
+        case .idle, .walk, .run, .sleep:
+            ProgressView().controlSize(.large)
+        case .alarm:
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(HetzlyColors.statusError)
+        case .celebrate:
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(HetzlyColors.statusRunning)
+        case .work:
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(HetzlyColors.textSecondary)
+        case .peek:
+            Image(systemName: "tray")
+                .font(.system(size: 40))
+                .foregroundStyle(HetzlyColors.textTertiary)
+        }
+    }
+
     // MARK: - Succeeded
 
     private func succeededContent(_ transaction: TransactionSummary) -> some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .celebrate, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .celebrate, scale: 3)
+            } else {
+                mascotFallback(for: .celebrate)
+            }
 
             VStack(spacing: Spacing.unit) {
                 Text("Order Placed").font(.system(size: 20, weight: .semibold)).foregroundStyle(HetzlyColors.textPrimary)
@@ -97,7 +133,11 @@ struct OrderPlacementResultView: View {
             orderingDisabledContent
         case .message(let message):
             VStack(spacing: Spacing.unit * 5) {
-                MascotView(state: .alarm, scale: 3)
+                if container.settings.mascotEnabled {
+                    MascotView(state: .alarm, scale: 3)
+                } else {
+                    mascotFallback(for: .alarm)
+                }
                 Text("Couldn't place the order").font(.system(size: 18, weight: .semibold)).foregroundStyle(HetzlyColors.textPrimary)
                 Text(message)
                     .bodySecondary()
@@ -110,7 +150,11 @@ struct OrderPlacementResultView: View {
 
     private var orderingDisabledContent: some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .alarm, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .alarm, scale: 3)
+            } else {
+                mascotFallback(for: .alarm)
+            }
             Text("Ordering Isn't Enabled")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(HetzlyColors.textPrimary)
@@ -140,6 +184,7 @@ struct OrderPlacementResultView: View {
         CanvasBackground()
         OrderPlacementResultView(viewModel: OrderPreviewFixtures.reviewViewModel(phase: .placing))
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }
 
@@ -148,6 +193,7 @@ struct OrderPlacementResultView: View {
         CanvasBackground()
         OrderPlacementResultView(viewModel: OrderPreviewFixtures.reviewViewModel(phase: .succeeded(OrderPreviewFixtures.transactions[0])))
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }
 
@@ -156,6 +202,7 @@ struct OrderPlacementResultView: View {
         CanvasBackground()
         OrderPlacementResultView(viewModel: OrderPreviewFixtures.reviewViewModel(phase: .failed(.orderingDisabled)))
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }
 
@@ -166,5 +213,6 @@ struct OrderPlacementResultView: View {
             viewModel: OrderPreviewFixtures.reviewViewModel(phase: .failed(.message("This product is temporarily out of stock.")))
         )
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }

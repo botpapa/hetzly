@@ -43,6 +43,7 @@ struct VolumesListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { isPresentingCreate = true } label: { Image(systemName: "plus") }
+                    .accessibilityLabel("Create Volume")
             }
         }
         .task(id: selection.projectID) { await reload() }

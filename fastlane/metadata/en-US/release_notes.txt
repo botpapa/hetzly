@@ -1,0 +1,7 @@
+Initial release of Hetzly.
+
+• Full Hetzner Cloud management: servers, volumes, networks, firewalls, load balancers, DNS, images, snapshots, IPs, placement groups, SSH keys, and a guided create-server wizard.
+• Hetzner Robot dedicated server management and ordering.
+• On-device cost dashboard across Cloud and Robot — nothing sent to a third party.
+• Home Screen widgets and Siri/Shortcuts support.
+• Zero backend, zero telemetry, zero third-party dependencies.

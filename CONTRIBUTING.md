@@ -61,7 +61,27 @@ coverage: aim for **≥80%** coverage on request building, response decoding,
 pagination, rate limiting, and error mapping. App-target code (SwiftUI
 views, DI wiring) is not held to the same bar, but non-trivial logic
 (view models, formatters, cost calculations) should still be tested where it
-can be pulled out of a view.
+can be pulled out of a view — see `HetzlyTests` for app-target unit tests and
+`HetzlyUITests` for end-to-end UI flows.
+
+Run the **full test suite** before opening a PR:
+
+```sh
+# Package tests (fast, no simulator needed)
+swift test --package-path Packages/HetznerKit
+
+# App-target unit + UI tests (needs a booted/available simulator)
+xcodegen
+xcodebuild test \
+  -project Hetzly.xcodeproj \
+  -scheme Hetzly \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5'
+```
+
+This is the same sequence CI runs on every PR and push to `main` (see
+`.github/workflows/ci.yml`) — a green local run doesn't guarantee CI passes
+(different runner, different simulator availability), but it catches the
+vast majority of issues before you push.
 
 ## PR checklist
 
@@ -73,6 +93,7 @@ Before opening a PR, please confirm:
       (`! grep -rn --include='*.swift' -E '(print|os_log|Logger).*[Aa]uthorization' Hetzly Packages`)
       passes locally.
 - [ ] `swift test --package-path Packages/HetznerKit` passes.
+- [ ] `xcodebuild test` passes for the `Hetzly` scheme (`HetzlyTests` + `HetzlyUITests`).
 - [ ] `xcodegen` was re-run and the project builds in Xcode 26.
 - [ ] No new third-party dependency was added.
 

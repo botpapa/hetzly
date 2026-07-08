@@ -62,7 +62,13 @@ struct ResourcesHubView: View {
 
     private var noProjectsState: some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .peek, scale: 4)
+            if container.settings.mascotEnabled {
+                MascotView(state: .peek, scale: 4)
+            } else {
+                Image(systemName: "tray")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
             VStack(spacing: Spacing.unit * 2) {
                 SectionLabel("No Projects")
                 Text("Add a project in Settings to manage its volumes, networks, and more.")

@@ -97,6 +97,7 @@ struct CostsView: View {
                         ) {
                             Image(systemName: "square.and.arrow.up")
                         }
+                        .accessibilityLabel("Share Costs Summary")
                         .tint(HetzlyColors.accent)
                     }
                 }

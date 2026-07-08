@@ -90,7 +90,13 @@ struct DedicatedView: View {
 
     private var noAccountsState: some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .peek, scale: 4)
+            if container.settings.mascotEnabled {
+                MascotView(state: .peek, scale: 4)
+            } else {
+                Image(systemName: "tray")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
             VStack(spacing: Spacing.unit * 2) {
                 SectionLabel("No Robot Accounts")
                 Text("Add your Robot webservice account in Settings to see dedicated servers.")
@@ -117,7 +123,13 @@ struct DedicatedView: View {
         case .failed(let message):
             if viewModel.servers.isEmpty {
                 VStack(spacing: Spacing.unit * 4) {
-                    MascotView(state: .alarm, scale: 3)
+                    if container.settings.mascotEnabled {
+                        MascotView(state: .alarm, scale: 3)
+                    } else {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(HetzlyColors.statusError)
+                    }
                     Text(message)
                         .bodySecondary()
                         .multilineTextAlignment(.center)
@@ -143,7 +155,13 @@ struct DedicatedView: View {
 
     private var emptyServersState: some View {
         VStack(spacing: Spacing.unit * 5) {
-            MascotView(state: .peek, scale: 4)
+            if container.settings.mascotEnabled {
+                MascotView(state: .peek, scale: 4)
+            } else {
+                Image(systemName: "tray")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
             VStack(spacing: Spacing.unit * 2) {
                 SectionLabel("No Dedicated Servers")
                 Text("This Robot account has no dedicated servers yet.")

@@ -42,6 +42,7 @@ struct NetworksListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { isPresentingCreate = true } label: { Image(systemName: "plus") }
+                    .accessibilityLabel("Create Network")
             }
         }
         .task(id: selection.projectID) { await reload() }

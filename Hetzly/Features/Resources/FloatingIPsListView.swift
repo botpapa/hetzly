@@ -66,6 +66,7 @@ struct FloatingIPsListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { isPresentingCreate = true } label: { Image(systemName: "plus") }
+                    .accessibilityLabel("Create Floating IP")
             }
         }
         .task(id: selection.projectID) { await reload() }

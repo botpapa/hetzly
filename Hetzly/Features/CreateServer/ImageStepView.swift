@@ -73,6 +73,7 @@ struct ImageStepView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("createServer.flavorRow.\(flavor)")
 
                 if isExpanded {
                     versionChips(flavorImages)
@@ -112,6 +113,7 @@ struct ImageStepView: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("createServer.versionChip.\(image.id)")
     }
 
     private func flavorDisplayName(_ flavor: String) -> String {

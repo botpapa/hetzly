@@ -31,6 +31,7 @@ struct StandardProductRow: View {
                 }
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     /// Robot prices standard products per-location — the cheapest available
@@ -43,6 +44,8 @@ struct StandardProductRow: View {
                 Text(OrderCurrencyFormat.string(price.monthlyNet, currencyCode: listing.currency))
                     .font(.system(size: 20, weight: .bold, design: .monospaced))
                     .monospacedDigit()
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
                     .foregroundStyle(HetzlyColors.textPrimary)
                 Text("from /mo + " + OrderCurrencyFormat.string(price.setupNet, currencyCode: listing.currency) + " setup")
                     .caption()

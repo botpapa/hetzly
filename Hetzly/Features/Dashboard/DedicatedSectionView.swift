@@ -7,11 +7,12 @@ import SwiftUI
 /// Robot account exists, since `DashboardViewModel.dedicatedServers` /
 /// `.dedicatedError` stay empty/nil otherwise.
 ///
-/// Rows are plain (no `NavigationLink`) for now: Server Detail for dedicated
-/// servers (`Features/Dedicated`) hasn't landed a routable detail view yet.
-/// Wiring `NavigationLink` here is a one-line follow-up once it does.
+/// Rows are `NavigationLink`s carrying a `RobotServerRoute`
+/// (`Features/Dedicated`'s own route type — the dashboard's `DashboardView`
+/// declares the matching `.navigationDestination(for: RobotServerRoute.self)`
+/// so the push lands on `DedicatedServerDetailView`).
 struct DedicatedSectionView: View {
-    let servers: [RobotServer]
+    let servers: [DashboardViewModel.DedicatedServerItem]
     let errorMessage: String?
 
     var body: some View {
@@ -31,8 +32,11 @@ struct DedicatedSectionView: View {
 
             if !servers.isEmpty {
                 VStack(spacing: Spacing.unit * 2) {
-                    ForEach(servers, id: \.serverNumber) { server in
-                        DedicatedServerRowView(server: server)
+                    ForEach(servers) { item in
+                        NavigationLink(value: RobotServerRoute(accountID: item.accountID, serverNumber: item.server.serverNumber)) {
+                            DedicatedServerRowView(server: item.server)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -88,40 +92,52 @@ private func resourceStatus(for server: RobotServer) -> ResourceStatus {
 }
 
 #Preview {
-    ZStack {
-        CanvasBackground()
-        ScrollView {
-            VStack(spacing: Spacing.unit * 6) {
-                DedicatedSectionView(
-                    servers: [
-                        RobotServer(
-                            serverIP: "192.0.2.10", serverIPv6Net: nil,
-                            serverNumber: 12345, serverName: "ax42-1",
-                            product: "AX42", dc: "FSN1-DC14", traffic: "unlimited",
-                            status: .ready, cancelled: false, paidUntil: "2026-08-01",
-                            ip: nil, subnet: nil
-                        ),
-                        RobotServer(
-                            serverIP: "192.0.2.11", serverIPv6Net: nil,
-                            serverNumber: 12346, serverName: "sx65-storage",
-                            product: "SX65", dc: "FSN1-DC10", traffic: "unlimited",
-                            status: .inProcess, cancelled: false, paidUntil: nil,
-                            ip: nil, subnet: nil
-                        ),
-                        RobotServer(
-                            serverIP: "192.0.2.12", serverIPv6Net: nil,
-                            serverNumber: 12347, serverName: "ex44-old",
-                            product: "EX44", dc: "FSN1-DC8", traffic: "unlimited",
-                            status: .ready, cancelled: true, paidUntil: "2026-07-15",
-                            ip: nil, subnet: nil
-                        ),
-                    ],
-                    errorMessage: nil
-                )
+    let accountID = UUID()
+    return NavigationStack {
+        ZStack {
+            CanvasBackground()
+            ScrollView {
+                VStack(spacing: Spacing.unit * 6) {
+                    DedicatedSectionView(
+                        servers: [
+                            DashboardViewModel.DedicatedServerItem(
+                                accountID: accountID,
+                                server: RobotServer(
+                                    serverIP: "192.0.2.10", serverIPv6Net: nil,
+                                    serverNumber: 12345, serverName: "ax42-1",
+                                    product: "AX42", dc: "FSN1-DC14", traffic: "unlimited",
+                                    status: .ready, cancelled: false, paidUntil: "2026-08-01",
+                                    ip: nil, subnet: nil
+                                )
+                            ),
+                            DashboardViewModel.DedicatedServerItem(
+                                accountID: accountID,
+                                server: RobotServer(
+                                    serverIP: "192.0.2.11", serverIPv6Net: nil,
+                                    serverNumber: 12346, serverName: "sx65-storage",
+                                    product: "SX65", dc: "FSN1-DC10", traffic: "unlimited",
+                                    status: .inProcess, cancelled: false, paidUntil: nil,
+                                    ip: nil, subnet: nil
+                                )
+                            ),
+                            DashboardViewModel.DedicatedServerItem(
+                                accountID: accountID,
+                                server: RobotServer(
+                                    serverIP: "192.0.2.12", serverIPv6Net: nil,
+                                    serverNumber: 12347, serverName: "ex44-old",
+                                    product: "EX44", dc: "FSN1-DC8", traffic: "unlimited",
+                                    status: .ready, cancelled: true, paidUntil: "2026-07-15",
+                                    ip: nil, subnet: nil
+                                )
+                            ),
+                        ],
+                        errorMessage: nil
+                    )
 
-                DedicatedSectionView(servers: [], errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
+                    DedicatedSectionView(servers: [], errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
+                }
+                .padding(Spacing.screenMargin)
             }
-            .padding(Spacing.screenMargin)
         }
     }
     .preferredColorScheme(.dark)

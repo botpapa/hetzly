@@ -26,6 +26,8 @@ struct ServerHeroCard: View {
 
                 Text(server.name)
                     .font(.system(size: 22, weight: .bold))
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
                     .foregroundStyle(HetzlyColors.textPrimary)
 
                 addressBlock
@@ -43,19 +45,27 @@ struct ServerHeroCard: View {
                     HStack(spacing: Spacing.unit * 2) {
                         Text(ipv4)
                             .hetzlyMonoNumbers()
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
                             .foregroundStyle(HetzlyColors.textPrimary)
                         Image(systemName: didCopyIPv4 ? "checkmark" : "doc.on.doc")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(HetzlyColors.textTertiary)
+                            .accessibilityHidden(true)
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("IPv4 address \(ipv4)")
+                .accessibilityHint(didCopyIPv4 ? "Copied" : "Double tap to copy")
             }
             if let ipv6 = server.publicNet.ipv6?.ip {
                 Text(ipv6)
                     .hetzlyMonoNumbers()
                     .font(.system(size: 13, design: .monospaced))
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
                     .foregroundStyle(HetzlyColors.textSecondary)
+                    .accessibilityLabel("IPv6 address \(ipv6)")
             }
         }
         .sensoryFeedback(.impact(weight: .light), trigger: copyHaptic)

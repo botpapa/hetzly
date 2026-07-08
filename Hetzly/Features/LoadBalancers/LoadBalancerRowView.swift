@@ -33,8 +33,10 @@ struct LoadBalancerRowView: View {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(HetzlyColors.textTertiary)
+                    .accessibilityHidden(true)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var countsLabel: String {

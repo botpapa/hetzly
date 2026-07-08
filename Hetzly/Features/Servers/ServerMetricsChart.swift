@@ -28,6 +28,20 @@ struct ServerMetricsChart: View {
         series.contains { !$0.points.isEmpty }
     }
 
+    /// A spoken summary of the chart's most recent value(s), read by
+    /// VoiceOver instead of trying to traverse individual chart marks —
+    /// e.g. "latest 42%" for a single-series chart, or "In 1.2 MB/s, Out
+    /// 340 KB/s" when there's more than one series.
+    private var chartAccessibilitySummary: String {
+        let summaries = series.compactMap { entry -> String? in
+            guard let latest = entry.points.last else { return nil }
+            return series.count > 1
+                ? "\(entry.name) \(valueFormatter(latest.value))"
+                : "latest \(valueFormatter(latest.value))"
+        }
+        return summaries.isEmpty ? "No data" : summaries.joined(separator: ", ")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 2) {
             HStack {
@@ -49,6 +63,9 @@ struct ServerMetricsChart: View {
                             .fill(HetzlyColors.textTertiary.opacity(0.25))
                             .frame(height: 1)
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(title) chart")
+                    .accessibilityValue(chartAccessibilitySummary)
             } else {
                 Text("No metrics available")
                     .caption()

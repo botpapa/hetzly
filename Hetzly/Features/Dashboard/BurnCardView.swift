@@ -27,6 +27,8 @@ struct BurnCardView: View {
                 }
                 .font(.system(size: 34, weight: .bold, design: .monospaced))
                 .monospacedDigit()
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
                 .foregroundStyle(HetzlyColors.textPrimary)
 
                 if let projected {
@@ -39,6 +41,7 @@ struct BurnCardView: View {
                     .caption()
             }
         }
+        .accessibilityElement(children: .combine)
         .overlay(alignment: .topTrailing) {
             if let idleMascotState {
                 MascotView(state: idleMascotState, scale: 2)

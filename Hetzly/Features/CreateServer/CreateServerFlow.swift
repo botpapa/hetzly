@@ -73,7 +73,11 @@ struct CreateServerFlow: View {
 
     private var catalogLoadingView: some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .idle, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .idle, scale: 3)
+            } else {
+                ProgressView().controlSize(.large)
+            }
             Text("Loading options…").caption()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -81,7 +85,13 @@ struct CreateServerFlow: View {
 
     private func catalogFailedView(_ message: String) -> some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .alarm, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .alarm, scale: 3)
+            } else {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.statusError)
+            }
             Text(message)
                 .bodySecondary()
                 .multilineTextAlignment(.center)

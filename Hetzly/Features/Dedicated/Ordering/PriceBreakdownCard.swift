@@ -33,6 +33,7 @@ struct PriceBreakdownCard: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var firstMonthExplainer: String {

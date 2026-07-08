@@ -33,7 +33,7 @@ struct MetricsRangePicker: View {
             }
         }
         .padding(3)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(Capsule(style: .continuous))
     }
 }
 

@@ -94,7 +94,11 @@ struct MarketBrowserView: View {
 
     private var loadingState: some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .idle, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .idle, scale: 3)
+            } else {
+                ProgressView().controlSize(.large)
+            }
             Text("Loading the market…").caption()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -102,7 +106,13 @@ struct MarketBrowserView: View {
 
     private func errorState(_ message: String) -> some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .alarm, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .alarm, scale: 3)
+            } else {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.statusError)
+            }
             Text(message)
                 .bodySecondary()
                 .multilineTextAlignment(.center)
@@ -115,7 +125,13 @@ struct MarketBrowserView: View {
 
     private var emptyState: some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .peek, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .peek, scale: 3)
+            } else {
+                Image(systemName: "tray")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
             Text("No auction servers available right now.")
                 .bodySecondary()
                 .multilineTextAlignment(.center)
@@ -126,7 +142,13 @@ struct MarketBrowserView: View {
 
     private var noMatchesState: some View {
         VStack(spacing: Spacing.unit * 4) {
-            MascotView(state: .peek, scale: 3)
+            if container.settings.mascotEnabled {
+                MascotView(state: .peek, scale: 3)
+            } else {
+                Image(systemName: "tray")
+                    .font(.system(size: 40))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
             Text("Nothing matches your filters.")
                 .bodySecondary()
             Button("Clear Filters") {

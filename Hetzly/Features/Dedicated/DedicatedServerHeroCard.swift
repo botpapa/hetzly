@@ -32,13 +32,18 @@ struct DedicatedServerHeroCard: View {
                     HStack(spacing: Spacing.unit * 2) {
                         Text(server.displayName)
                             .font(.system(size: 22, weight: .bold))
+                            .minimumScaleFactor(0.7)
+                            .lineLimit(1)
                             .foregroundStyle(HetzlyColors.textPrimary)
                         Image(systemName: "pencil")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundStyle(HetzlyColors.textTertiary)
+                            .accessibilityHidden(true)
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("\(server.displayName), rename")
+                .accessibilityHint("Double tap to rename this server")
 
                 addressBlock
 
@@ -61,26 +66,36 @@ struct DedicatedServerHeroCard: View {
                     HStack(spacing: Spacing.unit * 2) {
                         Text(ipv4)
                             .hetzlyMonoNumbers()
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
                             .foregroundStyle(HetzlyColors.textPrimary)
                         Image(systemName: didCopyIPv4 ? "checkmark" : "doc.on.doc")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(HetzlyColors.textTertiary)
+                            .accessibilityHidden(true)
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("IPv4 address \(ipv4)")
+                .accessibilityHint(didCopyIPv4 ? "Copied" : "Double tap to copy")
             }
             if let ipv6 = server.serverIPv6Net {
                 Button(action: { copy(ipv6, isV4: false) }) {
                     HStack(spacing: Spacing.unit * 2) {
                         Text(ipv6)
                             .font(.system(size: 13, design: .monospaced))
+                            .minimumScaleFactor(0.6)
+                            .lineLimit(1)
                             .foregroundStyle(HetzlyColors.textSecondary)
                         Image(systemName: didCopyIPv6 ? "checkmark" : "doc.on.doc")
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(HetzlyColors.textTertiary)
+                            .accessibilityHidden(true)
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("IPv6 address \(ipv6)")
+                .accessibilityHint(didCopyIPv6 ? "Copied" : "Double tap to copy")
             }
         }
     }

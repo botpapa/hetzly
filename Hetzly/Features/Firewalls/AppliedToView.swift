@@ -47,6 +47,7 @@ struct AppliedToView: View {
                     Button { onRemoveServer(serverID) } label: {
                         Image(systemName: "xmark.circle.fill").font(.system(size: 12))
                     }
+                    .accessibilityLabel("Remove \(serverName(for: serverID))")
                     .disabled(isSaving)
                 }
                 .foregroundStyle(HetzlyColors.textPrimary)

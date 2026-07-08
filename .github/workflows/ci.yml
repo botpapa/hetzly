@@ -34,7 +34,18 @@ jobs:
           xcodebuild build \
             -project Hetzly.xcodeproj \
             -scheme Hetzly \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+            CODE_SIGNING_ALLOWED=NO
+
+      # HetzlyTests (app-target unit tests) + HetzlyUITests (end-to-end UI
+      # flows) are wired into the Hetzly scheme's `test` action in
+      # project.yml — this exercises both in one xcodebuild invocation.
+      - name: Run app-target tests (HetzlyTests + HetzlyUITests)
+        run: |
+          xcodebuild test \
+            -project Hetzly.xcodeproj \
+            -scheme Hetzly \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Guard against logging secrets

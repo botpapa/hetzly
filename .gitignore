@@ -23,8 +23,17 @@ Packages/*/Package.resolved
 # Simulator / device logs
 *.crash
 
-# Fastlane / CI artifacts (if introduced later)
+# Fastlane / CI artifacts
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
-fastlane/test_output
+fastlane/test_output/
+
+# Fastlane secrets — never commit signing/API credentials
+fastlane/*.p8
+fastlane/*.p12
+fastlane/*.mobileprovision
+fastlane/.env
+fastlane/.env.*
+*.cer
+*.p12

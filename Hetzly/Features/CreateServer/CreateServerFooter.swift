@@ -30,6 +30,7 @@ struct CreateServerFooter: View {
 
                 PrimaryCTA(title: ctaTitle, action: onPrimary)
                     .disabled(!viewModel.canContinue)
+                    .accessibilityIdentifier("createServer.footer.primaryCTA")
             }
         }
         .padding(.horizontal, Spacing.screenMargin)

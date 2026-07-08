@@ -44,6 +44,7 @@ struct SSHKeysListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { isPresentingAdd = true } label: { Image(systemName: "plus") }
+                    .accessibilityLabel("Add SSH Key")
             }
         }
         .task(id: selection.projectID) { await reload() }

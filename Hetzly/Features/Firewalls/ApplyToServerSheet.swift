@@ -9,6 +9,7 @@ struct ApplyToServerSheet: View {
     var onApply: ([Int]) -> Void
     var onCancel: () -> Void
 
+    @Environment(AppContainer.self) private var container
     @State private var selectedIDs: Set<Int> = []
 
     var body: some View {
@@ -17,7 +18,13 @@ struct ApplyToServerSheet: View {
                 CanvasBackground()
                 if servers.isEmpty {
                     VStack(spacing: Spacing.unit * 4) {
-                        MascotView(state: .peek, scale: 3)
+                        if container.settings.mascotEnabled {
+                            MascotView(state: .peek, scale: 3)
+                        } else {
+                            Image(systemName: "tray")
+                                .font(.system(size: 40))
+                                .foregroundStyle(HetzlyColors.textTertiary)
+                        }
                         Text("No servers in this project to apply to.").bodySecondary()
                     }
                 } else {
@@ -97,5 +104,6 @@ struct ApplyToServerSheet: View {
         onApply: { _ in },
         onCancel: {}
     )
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }

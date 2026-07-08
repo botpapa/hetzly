@@ -271,10 +271,11 @@ struct InlineSegmentedPicker<Option: Equatable>: View {
                         }
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(selection == option ? [.isSelected] : [])
             }
         }
         .padding(3)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(Capsule(style: .continuous))
     }
 }
 

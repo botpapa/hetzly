@@ -156,6 +156,8 @@ struct IPDetailView: View {
             VStack(alignment: .leading, spacing: Spacing.unit * 3) {
                 Text(state.ip)
                     .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
                     .foregroundStyle(HetzlyColors.textPrimary)
                     .textSelection(.enabled)
 

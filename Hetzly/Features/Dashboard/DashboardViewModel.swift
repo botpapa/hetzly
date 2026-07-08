@@ -48,11 +48,21 @@ final class DashboardViewModel {
     private(set) var projected: Decimal?
     private(set) var currency = "EUR"
 
+    /// A Robot dedicated server paired with the account it was loaded from —
+    /// the account ID is needed alongside the server number to build a
+    /// `RobotServerRoute` for navigation into `DedicatedServerDetailView`.
+    struct DedicatedServerItem: Identifiable, Sendable {
+        let accountID: UUID
+        let server: RobotServer
+
+        var id: String { "\(accountID.uuidString)#\(server.serverNumber)" }
+    }
+
     /// Every Robot dedicated server across every configured Robot account,
     /// flattened. Loaded once per dashboard load/refresh alongside Cloud
     /// projects — no background polling, per the Robot spec's conservative
     /// request budget.
-    private(set) var dedicatedServers: [RobotServer] = []
+    private(set) var dedicatedServers: [DedicatedServerItem] = []
     /// Set when one or more Robot accounts failed to load; isolated at
     /// fetch time (one bad account doesn't drop another's servers), joined
     /// into a single line since the dashboard shows one inline error row.
@@ -84,7 +94,7 @@ final class DashboardViewModel {
         currency: String = "EUR",
         cpuSparklines: [String: [Double]] = [:],
         lastRefreshed: Date? = nil,
-        dedicatedServers: [RobotServer] = [],
+        dedicatedServers: [DedicatedServerItem] = [],
         dedicatedError: String? = nil
     ) {
         self.projectSections = projectSections
@@ -122,6 +132,7 @@ final class DashboardViewModel {
         await loadCostSummary(container: container)
         isLoading = false
         scheduleSparklineLoad(container: container)
+        writeWidgetSnapshot()
     }
 
     /// Pull-to-refresh. Enforces a 0.6s minimum duration so the `.run`
@@ -136,6 +147,7 @@ final class DashboardViewModel {
         _ = await (liveTask, dedicatedTask)
         await loadCostSummary(container: container)
         scheduleSparklineLoad(container: container)
+        writeWidgetSnapshot()
 
         let elapsed = Date().timeIntervalSince(start)
         let minDuration: TimeInterval = 0.6
@@ -243,6 +255,19 @@ final class DashboardViewModel {
         mutate(&projectSections[index])
     }
 
+    /// Mirrors the current dashboard state into the widget's App Group
+    /// snapshot after every load/refresh completes, so home/lock screen
+    /// widgets stay in sync without any polling of their own.
+    private func writeWidgetSnapshot() {
+        WidgetSnapshotWriter.write(
+            projectSections: projectSections,
+            cpuSparklines: cpuSparklines,
+            monthToDate: monthToDate,
+            projected: projected,
+            currency: currency
+        )
+    }
+
     private func recomputeAttention() {
         attention = projectSections.flatMap { section in
             section.servers.filter { isAttentionStatus($0.status) }
@@ -290,7 +315,7 @@ final class DashboardViewModel {
             let client: RobotClient?
         }
         struct RobotFetchResult: Sendable {
-            let servers: [RobotServer]
+            let items: [DedicatedServerItem]
             let errorMessage: String?
         }
 
@@ -307,15 +332,16 @@ final class DashboardViewModel {
             for target in targets {
                 group.addTask {
                     guard let client = target.client else {
-                        return RobotFetchResult(servers: [], errorMessage: "No credentials configured for this Robot account.")
+                        return RobotFetchResult(items: [], errorMessage: "No credentials configured for this Robot account.")
                     }
                     do {
                         let servers = try await client.listServers()
-                        return RobotFetchResult(servers: servers, errorMessage: nil)
+                        let items = servers.map { DedicatedServerItem(accountID: target.accountID, server: $0) }
+                        return RobotFetchResult(items: items, errorMessage: nil)
                     } catch let apiError as HetznerAPIError {
-                        return RobotFetchResult(servers: [], errorMessage: apiError.userMessage)
+                        return RobotFetchResult(items: [], errorMessage: apiError.userMessage)
                     } catch {
-                        return RobotFetchResult(servers: [], errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
+                        return RobotFetchResult(items: [], errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
                     }
                 }
             }
@@ -327,7 +353,7 @@ final class DashboardViewModel {
             return all
         }
 
-        dedicatedServers = results.flatMap(\.servers).sorted { $0.serverName < $1.serverName }
+        dedicatedServers = results.flatMap(\.items).sorted { $0.server.serverName < $1.server.serverName }
         let errors = results.compactMap(\.errorMessage)
         dedicatedError = errors.isEmpty ? nil : errors.joined(separator: " ")
     }

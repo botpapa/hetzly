@@ -4,6 +4,8 @@ import SwiftUI
 /// `AddProjectSheet` — the same sheet Settings uses later to add another
 /// project — to collect the first one.
 struct OnboardingView: View {
+    @Environment(AppContainer.self) private var container
+
     @State private var isPresentingAddProject = false
 
     var body: some View {
@@ -13,7 +15,11 @@ struct OnboardingView: View {
             VStack(spacing: Spacing.unit * 6) {
                 Spacer(minLength: 0)
 
-                MascotView(state: .idle, scale: 4)
+                if container.settings.mascotEnabled {
+                    MascotView(state: .idle, scale: 4)
+                } else {
+                    ProgressView().controlSize(.large)
+                }
 
                 VStack(spacing: Spacing.unit * 3) {
                     Text("Hetzly")

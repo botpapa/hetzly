@@ -131,4 +131,32 @@ final class AppContainer {
         robotClients[accountID] = client
         return client
     }
+
+    #if DEBUG
+    /// UI-test-only entry point (see `UITestSupport`): wraps an
+    /// already-configured `modelContainer` (in-memory, with any seed
+    /// `ProjectRecord`s already inserted by `UITestSupport`, so
+    /// `ProjectsStore`'s initial fetch sees them) in an `AppContainer`, and
+    /// pre-caches a fixture-backed `CloudClient` per entry of
+    /// `preconfiguredCloudClients`. The Keychain/`TokenVault` is entirely
+    /// bypassed — no token is ever stored (keychain writes fail in unsigned
+    /// `CODE_SIGNING_ALLOWED=NO` UI-test builds anyway), the client cache
+    /// alone carries the project→client association, and `cloudClient(for:)`
+    /// returns cached entries before ever consulting the store, so every
+    /// feature resolves these clients through its normal code path.
+    ///
+    /// Reachable only from `UITestSupport.makeContainerIfRequested()`, which
+    /// is itself gated on an explicit `HETZLY_UITEST`/`HETZLY_UITEST_EMPTY`
+    /// launch-environment flag — this can never run in a normal launch.
+    static func makeForUITesting(
+        modelContainer: ModelContainer,
+        preconfiguredCloudClients: [UUID: CloudClient]
+    ) -> AppContainer {
+        let container = AppContainer(modelContainer: modelContainer)
+        for (projectID, client) in preconfiguredCloudClients {
+            container.cloudClients[projectID] = client
+        }
+        return container
+    }
+    #endif
 }

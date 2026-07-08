@@ -44,7 +44,7 @@ struct ServerTypeStepView: View {
             archSegment(.arm, label: "Arm")
         }
         .padding(3)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(Capsule(style: .continuous))
     }
 
     private func archSegment(_ architecture: Architecture, label: String) -> some View {
@@ -66,6 +66,7 @@ struct ServerTypeStepView: View {
                 }
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 
     // MARK: - CPU filter chips
@@ -139,6 +140,7 @@ struct ServerTypeStepView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityIdentifier("createServer.typeRow.\(type.id)")
     }
 
     private func formattedMemory(_ memory: Double) -> String {

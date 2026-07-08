@@ -1,0 +1,80 @@
+# Fastfile — Hetzly
+#
+# A minimal TestFlight beta lane. Signing is intentionally NOT configured
+# out of the box: this is a public, open-source repo with no shared Apple
+# Developer Team, no committed App Store Connect API key, and no `match`
+# storage wired up. Whoever is actually shipping a build supplies their own
+# — see fastlane/README.md before running `fastlane beta`.
+
+default_platform(:ios)
+
+PROJECT = "Hetzly.xcodeproj"
+SCHEME = "Hetzly"
+SIMULATOR = "iPhone 17 Pro"
+
+platform :ios do
+  desc "Regenerate the Xcode project from project.yml (xcodegen is the source of truth — the .xcodeproj is not committed)."
+  lane :generate_project do
+    sh("xcodegen", "generate", chdir: "..")
+  end
+
+  desc "Run the full test suite: HetznerKit package tests + HetzlyTests/HetzlyUITests."
+  lane :test do
+    generate_project
+
+    sh("swift", "test", "--package-path", "Packages/HetznerKit", chdir: "..")
+
+    run_tests(
+      project: PROJECT,
+      scheme: SCHEME,
+      devices: [SIMULATOR]
+    )
+  end
+
+  desc "Build and upload a TestFlight beta. Requires signing to be configured — see fastlane/README.md."
+  lane :beta do
+    generate_project
+
+    # --- Code signing ---------------------------------------------------
+    # project.yml ships with CODE_SIGN_STYLE: Automatic, which is enough for
+    # a local/CI `xcodebuild build -destination 'platform=iOS Simulator...'
+    # CODE_SIGNING_ALLOWED=NO` (what .github/workflows/ci.yml does) but is
+    # NOT enough to produce an archive you can actually upload to App Store
+    # Connect. To do that you need ONE of:
+    #
+    #   (a) Xcode's automatic signing with YOUR OWN paid Apple Developer
+    #       Team ID (set `team_id` in fastlane/Appfile, or pass
+    #       `export_team_id:` to build_app below), or
+    #   (b) `match` — fastlane's certificate/profile manager — pointed at a
+    #       private git or cloud storage repo YOU control. Hetzly has two
+    #       bundle IDs that both need a distribution profile:
+    #       com.hetzly.app (the app) and com.hetzly.app.widgets (the
+    #       WidgetKit extension).
+    #
+    # Neither is wired up here on purpose — there is no shared signing
+    # identity for an open-source project like this one. Uncomment and fill
+    # in your own details before running this lane:
+    #
+    # match(
+    #   type: "appstore",
+    #   app_identifier: ["com.hetzly.app", "com.hetzly.app.widgets"],
+    #   git_url: "git@github.com:YOUR_ORG/hetzly-certificates.git",
+    #   readonly: true
+    # )
+
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      export_method: "app-store",
+      clean: true
+      # export_team_id: "YOUR_TEAM_ID", # required once signing is set up
+    )
+
+    # Requires either an App Store Connect API key (recommended — see
+    # fastlane/README.md for `api_key_path`) or an interactive Apple ID
+    # session the first time it runs.
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

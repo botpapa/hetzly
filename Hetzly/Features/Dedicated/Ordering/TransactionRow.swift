@@ -32,6 +32,7 @@ struct TransactionRow: View {
                 }
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var statusChip: some View {

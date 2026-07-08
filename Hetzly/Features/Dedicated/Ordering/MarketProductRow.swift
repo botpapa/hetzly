@@ -31,6 +31,7 @@ struct MarketProductRow: View {
                 }
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var priceBlock: some View {
@@ -38,6 +39,8 @@ struct MarketProductRow: View {
             Text(OrderCurrencyFormat.string(listing.monthlyNet, currencyCode: listing.currency))
                 .font(.system(size: 20, weight: .bold, design: .monospaced))
                 .monospacedDigit()
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
                 .foregroundStyle(HetzlyColors.textPrimary)
             Text("/mo net").caption()
         }

@@ -17,6 +17,17 @@ enum ResourceStatus {
         case .unknown: HetzlyColors.textTertiary
         }
     }
+
+    /// VoiceOver never sees color alone — every dot announces its status name.
+    var accessibilityLabel: String {
+        switch self {
+        case .running: "Running"
+        case .off: "Off"
+        case .transitioning: "Transitioning"
+        case .error: "Error"
+        case .unknown: "Unknown status"
+        }
+    }
 }
 
 /// An 8pt status indicator dot. Pulses gently while `.transitioning`, but
@@ -41,6 +52,7 @@ struct StatusDot: View {
             .animation(pulseAnimation, value: isPulsing)
             .onAppear { isPulsing = shouldPulse }
             .onChange(of: shouldPulse) { _, newValue in isPulsing = newValue }
+            .accessibilityLabel(status.accessibilityLabel)
     }
 
     private var shouldPulse: Bool {

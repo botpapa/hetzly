@@ -69,13 +69,20 @@ struct DashboardView: View {
                 }
                 .simultaneousGesture(TapGesture().onEnded { resetIdleTimer() })
 
-                if viewModel.isRefreshing, container.settings.mascotEnabled {
+                // Max one mascot instance on screen at a time: when the
+                // "Attention" section is showing its own alarm mascot, that
+                // one wins and the refresh-run mascot sits out this refresh
+                // rather than doubling up.
+                if viewModel.isRefreshing, container.settings.mascotEnabled, viewModel.attention.isEmpty {
                     refreshingMascotOverlay
                 }
             }
             .navigationTitle("Dashboard")
             .navigationDestination(for: ServerRoute.self) { route in
                 ServerDetailView(route: route)
+            }
+            .navigationDestination(for: RobotServerRoute.self) { route in
+                DedicatedServerDetailView(route: route)
             }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

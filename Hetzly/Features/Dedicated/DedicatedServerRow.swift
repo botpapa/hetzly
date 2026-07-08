@@ -34,6 +34,7 @@ struct DedicatedServerRow: View {
                 Spacer(minLength: 0)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

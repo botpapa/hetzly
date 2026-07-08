@@ -108,6 +108,7 @@ struct NetworkDetailView: View {
                 SectionLabel("Subnets")
                 Spacer()
                 Button { isPresentingAddSubnet = true } label: { Image(systemName: "plus.circle") }
+                    .accessibilityLabel("Add Subnet")
                     .disabled(isPerformingAction)
             }
             if current.subnets.isEmpty {
@@ -126,6 +127,7 @@ struct NetworkDetailView: View {
                             } label: {
                                 Image(systemName: "trash")
                             }
+                            .accessibilityLabel("Delete Subnet \(subnet.ipRange ?? "")")
                             .disabled(isPerformingAction || subnet.ipRange == nil)
                         }
                     }
@@ -142,6 +144,7 @@ struct NetworkDetailView: View {
                 SectionLabel("Routes")
                 Spacer()
                 Button { isPresentingAddRoute = true } label: { Image(systemName: "plus.circle") }
+                    .accessibilityLabel("Add Route")
                     .disabled(isPerformingAction)
             }
             if current.routes.isEmpty {
@@ -160,6 +163,7 @@ struct NetworkDetailView: View {
                             } label: {
                                 Image(systemName: "trash")
                             }
+                            .accessibilityLabel("Delete Route \(route.destination)")
                             .disabled(isPerformingAction)
                         }
                     }

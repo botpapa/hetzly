@@ -51,7 +51,13 @@ struct OrderReviewView: View {
             }
         } else {
             VStack(spacing: Spacing.unit * 4) {
-                MascotView(state: .alarm, scale: 3)
+                if container.settings.mascotEnabled {
+                    MascotView(state: .alarm, scale: 3)
+                } else {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 40))
+                        .foregroundStyle(HetzlyColors.statusError)
+                }
                 Text("Nothing to review — go back and pick a product first.")
                     .bodySecondary()
                     .multilineTextAlignment(.center)
@@ -144,9 +150,7 @@ struct OrderReviewView: View {
         .padding(.horizontal, Spacing.screenMargin)
         .padding(.top, Spacing.unit * 2)
         .padding(.bottom, Spacing.unit * 3)
-        .background {
-            Color.clear.glassEffect(.regular, in: .rect(cornerRadius: 0)).ignoresSafeArea(edges: .bottom)
-        }
+        .glassFooterBackground()
     }
 
     private func placeOrderTitle(_ draft: OrderDraft) -> String {

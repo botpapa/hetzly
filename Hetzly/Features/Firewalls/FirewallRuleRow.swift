@@ -24,6 +24,7 @@ struct FirewallRuleRow: View {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(HetzlyColors.textTertiary)
+                        .accessibilityHidden(true)
                 }
 
                 if !addresses.isEmpty {
@@ -44,6 +45,7 @@ struct FirewallRuleRow: View {
                 }
             }
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var protocolChip: some View {

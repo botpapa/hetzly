@@ -51,6 +51,7 @@ struct ServerActiveActionCard: View {
                 }
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

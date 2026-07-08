@@ -11,6 +11,8 @@ struct SettingsView: View {
     @State private var pendingDeletion: ProjectRecord?
     @State private var actionError: String?
 
+    @State private var isPresentingAppIconPicker = false
+
     @State private var isPresentingAddRobotAccount = false
     @State private var renamingRobotAccount: RobotAccountRecord?
     @State private var renameRobotAccountText = ""
@@ -40,6 +42,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $isPresentingAddRobotAccount) {
                 AddRobotAccountSheet()
+            }
+            .sheet(isPresented: $isPresentingAppIconPicker) {
+                AppIconPickerSheet()
             }
             .alert("Rename Project", isPresented: renameAlertBinding) {
                 TextField("Project name", text: $renameText)
@@ -183,6 +188,20 @@ struct SettingsView: View {
                     .foregroundStyle(HetzlyColors.textPrimary)
             }
             .listRowBackground(rowBackground)
+
+            Button {
+                isPresentingAppIconPicker = true
+            } label: {
+                LabeledContent {
+                    Text(AppIconOption.current.title)
+                        .bodySecondary()
+                } label: {
+                    Label("App Icon", systemImage: "app.badge")
+                        .foregroundStyle(HetzlyColors.textPrimary)
+                }
+            }
+            .listRowBackground(rowBackground)
+            .accessibilityHint("Opens the app icon picker")
         } header: {
             SectionLabel("Appearance")
         }

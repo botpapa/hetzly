@@ -1,0 +1,27 @@
+Hetzly is a native, open-source iOS client for Hetzner Cloud and Hetzner Robot (dedicated servers) — built for people who manage real infrastructure from their phone and don't want a web view pretending to be an app.
+
+Not affiliated with Hetzner Online GmbH. Hetzly is an independent, third-party client built by the community, using Hetzner's published Cloud and Robot APIs. "Hetzner" is a trademark of Hetzner Online GmbH.
+
+ZERO BACKEND. ZERO TELEMETRY.
+Hetzly has no server of its own. Every request goes directly from your device to Hetzner's own API endpoints (api.hetzner.cloud and robot-ws.your-server.de) — nothing in between, nothing logged anywhere but on your phone. There is no analytics SDK, no crash reporter, no third-party dependency of any kind in the app. Your API tokens are stored in the iOS Keychain, restricted to this device, and never touch iCloud sync. The source is public — you don't have to take any of this on faith.
+
+WHAT YOU CAN DO
+• Manage Hetzner Cloud servers: power actions, rebuild, resize, rescue mode, backups, snapshots, protection locks, console access, and live CPU/disk/network graphs.
+• Spin up new servers with a guided creation wizard — location, image, server type, networking, and SSH keys in a few taps.
+• Manage volumes, private networks, firewalls, load balancers, DNS zones, floating & primary IPs, placement groups, and SSH keys.
+• Manage Hetzner Robot dedicated servers: reset (soft/hard/manual), Wake-on-LAN, rescue mode, boot configuration, and reverse DNS.
+• Order new dedicated servers — standard and server auction listings — directly from the app, with a review step and Face ID confirmation before anything is billed.
+• See what you're actually spending: a cost dashboard that aggregates Cloud and Robot spend, computed on-device from live pricing data, updated the moment your infrastructure changes.
+• Home Screen widgets for at-a-glance fleet status, and Siri/Shortcuts support for checking server status, rebooting a server, or asking what this month's bill looks like — hands-free.
+• A small pixel-art companion who reacts to what's happening in your infrastructure. Entirely optional — turn it off in Settings and it's gone everywhere, including loading and error states.
+
+BUILT FOR IOS 26
+Native SwiftUI throughout, real Liquid Glass materials, dark-first design, and full support for Dynamic Type, Reduce Motion, and VoiceOver.
+
+DATA NOT COLLECTED
+Hetzly's App Store privacy label is "Data Not Collected" because that's the truth: nothing you do in this app is sent anywhere except directly to the Hetzner API you're already using, authenticated with a token you provide and control.
+
+OPEN SOURCE
+The full source is available on GitHub under the MIT license. Read it, audit it, or contribute to it — links and contribution guidelines are in the README.
+
+You'll need your own Hetzner Cloud API token and/or Robot webservice credentials to use this app — Hetzly doesn't provide hosting, only a client for managing infrastructure you already have with Hetzner.

@@ -28,9 +28,11 @@ struct ServerRowView: View {
 
                 if let cpuSamples, cpuSamples.count > 1 {
                     CPUSparklineView(values: cpuSamples)
+                        .accessibilityHidden(true)
                 }
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

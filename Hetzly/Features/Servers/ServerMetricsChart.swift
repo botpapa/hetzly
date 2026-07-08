@@ -21,6 +21,10 @@ struct ServerMetricsChart: View {
     var showAreaFill: Bool = false
     let valueFormatter: (Double) -> String
     let range: MetricsRange
+    /// Install the hold-to-scrub overlay. Disabled by render tests:
+    /// `ImageRenderer` cannot rasterize UIKit-backed views and draws a
+    /// full-size "unsupported view" placeholder over the chart instead.
+    var interactive: Bool = true
 
     @State private var scrubDate: Date?
 
@@ -139,15 +143,27 @@ struct ServerMetricsChart: View {
         .chartOverlay { proxy in
             GeometryReader { geometry in
                 ZStack(alignment: .topLeading) {
-                    Rectangle()
-                        .fill(Color.clear)
-                        .contentShape(Rectangle())
-                        // Press-and-hold to scrub. A plain drag gesture here
-                        // swallows every touch, which makes the page
-                        // impossible to scroll when a swipe starts on the
-                        // chart — sequencing behind a long-press leaves
-                        // quick vertical swipes to the ScrollView.
-                        .gesture(scrubGesture(proxy: proxy, geometry: geometry))
+                    // Scrubbing must NEVER steal scrolling. Verified by
+                    // ChartScrollUITests: EVERY SwiftUI gesture variant
+                    // tried here (exclusive, sequenced-behind-long-press,
+                    // simultaneous, minimumDistance 0) claims chart-origin
+                    // touches and the page stops scrolling. UIKit's
+                    // UILongPressGestureRecognizer is the primitive built
+                    // for this: it fails on early movement (flick →
+                    // ScrollView pans normally) and cancels the scroll
+                    // view's touches once the hold is recognized (the scrub
+                    // owns the finger afterwards).
+                    if interactive {
+                        HoldToScrubOverlay(
+                            onChange: { location in
+                                updateScrub(at: location, proxy: proxy, geometry: geometry)
+                            },
+                            onEnd: {
+                                withAnimation(.snappy) { scrubDate = nil }
+                            }
+                        )
+                        .sensoryFeedback(.selection, trigger: scrubDate != nil)
+                    }
 
                     if let scrubDate, let anchor = nearestPoint(to: scrubDate),
                        let x = proxy.position(forX: anchor.date), let plotFrame = proxy.plotFrame {
@@ -183,31 +199,18 @@ struct ServerMetricsChart: View {
         .padding(.horizontal, Spacing.unit * 2)
         .padding(.vertical, Spacing.unit)
         .glassSurface(Capsule())
+        .accessibilityIdentifier("chart.lollipop")
     }
 
-    private func scrubGesture(proxy: ChartProxy, geometry: GeometryProxy) -> some Gesture {
-        LongPressGesture(minimumDuration: 0.15)
-            .sequenced(before: DragGesture(minimumDistance: 0))
-            .onChanged { value in
-                guard case .second(true, let drag) = value, let drag else {
-                    // Long-press recognized, drag not started yet: anchor the
-                    // scrub where the finger already is (start of the plot
-                    // until the first drag update arrives is avoided by
-                    // waiting for drag values).
-                    return
-                }
-                guard let plotFrame = proxy.plotFrame else { return }
-                let plot = geometry[plotFrame]
-                // Ignore touches outside the plot (e.g. on the y-axis
-                // labels) — the axis is not an interactive control.
-                guard plot.insetBy(dx: -Spacing.unit, dy: -Spacing.unit * 2).contains(drag.location) else { return }
-                let relativeX = min(max(drag.location.x - plot.origin.x, 0), plot.width)
-                guard let date = proxy.value(atX: relativeX, as: Date.self) else { return }
-                scrubDate = date
-            }
-            .onEnded { _ in
-                withAnimation(.snappy) { scrubDate = nil }
-            }
+    private func updateScrub(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
+        guard let plotFrame = proxy.plotFrame else { return }
+        let plot = geometry[plotFrame]
+        // Ignore touches outside the plot (e.g. on the y-axis labels) —
+        // the axis is not an interactive control.
+        guard plot.insetBy(dx: -Spacing.unit, dy: -Spacing.unit * 2).contains(location) else { return }
+        let relativeX = min(max(location.x - plot.origin.x, 0), plot.width)
+        guard let date = proxy.value(atX: relativeX, as: Date.self) else { return }
+        scrubDate = date
     }
 
     private func nearestPoint(to date: Date) -> ChartPoint? {

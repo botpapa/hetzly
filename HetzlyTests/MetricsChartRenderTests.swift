@@ -32,7 +32,11 @@ final class MetricsChartRenderTests: XCTestCase {
                 MetricsChartSeries(name: "Out", color: HetzlyColors.textSecondary, points: high),
             ],
             valueFormatter: { String(Int($0)) },
-            range: .oneHour
+            range: .oneHour,
+            // ImageRenderer can't rasterize the UIKit scrub overlay (it
+            // draws a full-size placeholder over the chart) — render tests
+            // exercise the drawing, not the gesture.
+            interactive: false
         )
     }
 

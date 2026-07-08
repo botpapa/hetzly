@@ -52,6 +52,13 @@ struct DashboardView: View {
                         ForEach(viewModel.projectSections) { section in
                             projectSection(section)
                         }
+
+                        if !viewModel.dedicatedServers.isEmpty || viewModel.dedicatedError != nil {
+                            DedicatedSectionView(
+                                servers: viewModel.dedicatedServers,
+                                errorMessage: viewModel.dedicatedError
+                            )
+                        }
                     }
                     .padding(.horizontal, Spacing.screenMargin)
                     .padding(.vertical, Spacing.screenMargin)

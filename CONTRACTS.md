@@ -266,6 +266,62 @@ App-target (M2 Wave A worker 5):
 - Server Detail M2 surface stays in `Hetzly/Features/Servers/` (same worker family owns it).
 - Shared per-project selection for Resources/Costs: each view exposes its own project picker via a `ProjectPickerChip` — implemented once in `Hetzly/Features/Resources/ProjectPickerChip.swift`, reused by Costs via `import` (same target).
 
+## M3 contracts (Robot / dedicated servers)
+
+Robot Webservice: `https://robot-ws.your-server.de`, HTTP **Basic auth** (separate webservice user), JSON responses.
+Hard client-side constraints (spec-mandated): max 1 login attempt when adding credentials (3 failures = 10-min IP ban),
+ALL requests serialized through one queue, conservative budget (~150 req/h), 5-minute response cache, no background polling.
+
+### RobotAPI (`Packages/HetznerKit/Sources/HetznerKit/RobotAPI/`) — package layer
+
+```swift
+public actor RobotClient {
+    public init(username: String, password: String, transport: HTTPTransport = URLSessionTransport())
+    // Serialized: one in-flight request at a time; token-bucket ~150/h; 5-min TTL cache on GETs (bypass via forceRefresh).
+    public func validateCredentials() async throws            // exactly ONE GET /server; 401 → HetznerAPIError.unauthorized
+    public func listServers(forceRefresh: Bool = false) async throws -> [RobotServer]
+    public func server(number: Int) async throws -> RobotServer
+    public func rename(serverNumber: Int, to name: String) async throws -> RobotServer
+    public func resetOptions(serverNumber: Int) async throws -> RobotResetInfo   // GET /reset/{n}
+    public func reset(serverNumber: Int, type: RobotResetType) async throws      // POST /reset/{n} type=sw|hw|man
+    public func wake(serverNumber: Int) async throws                              // POST /wol/{n}
+    public func rescue(serverNumber: Int) async throws -> RobotRescue             // GET  /boot/{n}/rescue
+    public func enableRescue(serverNumber: Int, os: String, sshKeyFingerprints: [String]) async throws -> RobotRescue // POST (password in response!)
+    public func disableRescue(serverNumber: Int) async throws -> RobotRescue      // DELETE
+    public func bootConfiguration(serverNumber: Int) async throws -> RobotBootConfiguration // GET /boot/{n}
+    public func rdns(ip: String) async throws -> RobotRDNS                        // GET /rdns/{ip}
+    public func setRDNS(ip: String, ptr: String) async throws -> RobotRDNS        // POST/PUT
+    public func deleteRDNS(ip: String) async throws
+    public func listIPs() async throws -> [RobotIP]                               // GET /ip
+    public func listSubnets() async throws -> [RobotSubnet]                       // GET /subnet
+    public func listSSHKeys() async throws -> [RobotSSHKey]                       // GET /key
+    // Ordering (M3 worker 2):
+    public func listProducts() async throws -> [RobotProduct]                     // GET /order/server/product (standard)
+    public func listMarketProducts() async throws -> [RobotMarketProduct]         // GET /order/server_market/product
+    public func orderServer(_ order: RobotServerOrder) async throws -> RobotTransaction        // POST /order/server
+    public func orderMarketServer(_ order: RobotMarketOrder) async throws -> RobotTransaction  // POST /order/server_market
+    public func listTransactions() async throws -> [RobotTransaction]             // GET /order/server/transaction (+ market)
+    public func transaction(id: String) async throws -> RobotTransaction
+}
+```
+Robot JSON quirks (models must handle): list endpoints return `[{"server": {...}}, ...]` (each element wrapped);
+single endpoints return `{"server": {...}}`. Errors: `{"error": {"status": 404, "code": "SERVER_NOT_FOUND", "message": "..."}}`
+→ map to HetznerAPIError (reuse Core). 403 with code "NOT_ALLOWED"/ordering-disabled → HetznerAPIError.forbidden with the code preserved in the message.
+Key models: `RobotServer` (serverNumber Int ("server_number"), serverName, product, dc, traffic, status ready/in process, cancelled Bool, paidUntil String?, serverIP String?, serverIPv6Net String?, subnet/ip arrays optional), `RobotResetType` sw/hw/man (+ per-type availability from RobotResetInfo.type [String]), `RobotRescue` (os, active Bool, password String? — SECRET, boot config), `RobotRDNS` (ip, ptr), `RobotIP`/`RobotSubnet`, `RobotSSHKey` (name, fingerprint, data), `RobotProduct` (id, name, description [String], traffic, dist [String], price/priceSetup Decimal-bearing strings + location list), `RobotMarketProduct` (id, name, cpu, memorySize, hddSize/hddText, price, priceSetup, fixedPrice Bool, nextReduce timestamps), `RobotServerOrder`/`RobotMarketOrder` (productID, authorizedKeys [String] fingerprints, dist?, location?, test Bool — ALWAYS default test=true in the type; UI must explicitly set false), `RobotTransaction` (id, date, status "in process"/"ready"/"cancelled", serverNumber Int?, product summary).
+
+### App layer (M3)
+
+- `RobotAccountsStore` (Hetzly/Store/RobotAccountsStore.swift — worker 3): SwiftData `RobotAccountRecord { id UUID, label String, username String, createdAt }`
+  (password ONLY in Keychain via TokenVault.robotCredentials, account = id.uuidString). @MainActor @Observable, add/rename/remove; AppContainer gains
+  `var robotAccountsStore` + `func robotClient(for accountID: UUID) -> RobotClient?` (cached) — worker 3 edits AppContainer (owns that edit this wave) and
+  registers the new @Model in hetzlyModelContainer()'s schema (edit Hetzly/Store/HetzlyModelContainer.swift).
+- `DedicatedView()` (Hetzly/Features/Dedicated/ — worker 3): 5th tab (integrator wires the Tab). Account picker chip when >1 account.
+- Ordering UI (Hetzly/Features/Dedicated/Ordering/ — worker 4): entry from DedicatedView toolbar ("Order server", cart icon). Binding name: `OrderServerFlow()`.
+  Order placement is ALWAYS Face-ID-gated (regardless of the destructive-actions setting) and double-confirmed (review screen → typed "ORDER" or explicit
+  armed toggle → Face ID → place). Default test-mode order first is NOT exposed to users; the client type defaults test=true and the final placement sets test=false explicitly.
+- Costs (worker 5): Robot servers auto-listed in Costs with per-server manual €/mo (persisted, keyed by server number in ManualCostStore-style UserDefaults JSON,
+  distinct store: `DedicatedPriceStore`); Dashboard gets a "DEDICATED" section listing robot servers (status dot: ready/in-process) when accounts exist.
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

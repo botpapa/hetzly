@@ -48,6 +48,16 @@ final class DashboardViewModel {
     private(set) var projected: Decimal?
     private(set) var currency = "EUR"
 
+    /// Every Robot dedicated server across every configured Robot account,
+    /// flattened. Loaded once per dashboard load/refresh alongside Cloud
+    /// projects — no background polling, per the Robot spec's conservative
+    /// request budget.
+    private(set) var dedicatedServers: [RobotServer] = []
+    /// Set when one or more Robot accounts failed to load; isolated at
+    /// fetch time (one bad account doesn't drop another's servers), joined
+    /// into a single line since the dashboard shows one inline error row.
+    private(set) var dedicatedError: String?
+
     /// Full `Server` payloads per project, kept alongside the display-only
     /// `ServerListItem` rows so `CostItemBuilder` has everything it needs
     /// (creation date, server-type prices, etc).
@@ -73,7 +83,9 @@ final class DashboardViewModel {
         projected: Decimal? = nil,
         currency: String = "EUR",
         cpuSparklines: [String: [Double]] = [:],
-        lastRefreshed: Date? = nil
+        lastRefreshed: Date? = nil,
+        dedicatedServers: [RobotServer] = [],
+        dedicatedError: String? = nil
     ) {
         self.projectSections = projectSections
         self.attention = attention
@@ -82,6 +94,8 @@ final class DashboardViewModel {
         self.currency = currency
         self.cpuSparklines = cpuSparklines
         self.lastRefreshed = lastRefreshed
+        self.dedicatedServers = dedicatedServers
+        self.dedicatedError = dedicatedError
     }
 
     var isHealthy: Bool {
@@ -102,7 +116,9 @@ final class DashboardViewModel {
     func load(container: AppContainer) async {
         isLoading = true
         loadFromSnapshots(container: container)
-        await refreshLive(container: container)
+        async let liveTask: Void = refreshLive(container: container)
+        async let dedicatedTask: Void = loadDedicatedServers(container: container)
+        _ = await (liveTask, dedicatedTask)
         await loadCostSummary(container: container)
         isLoading = false
         scheduleSparklineLoad(container: container)
@@ -115,7 +131,9 @@ final class DashboardViewModel {
         isRefreshing = true
         let start = Date()
 
-        await refreshLive(container: container)
+        async let liveTask: Void = refreshLive(container: container)
+        async let dedicatedTask: Void = loadDedicatedServers(container: container)
+        _ = await (liveTask, dedicatedTask)
         await loadCostSummary(container: container)
         scheduleSparklineLoad(container: container)
 
@@ -255,6 +273,63 @@ final class DashboardViewModel {
         monthToDate = summary.monthToDate
         projected = summary.projectedMonthTotal
         currency = summary.currency
+    }
+
+    // MARK: - Dedicated servers (Robot)
+
+    /// Fetches every configured Robot account's servers concurrently (with
+    /// each other and — via `load()`/`refresh()`'s `async let` — with the
+    /// Cloud project fetch too), then flattens them into `dedicatedServers`.
+    /// A single request per account (`listServers()`); `RobotClient` itself
+    /// enforces the serialized queue, conservative budget, and 5-minute
+    /// response cache the Robot spec mandates, so there's no polling here —
+    /// this only ever runs once per explicit load/refresh.
+    private func loadDedicatedServers(container: AppContainer) async {
+        struct RobotFetchTarget: Sendable {
+            let accountID: UUID
+            let client: RobotClient?
+        }
+        struct RobotFetchResult: Sendable {
+            let servers: [RobotServer]
+            let errorMessage: String?
+        }
+
+        let accounts = container.robotAccountsStore.accounts
+        guard !accounts.isEmpty else {
+            dedicatedServers = []
+            dedicatedError = nil
+            return
+        }
+
+        let targets = accounts.map { RobotFetchTarget(accountID: $0.id, client: container.robotClient(for: $0.id)) }
+
+        let results = await withTaskGroup(of: RobotFetchResult.self) { group in
+            for target in targets {
+                group.addTask {
+                    guard let client = target.client else {
+                        return RobotFetchResult(servers: [], errorMessage: "No credentials configured for this Robot account.")
+                    }
+                    do {
+                        let servers = try await client.listServers()
+                        return RobotFetchResult(servers: servers, errorMessage: nil)
+                    } catch let apiError as HetznerAPIError {
+                        return RobotFetchResult(servers: [], errorMessage: apiError.userMessage)
+                    } catch {
+                        return RobotFetchResult(servers: [], errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
+                    }
+                }
+            }
+            var all: [RobotFetchResult] = []
+            all.reserveCapacity(targets.count)
+            for await result in group {
+                all.append(result)
+            }
+            return all
+        }
+
+        dedicatedServers = results.flatMap(\.servers).sorted { $0.serverName < $1.serverName }
+        let errors = results.compactMap(\.errorMessage)
+        dedicatedError = errors.isEmpty ? nil : errors.joined(separator: " ")
     }
 
     private func pricing(for projectID: UUID, client: CloudClient) async -> Pricing? {

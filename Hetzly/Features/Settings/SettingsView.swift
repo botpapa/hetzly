@@ -11,6 +11,11 @@ struct SettingsView: View {
     @State private var pendingDeletion: ProjectRecord?
     @State private var actionError: String?
 
+    @State private var isPresentingAddRobotAccount = false
+    @State private var renamingRobotAccount: RobotAccountRecord?
+    @State private var renameRobotAccountText = ""
+    @State private var pendingRobotAccountDeletion: RobotAccountRecord?
+
     var body: some View {
         @Bindable var settings = container.settings
 
@@ -20,6 +25,7 @@ struct SettingsView: View {
 
                 List {
                     accountsSection
+                    robotAccountsSection
                     securitySection(requireBiometrics: $settings.requireBiometricsForDestructive)
                     appearanceSection(appearance: $settings.appearance)
                     mascotSection(mascotEnabled: $settings.mascotEnabled)
@@ -31,6 +37,9 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $isPresentingAddProject) {
                 AddProjectSheet()
+            }
+            .sheet(isPresented: $isPresentingAddRobotAccount) {
+                AddRobotAccountSheet()
             }
             .alert("Rename Project", isPresented: renameAlertBinding) {
                 TextField("Project name", text: $renameText)
@@ -46,6 +55,24 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This only removes \"\(pendingDeletion?.name ?? "")\" from Hetzly. Nothing is deleted on Hetzner.")
+            }
+            .alert("Rename Robot Account", isPresented: renameRobotAccountAlertBinding) {
+                TextField("Label", text: $renameRobotAccountText)
+                Button("Cancel", role: .cancel) {}
+                Button("Save") { commitRenameRobotAccount() }
+            }
+            .confirmationDialog(
+                "Remove Robot Account",
+                isPresented: pendingRobotAccountDeletionBinding,
+                titleVisibility: .visible
+            ) {
+                Button("Remove from Hetzly", role: .destructive) { commitRobotAccountDeletion() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text(
+                    "This only removes \"\(pendingRobotAccountDeletion?.label ?? "")\" from Hetzly. "
+                        + "Nothing is deleted on Hetzner."
+                )
             }
             .alert(
                 "Something Went Wrong",
@@ -89,6 +116,43 @@ struct SettingsView: View {
             .listRowBackground(rowBackground)
         } header: {
             SectionLabel("Accounts")
+        }
+    }
+
+    // MARK: - Robot accounts
+
+    private var robotAccountsSection: some View {
+        Section {
+            ForEach(container.robotAccountsStore.accounts) { account in
+                RobotAccountRow(account: account)
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            pendingRobotAccountDeletion = account
+                        } label: {
+                            Label("Remove", systemImage: "trash")
+                        }
+                        Button {
+                            beginRenameRobotAccount(account)
+                        } label: {
+                            Label("Rename", systemImage: "pencil")
+                        }
+                        .tint(HetzlyColors.textTertiary)
+                    }
+            }
+            .listRowBackground(rowBackground)
+
+            Button {
+                isPresentingAddRobotAccount = true
+            } label: {
+                Label("Add Robot Account", systemImage: "server.rack")
+                    .foregroundStyle(HetzlyColors.accent)
+            }
+            .listRowBackground(rowBackground)
+        } header: {
+            SectionLabel("Robot Accounts")
+        } footer: {
+            Text("For dedicated servers via Hetzner Robot. Uses a separate webservice login, not your main Hetzner account.")
+                .caption()
         }
     }
 
@@ -240,6 +304,56 @@ struct SettingsView: View {
             }
         }
     }
+
+    // MARK: - Robot account rename
+
+    private var renameRobotAccountAlertBinding: Binding<Bool> {
+        Binding(
+            get: { renamingRobotAccount != nil },
+            set: { if !$0 { renamingRobotAccount = nil } }
+        )
+    }
+
+    private func beginRenameRobotAccount(_ account: RobotAccountRecord) {
+        renameRobotAccountText = account.label
+        renamingRobotAccount = account
+    }
+
+    private func commitRenameRobotAccount() {
+        guard let account = renamingRobotAccount else { return }
+        let trimmed = renameRobotAccountText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        container.robotAccountsStore.rename(account, to: trimmed)
+        renamingRobotAccount = nil
+    }
+
+    // MARK: - Robot account deletion
+
+    private var pendingRobotAccountDeletionBinding: Binding<Bool> {
+        Binding(
+            get: { pendingRobotAccountDeletion != nil },
+            set: { if !$0 { pendingRobotAccountDeletion = nil } }
+        )
+    }
+
+    private func commitRobotAccountDeletion() {
+        guard let account = pendingRobotAccountDeletion else { return }
+        pendingRobotAccountDeletion = nil
+
+        Task {
+            if container.settings.requireBiometricsForDestructive {
+                let authenticated = await container.biometricGate.authenticate(
+                    reason: "Confirm removing \"\(account.label)\" from Hetzly"
+                )
+                guard authenticated else { return }
+            }
+            do {
+                try container.robotAccountsStore.remove(account)
+            } catch {
+                actionError = "Couldn't remove this Robot account. Please try again."
+            }
+        }
+    }
 }
 
 /// A single project row: name plus the date it was added. Swipe actions for
@@ -254,6 +368,28 @@ private struct ProjectRow: View {
                     .bodyPrimary()
                 Text("Added \(project.createdAt.formatted(date: .abbreviated, time: .omitted))")
                     .caption()
+            }
+            Spacer()
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+/// A single Robot account row: label plus its webservice username. Swipe
+/// actions for rename/remove are attached by the caller
+/// (`SettingsView.robotAccountsSection`).
+private struct RobotAccountRow: View {
+    let account: RobotAccountRecord
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.unit) {
+                Text(account.label)
+                    .bodyPrimary()
+                Text(account.username)
+                    .hetzlyMonoNumbers()
+                    .font(.system(size: 13, design: .monospaced))
+                    .foregroundStyle(HetzlyColors.textTertiary)
             }
             Spacer()
         }

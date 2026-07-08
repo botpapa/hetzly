@@ -13,6 +13,7 @@ import SwiftData
 final class AppContainer {
     let modelContainer: ModelContainer
     let projectsStore: ProjectsStore
+    let robotAccountsStore: RobotAccountsStore
     let biometricGate: BiometricGate
     var settings: AppSettings
 
@@ -25,10 +26,18 @@ final class AppContainer {
     @ObservationIgnored
     private var cloudClients: [UUID: CloudClient] = [:]
 
+    /// Per-account `RobotClient` cache, keyed by `RobotAccountRecord.id`.
+    /// Mirrors `cloudClients` — a `RobotClient` serializes its own requests
+    /// and holds a 5-minute response cache internally, both of which need to
+    /// survive across calls rather than being rebuilt each time.
+    @ObservationIgnored
+    private var robotClients: [UUID: RobotClient] = [:]
+
     private init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
         let context = modelContainer.mainContext
         self.projectsStore = ProjectsStore(context: context)
+        self.robotAccountsStore = RobotAccountsStore(context: context)
         self.sharedSnapshotStore = SnapshotStore(context: context)
         self.biometricGate = BiometricGate()
         self.settings = AppSettings()
@@ -56,7 +65,7 @@ final class AppContainer {
         // "nothing persists this launch" instead of a crash.
         let fallbackConfiguration = ModelConfiguration(isStoredInMemoryOnly: true)
         if let container = try? ModelContainer(
-            for: ProjectRecord.self, ServerSnapshotRecord.self,
+            for: ProjectRecord.self, ServerSnapshotRecord.self, RobotAccountRecord.self,
             configurations: fallbackConfiguration
         ) {
             return container
@@ -77,7 +86,7 @@ final class AppContainer {
         // review, not silent policy-breaking.
         // swiftlint:disable:next force_try
         return try! ModelContainer(
-            for: ProjectRecord.self, ServerSnapshotRecord.self,
+            for: ProjectRecord.self, ServerSnapshotRecord.self, RobotAccountRecord.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
     }
@@ -103,5 +112,23 @@ final class AppContainer {
     /// The shared on-device server snapshot cache.
     func snapshotStore() -> SnapshotStore {
         sharedSnapshotStore
+    }
+
+    /// Returns a cached `RobotClient` for `accountID`, building one from the
+    /// account's Keychain-stored credentials on first access. `nil` if the
+    /// account doesn't exist or has no stored credentials.
+    func robotClient(for accountID: UUID) -> RobotClient? {
+        if let cached = robotClients[accountID] {
+            return cached
+        }
+        guard let account = robotAccountsStore.accounts.first(where: { $0.id == accountID }) else {
+            return nil
+        }
+        guard let credentials = (try? robotAccountsStore.credentials(for: account)) ?? nil else {
+            return nil
+        }
+        let client = RobotClient(username: credentials.username, password: credentials.password)
+        robotClients[accountID] = client
+        return client
     }
 }

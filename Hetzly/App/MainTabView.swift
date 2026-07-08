@@ -13,6 +13,10 @@ struct MainTabView: View {
                 ResourcesHubView()
             }
 
+            Tab("Dedicated", systemImage: "server.rack") {
+                DedicatedView()
+            }
+
             Tab("Costs", systemImage: "chart.line.uptrend.xyaxis") {
                 CostsView()
             }

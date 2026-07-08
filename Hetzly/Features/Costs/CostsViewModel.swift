@@ -61,6 +61,27 @@ final class CostsViewModel {
         var id: CostKind { kind }
     }
 
+    /// One Robot dedicated server, flattened across every configured Robot
+    /// account. `monthlyPrice`/`note` come from `DedicatedPriceStore`; `nil`
+    /// price means the server hasn't been priced yet — it's still listed
+    /// (so users see it and can price it) but excluded from every total
+    /// until it is, since Robot has no pricing API for servers you already
+    /// own.
+    struct DedicatedServerRow: Identifiable, Sendable, Equatable {
+        let accountID: UUID
+        let serverNumber: Int
+        let name: String
+        let product: String
+        let datacenter: String
+        let ip: String?
+        let status: RobotServerStatus
+        let cancelled: Bool
+        let monthlyPrice: Decimal?
+        let note: String?
+
+        var id: String { "dedicated-\(accountID.uuidString)-\(serverNumber)" }
+    }
+
     private(set) var projectSections: [ProjectSection] = []
     private(set) var combinedMonthToDate: Decimal?
     private(set) var combinedProjected: Decimal?
@@ -69,6 +90,15 @@ final class CostsViewModel {
     private(set) var monthElapsedFraction: Double = 0
     private(set) var isLoading = false
     private(set) var isRefreshing = false
+
+    /// Every Robot server across every configured account, regardless of
+    /// whether it's been priced yet.
+    private(set) var dedicatedServers: [DedicatedServerRow] = []
+    /// Combined message when one or more Robot accounts failed to load —
+    /// isolated per account at fetch time (one bad account never drops the
+    /// others), joined into a single line for display since Costs shows one
+    /// dedicated-servers section, not one per account.
+    private(set) var dedicatedErrorMessage: String?
 
     /// Per-project pricing memo (TTL 24h), mirroring
     /// `DashboardViewModel.pricingCache`: this view model is its own
@@ -87,7 +117,9 @@ final class CostsViewModel {
         combinedProjected: Decimal? = nil,
         currency: String = "EUR",
         kindShares: [KindShare] = [],
-        monthElapsedFraction: Double = 0
+        monthElapsedFraction: Double = 0,
+        dedicatedServers: [DedicatedServerRow] = [],
+        dedicatedErrorMessage: String? = nil
     ) {
         self.projectSections = projectSections
         self.combinedMonthToDate = combinedMonthToDate
@@ -95,6 +127,8 @@ final class CostsViewModel {
         self.currency = currency
         self.kindShares = kindShares
         self.monthElapsedFraction = monthElapsedFraction
+        self.dedicatedServers = dedicatedServers
+        self.dedicatedErrorMessage = dedicatedErrorMessage
     }
 
     /// True once we know for certain there is nothing to show: no project
@@ -105,13 +139,13 @@ final class CostsViewModel {
 
     // MARK: - Lifecycle
 
-    func load(container: AppContainer, manualEntries: [ManualCostEntry]) async {
+    func load(container: AppContainer, manualEntries: [ManualCostEntry], dedicatedPrices: [DedicatedPriceEntry]) async {
         isLoading = true
-        await refresh(container: container, manualEntries: manualEntries)
+        await refresh(container: container, manualEntries: manualEntries, dedicatedPrices: dedicatedPrices)
         isLoading = false
     }
 
-    func refresh(container: AppContainer, manualEntries: [ManualCostEntry]) async {
+    func refresh(container: AppContainer, manualEntries: [ManualCostEntry], dedicatedPrices: [DedicatedPriceEntry]) async {
         isRefreshing = true
         defer { isRefreshing = false }
 
@@ -128,28 +162,21 @@ final class CostsViewModel {
             )
         }
 
-        let fetches: [ProjectFetch]
-        if targets.isEmpty {
-            fetches = []
-        } else {
-            fetches = await withTaskGroup(of: ProjectFetch.self) { group in
-                for target in targets {
-                    group.addTask { await Self.fetchProject(target) }
-                }
-                var results: [ProjectFetch] = []
-                results.reserveCapacity(targets.count)
-                for await result in group {
-                    results.append(result)
-                }
-                return results
-            }
-        }
+        // Cloud projects and Robot accounts are fetched concurrently with
+        // each other (not just internally) — neither waits on the other.
+        async let fetchesTask = Self.fetchAllProjects(targets)
+        async let robotFetchesTask = Self.fetchAllRobotAccounts(container: container)
+        let fetches = await fetchesTask
+        let robotFetches = await robotFetchesTask
 
         for fetch in fetches {
             if let freshPricing = fetch.freshPricing {
                 pricingCache[fetch.projectID] = (freshPricing, now)
             }
         }
+
+        let priceByServerNumber = Dictionary(uniqueKeysWithValues: dedicatedPrices.map { ($0.serverNumber, $0) })
+        applyRobotFetches(robotFetches, priceByServerNumber: priceByServerNumber)
 
         recompute(manualEntries: manualEntries, fetches: fetches, now: now, calendar: calendar)
     }
@@ -180,6 +207,22 @@ final class CostsViewModel {
         /// it back into `pricingCache`.
         let freshPricing: Pricing?
         let errorMessage: String?
+    }
+
+    /// Fetches every project concurrently with every other project.
+    private static func fetchAllProjects(_ targets: [FetchTarget]) async -> [ProjectFetch] {
+        guard !targets.isEmpty else { return [] }
+        return await withTaskGroup(of: ProjectFetch.self) { group in
+            for target in targets {
+                group.addTask { await Self.fetchProject(target) }
+            }
+            var results: [ProjectFetch] = []
+            results.reserveCapacity(targets.count)
+            for await result in group {
+                results.append(result)
+            }
+            return results
+        }
     }
 
     /// Fetches one project's five resource lists (concurrently) plus
@@ -267,6 +310,115 @@ final class CostsViewModel {
         }
     }
 
+    // MARK: - Robot dedicated servers
+
+    private struct RobotAccountFetchTarget: Sendable {
+        let accountID: UUID
+        let client: RobotClient?
+    }
+
+    private struct RobotAccountFetch: Sendable {
+        let accountID: UUID
+        let servers: [RobotServer]
+        let errorMessage: String?
+    }
+
+    /// Fetches every Robot account concurrently with every other account
+    /// (and, at the `refresh` call site, concurrently with every Cloud
+    /// project too). A single request per account (`listServers()`) —
+    /// `RobotClient` itself enforces the spec-mandated serialized queue,
+    /// conservative budget, and 5-minute response cache, so calling this
+    /// again shortly after (e.g. right after the user edits a price
+    /// locally) is effectively free.
+    private static func fetchAllRobotAccounts(container: AppContainer) async -> [RobotAccountFetch] {
+        let accounts = container.robotAccountsStore.accounts
+        guard !accounts.isEmpty else { return [] }
+
+        let targets = accounts.map { RobotAccountFetchTarget(accountID: $0.id, client: container.robotClient(for: $0.id)) }
+        return await withTaskGroup(of: RobotAccountFetch.self) { group in
+            for target in targets {
+                group.addTask { await Self.fetchRobotAccount(target) }
+            }
+            var results: [RobotAccountFetch] = []
+            results.reserveCapacity(targets.count)
+            for await result in group {
+                results.append(result)
+            }
+            return results
+        }
+    }
+
+    /// Never throws out to the caller: any failure becomes this account's
+    /// isolated `errorMessage` instead, exactly like `fetchProject`.
+    private static func fetchRobotAccount(_ target: RobotAccountFetchTarget) async -> RobotAccountFetch {
+        guard let client = target.client else {
+            return RobotAccountFetch(
+                accountID: target.accountID, servers: [],
+                errorMessage: "No credentials configured for this Robot account."
+            )
+        }
+
+        do {
+            let servers = try await client.listServers()
+            return RobotAccountFetch(accountID: target.accountID, servers: servers, errorMessage: nil)
+        } catch let apiError as HetznerAPIError {
+            return RobotAccountFetch(accountID: target.accountID, servers: [], errorMessage: apiError.userMessage)
+        } catch {
+            return RobotAccountFetch(
+                accountID: target.accountID, servers: [],
+                errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again."
+            )
+        }
+    }
+
+    /// Flattens every account's servers into `dedicatedServers`, attaching
+    /// each one's manually entered price (if any) from `DedicatedPriceStore`.
+    /// A server without a set price stays in the list (as a "Set price" row
+    /// in the UI) — it just never produces a `CostItem`, so it's excluded
+    /// from every total until priced.
+    private func applyRobotFetches(_ robotFetches: [RobotAccountFetch], priceByServerNumber: [Int: DedicatedPriceEntry]) {
+        var rows: [DedicatedServerRow] = []
+        var errors: [String] = []
+
+        for fetch in robotFetches {
+            if let errorMessage = fetch.errorMessage {
+                errors.append(errorMessage)
+            }
+            for server in fetch.servers {
+                let priceEntry = priceByServerNumber[server.serverNumber]
+                rows.append(
+                    DedicatedServerRow(
+                        accountID: fetch.accountID,
+                        serverNumber: server.serverNumber,
+                        name: server.serverName,
+                        product: server.product,
+                        datacenter: server.dc,
+                        ip: server.serverIP,
+                        status: server.status,
+                        cancelled: server.cancelled,
+                        monthlyPrice: priceEntry?.monthlyPrice,
+                        note: priceEntry?.note
+                    )
+                )
+            }
+        }
+
+        dedicatedServers = rows.sorted { $0.name < $1.name }
+        dedicatedErrorMessage = errors.isEmpty ? nil : errors.joined(separator: " ")
+    }
+
+    /// Priced dedicated servers, adapted into `CostItem`s the same way
+    /// `ManualCostEntry.costItem` is — these feed the combined summary and
+    /// donut alongside every project's live inventory, but (like manual
+    /// entries) never into any per-project `ProjectSection`, since Robot
+    /// accounts aren't Cloud projects.
+    private var dedicatedCostItems: [CostItem] {
+        dedicatedServers.compactMap { row in
+            guard let price = row.monthlyPrice else { return nil }
+            return CostItem(id: row.id, name: row.name, kind: .dedicated, pricing: .monthlyFlat(net: price), createdAt: nil)
+        }
+    }
+
     // MARK: - Reduce
 
     private func recompute(manualEntries: [ManualCostEntry], fetches: [ProjectFetch], now: Date, calendar: Calendar) {
@@ -304,6 +456,7 @@ final class CostsViewModel {
         }
 
         allItems.append(contentsOf: manualEntries.map(\.costItem))
+        allItems.append(contentsOf: dedicatedCostItems)
         projectSections = sections.sorted { $0.projectedTotal > $1.projectedTotal }
         monthElapsedFraction = Self.monthElapsedFraction(now: now, calendar: calendar)
 

@@ -9,8 +9,10 @@ struct CostsView: View {
     @Environment(AppContainer.self) private var container
     @State private var viewModel: CostsViewModel
     @State private var manualStore = ManualCostStore()
+    @State private var dedicatedPriceStore = DedicatedPriceStore()
     @State private var isPresentingAddManual = false
     @State private var editingManualEntry: ManualCostEntry?
+    @State private var settingPriceForServer: CostsViewModel.DedicatedServerRow?
     @State private var shareImage: Image?
 
     init() {
@@ -58,20 +60,24 @@ struct CostsView: View {
                             }
                         }
 
-                        ManualCostSection(
-                            entries: manualStore.entries,
+                        DedicatedCostSection(
+                            dedicatedServers: viewModel.dedicatedServers,
+                            dedicatedErrorMessage: viewModel.dedicatedErrorMessage,
+                            manualEntries: manualStore.entries,
                             currency: viewModel.currency,
-                            onAdd: { isPresentingAddManual = true },
-                            onEdit: { editingManualEntry = $0 },
-                            onDelete: { removeManualEntry($0) }
+                            onSetPrice: { settingPriceForServer = $0 },
+                            onAddManual: { isPresentingAddManual = true },
+                            onEditManual: { editingManualEntry = $0 },
+                            onDeleteManual: { removeManualEntry($0) }
                         )
                     }
                     .padding(.horizontal, Spacing.screenMargin)
                     .padding(.vertical, Spacing.screenMargin)
                     .animation(.smooth, value: manualStore.entries)
+                    .animation(.smooth, value: dedicatedPriceStore.entries)
                 }
                 .refreshable {
-                    await viewModel.refresh(container: container, manualEntries: manualStore.entries)
+                    await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
                 }
             }
             .navigationTitle("Costs")
@@ -97,7 +103,7 @@ struct CostsView: View {
             }
         }
         .task {
-            await viewModel.load(container: container, manualEntries: manualStore.entries)
+            await viewModel.load(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
         }
         .task(id: shareRenderKey) {
             await renderShareCard()
@@ -108,7 +114,15 @@ struct CostsView: View {
             // surface, so refresh (per-project pricing is memoized, so this
             // is cheap in practice).
             Task {
-                await viewModel.refresh(container: container, manualEntries: manualStore.entries)
+                await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
+            }
+        }
+        .onChange(of: dedicatedPriceStore.entries) {
+            // Same rationale as manual entries above — and `RobotClient`'s
+            // own 5-minute response cache means re-fetching Robot servers
+            // right after a local price edit doesn't cost a real request.
+            Task {
+                await viewModel.refresh(container: container, manualEntries: manualStore.entries, dedicatedPrices: dedicatedPriceStore.entries)
             }
         }
         .sheet(isPresented: $isPresentingAddManual) {
@@ -116,6 +130,15 @@ struct CostsView: View {
         }
         .sheet(item: $editingManualEntry) { entry in
             ManualCostSheet(store: manualStore, currency: viewModel.currency, editing: entry)
+        }
+        .sheet(item: $settingPriceForServer) { server in
+            DedicatedPriceSheet(
+                store: dedicatedPriceStore,
+                currency: viewModel.currency,
+                serverNumber: server.serverNumber,
+                serverName: server.name,
+                existing: dedicatedPriceStore.price(for: server.serverNumber)
+            )
         }
     }
 

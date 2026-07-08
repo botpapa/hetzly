@@ -1,1 +1,1 @@
-hetzner,cloud,vps,server,dedicated,robot,devops,sysadmin,infrastructure,dns,firewall,vm,api
+hetzner,cloud,server,vps,devops,sysadmin,ssh,dedicated,storage box,hosting,infrastructure,dns,vm

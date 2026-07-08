@@ -6,6 +6,60 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 Hetzly does not yet follow strict semantic versioning pre-1.0 — expect the shape of things to
 settle further before a `1.0.0` tag.
 
+## [Unreleased]
+
+Everything built since the M4 milestone tag, in one multi-project overhaul.
+
+### Added
+
+- **Multi-project UX overhaul**: any number of Cloud projects, Robot accounts, and Storage Box
+  accounts side by side, with a cross-account Dashboard rollup, search, and quick actions; project
+  names can now be derived automatically from server naming.
+- **Live-API compatibility pass**: fixes for multi-series charts (In/Out and Read/Write no longer
+  joined into one path), correctness fixes surfaced by exercising the app against real Hetzner
+  accounts rather than fixtures alone, and token-recovery flows for expired/revoked credentials.
+- **Storage Boxes**: a full feature module (`Hetzly/Features/StorageBoxes/`) — account management,
+  usage/quota visibility, subaccounts, snapshots, and access configuration.
+- **Robot vSwitch + failover IP routing**: list/create/update/delete vSwitches, attach/detach
+  servers, and switch failover IP routing, surfaced as new sections in the Dedicated tab.
+- **CSV export**: `CostsCSVExporter` builds a CSV (project, name, kind, monthly projected, MTD,
+  currency) from the cost dashboard, shared via a toolbar menu alongside the existing image share
+  card.
+- **Adaptive light mode**: the design system now supports a light appearance in addition to the
+  original dark-first canvas; Appearance in Settings offers Dark/System.
+- **Chart scroll/scrub fix**: a UIKit hold-to-scrub gesture recognizer replaces the earlier
+  SwiftUI-only approach so chart-origin scrolling behaves correctly during drag.
+- **Red panda mascot redraw**: Hetzi's sprites were redrawn and then replaced again with converted
+  frame data derived from Elthen's "2D Pixel Art Red Panda Sprites" pack — see
+  [ASSETS-LICENSE.md](ASSETS-LICENSE.md) for the licensing terms that come with that swap (asset
+  redistribution is restricted; resolve before publishing).
+- **UX polish waves**: Settings simplified into four sections (Accounts, Security, Appearance,
+  About) with accounts merged into one kind-subgrouped list; a tightened create-server wizard;
+  dashboard search and quick actions.
+- **In-app SSH terminal**: an opt-in full terminal (`Hetzly/Features/Terminal/`) to Cloud and Robot
+  servers, built on `apple/swift-nio-ssh` and `migueldeicaza/SwiftTerm` — the app's first
+  third-party dependencies, scoped to this one feature (see
+  [CONTRIBUTING.md](CONTRIBUTING.md#the-dependency-rule)).
+- **Manual price overrides**: `DedicatedPriceStore`/`DedicatedPriceSheet` let the cost dashboard
+  reflect grandfathered/legacy per-server pricing that Hetzner's API doesn't expose, stored
+  on-device only.
+- New app icon: replaced with the project's own red panda logo (`app-icon.png`), generated into the
+  asset catalog via `scripts/generate_icons.swift`.
+- Centralized outbound links (`Hetzly/App/AppLinks.swift`) — GitHub and privacy-policy URLs now
+  live in one place ahead of public release.
+
+### Fixed
+
+- Dashboard chart scroll/scrub behavior on chart origin drag.
+- Multi-series chart lines no longer incorrectly join In/Out and Read/Write into a single path.
+- Various live-API response shape mismatches surfaced only against real Hetzner accounts.
+
+### Changed
+
+- README, SECURITY.md, and CONTRIBUTING.md corrected: the app is no longer "zero third-party
+  dependencies" — see the Added section above and
+  [CONTRIBUTING.md](CONTRIBUTING.md#the-dependency-rule).
+
 ## [0.1.0] — 2026-07-08
 
 Initial public release. Built across four milestones by a small group of parallel contributors

@@ -1,0 +1,1 @@
+Manage Hetzner Cloud, Robot servers, and Storage Boxes with a built-in SSH terminal and on-device cost dashboard. Zero backend — your token stays on your device.

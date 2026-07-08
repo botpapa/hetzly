@@ -7,11 +7,21 @@ final class ChartScrollUITests: HetzlyUITestCase {
     /// the server screen unscrollable wherever a chart happened to be under
     /// the finger — the scrub is now a simultaneous hold-then-drag, so a
     /// plain flick always pans the ScrollView.
+    ///
+    /// Since the SP2 Control/Analytics restructure, the metrics charts live
+    /// under the Analytics tab and the Danger Zone under Control — so this
+    /// switches to Analytics for the chart-origin scroll assertion, then
+    /// back to Control to confirm the Danger Zone is still reachable there
+    /// (it's no longer reachable by scrolling PAST the chart, since they're
+    /// on different panels now, but the underlying "flick starting on a
+    /// chart scrolls the page" regression is exercised the same way).
     func test_serverDetail_swipeStartingOnChart_scrollsPage() {
         let app = launchSeeded()
 
         XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
         waitAndTap(element(labeled: "web-01", in: app))
+
+        waitAndTap(element(labeled: "Analytics", in: app))
 
         // Wait for the metrics section (CPU chart renders from fixtures).
         let cpuChart = element(labeled: "CPU chart", in: app)
@@ -30,19 +40,16 @@ final class ChartScrollUITests: HetzlyUITestCase {
             "A flick starting on the chart did not scroll the page (frame unchanged: \(before) -> \(after))"
         )
 
-        // And keep flicking from the chart until the danger zone at the very
-        // bottom is reachable.
+        // Danger Zone now lives on the Control tab — switch back and keep
+        // flicking until it's reachable at the very bottom of that panel.
+        waitAndTap(element(labeled: "Control", in: app))
         let dangerZone = element(labeled: "Danger Zone", in: app)
         for _ in 0..<4 where !(dangerZone.exists && dangerZone.isHittable) {
-            if cpuChart.exists && cpuChart.isHittable {
-                cpuChart.swipeUp(velocity: .fast)
-            } else {
-                app.swipeUp(velocity: .fast)
-            }
+            app.swipeUp(velocity: .fast)
         }
         XCTAssertTrue(
             dangerZone.waitForExistence(timeout: 5),
-            "Danger Zone should be reachable after chart-origin swipes"
+            "Danger Zone should be reachable on the Control tab"
         )
     }
 
@@ -53,6 +60,8 @@ final class ChartScrollUITests: HetzlyUITestCase {
 
         XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
         waitAndTap(element(labeled: "web-01", in: app))
+
+        waitAndTap(element(labeled: "Analytics", in: app))
 
         let cpuChart = element(labeled: "CPU chart", in: app)
         XCTAssertTrue(cpuChart.waitForExistence(timeout: 15))

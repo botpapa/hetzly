@@ -9,7 +9,8 @@ Requirements: macOS with Xcode 26, [XcodeGen](https://github.com/yonaskolb/Xcode
 
 ```sh
 brew install xcodegen
-git clone https://github.com/hetzly/hetzly.git
+# TODO(release): replace PLACEHOLDER-OWNER with the real GitHub org/user — see AppLinks.swift
+git clone https://github.com/PLACEHOLDER-OWNER/hetzly.git
 cd hetzly
 xcodegen
 open Hetzly.xcodeproj
@@ -27,14 +28,25 @@ swift build --package-path Packages/HetznerKit
 swift test  --package-path Packages/HetznerKit
 ```
 
-## The zero-dependency rule
+## The dependency rule
 
-Hetzly ships with **zero third-party dependencies** — Apple frameworks and
-the Swift standard library only. This is deliberate: it keeps the supply
-chain auditable and the binary lean, and matches the app's "your credentials
-never leave this device, through code you can read end to end" promise. PRs
-that add a package dependency (SPM or otherwise) will not be merged; if you
-think an exception is warranted, open an issue to discuss it first.
+Hetzly ships with **no third-party dependencies**, with one deliberate,
+narrowly-scoped exception: the in-app SSH terminal
+(`Hetzly/Features/Terminal/`) uses
+[`apple/swift-nio-ssh`](https://github.com/apple/swift-nio-ssh) and
+[`migueldeicaza/SwiftTerm`](https://github.com/migueldeicaza/SwiftTerm) —
+implementing an SSH client and a terminal emulator from scratch was judged
+out of scope, unlike everything else in the app. Everywhere else — the core
+app, HetznerKit, the design system, the mascot engine — is Apple frameworks
+and the Swift standard library only.
+
+This is deliberate: it keeps the supply chain auditable and the binary lean,
+and matches the app's "your credentials never leave this device, through
+code you can read end to end" promise. PRs that add a package dependency
+outside the Terminal feature will not be merged; if you think a new
+exception is warranted (for the Terminal feature or otherwise), open an
+issue to discuss it first — do not add a `packages:` entry to `project.yml`
+speculatively.
 
 ## Swift 6 strict concurrency
 
@@ -95,7 +107,8 @@ Before opening a PR, please confirm:
 - [ ] `swift test --package-path Packages/HetznerKit` passes.
 - [ ] `xcodebuild test` passes for the `Hetzly` scheme (`HetzlyTests` + `HetzlyUITests`).
 - [ ] `xcodegen` was re-run and the project builds in Xcode 26.
-- [ ] No new third-party dependency was added.
+- [ ] No new third-party dependency was added outside `Hetzly/Features/Terminal/`
+      (see [The dependency rule](#the-dependency-rule)).
 
 ## Reporting security issues
 

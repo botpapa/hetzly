@@ -54,13 +54,18 @@ security model and how to report problems.
   There is no Hetzly backend, no analytics endpoint, no crash reporter.
 - **No App Transport Security exceptions.** Hetzly ships with ATS defaults —
   no `NSAllowsArbitraryLoads`, no per-domain exceptions. All traffic is TLS.
-- **No telemetry.** No usage analytics, no crash reporting SDKs, no
-  third-party dependencies of any kind (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+- **No telemetry.** No usage analytics, no crash reporting SDKs. The app and
+  `HetznerKit` have no third-party dependencies; the sole exception is the
+  optional in-app SSH terminal (`Hetzly/Features/Terminal/`), which uses
+  Apple's [swift-nio-ssh](https://github.com/apple/swift-nio-ssh) and
+  [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) — both permissively
+  licensed (Apache 2.0 / MIT). See [CONTRIBUTING.md](CONTRIBUTING.md#the-dependency-rule).
 
 ## Reporting a vulnerability
 
 Please report security issues privately via
-[GitHub Security Advisories](https://github.com/hetzly/hetzly/security/advisories/new)
+[GitHub Security Advisories](https://github.com/PLACEHOLDER-OWNER/hetzly/security/advisories/new)
+<!-- TODO(release): replace PLACEHOLDER-OWNER with the real GitHub org/user — see AppLinks.swift -->
 for this repository rather than opening a public issue. Include the affected
 version/commit, reproduction steps, and impact. We aim to acknowledge reports
 within a few days.

@@ -37,3 +37,7 @@ fastlane/.env
 fastlane/.env.*
 *.cer
 *.p12
+
+# NOTE: app-icon.png at the repo root is the source artwork for the app icon
+# (see README.md#app-icon) and is intentionally tracked — do not add a
+# blanket *.png ignore rule that would catch it.

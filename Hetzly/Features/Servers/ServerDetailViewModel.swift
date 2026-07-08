@@ -355,10 +355,16 @@ final class ServerDetailViewModel {
         case .enableRescue(let sshKeyIDs):
             let result = try await client.enableRescue(serverID: route.serverID, sshKeyIDs: sshKeyIDs)
             if !result.rootPassword.isEmpty {
+                // This is a rescue-SYSTEM password (only valid once the
+                // server actually boots into rescue), not the normal-OS root
+                // password — still worth saving durably so the Credentials
+                // section on this screen stays current, same as the
+                // reset-root-password case below.
+                try? ServerCredentialsVault.saveRootPassword(result.rootPassword, serverID: route.serverID)
                 revealedSecret = RevealedSecret(
                     title: "Rescue Root Password",
                     secret: result.rootPassword,
-                    note: "Shown once. Reboot the server to actually enter rescue mode — Hetzner only boots into rescue on the next restart.",
+                    note: "Shown once and saved on this device. Reboot the server to actually enter rescue mode — Hetzner only boots into rescue on the next restart.",
                     offersReboot: true
                 )
             }
@@ -376,10 +382,11 @@ final class ServerDetailViewModel {
         case .resetRootPassword:
             let result = try await client.resetPassword(serverID: route.serverID)
             if !result.rootPassword.isEmpty {
+                try? ServerCredentialsVault.saveRootPassword(result.rootPassword, serverID: route.serverID)
                 revealedSecret = RevealedSecret(
                     title: "New Root Password",
                     secret: result.rootPassword,
-                    note: "Shown once. Only takes effect immediately with the qemu guest agent installed and the disk mounted normally — otherwise it applies on next boot."
+                    note: "Shown once and saved on this device. Only takes effect immediately with the qemu guest agent installed and the disk mounted normally — otherwise it applies on next boot."
                 )
             }
             return result.action

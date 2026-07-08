@@ -10,6 +10,18 @@ options:
 packages:
   HetznerKit:
     path: Packages/HetznerKit
+  # SP1 Terminal module ONLY (Hetzly/Features/Terminal/): the user explicitly
+  # approved these two third-party SPM dependencies for the in-app SSH
+  # terminal feature, overriding the app's usual zero-dependency rule. Do not
+  # reach for these packages from any other feature — implementing an SSH
+  # client and a terminal emulator from scratch is out of scope for
+  # everything else in the app.
+  NIOSSH:
+    url: https://github.com/apple/swift-nio-ssh.git
+    exactVersion: 0.14.0
+  SwiftTerm:
+    url: https://github.com/migueldeicaza/SwiftTerm.git
+    exactVersion: 1.13.0
 
 targets:
   Hetzly:
@@ -20,6 +32,12 @@ targets:
       - path: HetzlyWidgets/Shared/WidgetSnapshotShared.swift
     dependencies:
       - package: HetznerKit
+      # SP1 Terminal module deps — see the `packages:` block above for the
+      # dependency-exception rationale.
+      - package: NIOSSH
+        product: NIOSSH
+      - package: SwiftTerm
+        product: SwiftTerm
       # TEMPORARY device-build workaround: widgets need the App Groups
       # capability, which this Apple account can't provision until the
       # latest Program License Agreement is accepted at developer.apple.com.

@@ -378,6 +378,32 @@ Models per real docs (unknown-tolerant enums, lenient labels via CloudAPICompat 
 ### Adaptive colors (light mode) — worker F5
 `HetzlyColors` entries become adaptive `Color(uiColor: UIColor { trait ... })` — dark values UNCHANGED (current hex), light variants: canvas #F5F5F7, textPrimary #1D1D1F, textSecondary #6E6E73, textTertiary #AEAEB2, accent unchanged, destructive unchanged, status colors unchanged. CanvasBackground + GlassCard/GlassChip fallback fills adapt via trait too. Mascot palette stays fixed (sprite art). Every #Preview keeps .dark; add a handful of light previews on key screens.
 
+## Server-page wave contracts
+
+### Terminal module (`Hetzly/Features/Terminal/`) — worker SP1
+Adds SPM deps (user explicitly approved, overriding zero-dep for this feature):
+- `apple/swift-nio-ssh` (SSH protocol) + its NIO transitive deps.
+- `migueldeicaza/SwiftTerm` (terminal emulator UIView).
+Both added to project.yml `packages:` and the Hetzly target `dependencies:`. Pin to versions that build on iOS 26.
+
+Binding entry:
+```swift
+struct ServerTerminalView: View {
+    init(host: String, port: Int = 22, username: String = "root", credential: SSHCredential, serverName: String)
+}
+enum SSHCredential { case privateKeyPEM(String), password(String) }
+```
+Full-screen cover. Connects via NIO-SSH, opens a shell channel with a PTY, pipes to a SwiftTerm `TerminalView` (UIViewRepresentable). States: connecting / connected / auth-failed / unreachable / closed, each with clear copy. Host-key: trust-on-first-use, persisted per host in UserDefaults (fingerprint only), with a mismatch warning. NEVER log key material or session bytes. Disconnect on dismiss. Ed25519 private keys from Hetzly's generator are OpenSSH-PEM — NIO-SSH needs them as `NIOSSHPrivateKey`; convert (the key is Curve25519; use the raw seed). If PEM→NIOSSHPrivateKey is impractical, fall back to password auth and report the limitation precisely.
+
+### Server page restructure (`Hetzly/Features/Servers/`) — worker SP2
+Restructure `ServerDetailView` into a segmented **Control / Analytics** layout (glass segmented picker under the hero):
+- **Control tab**: the power action row, protection toggle, Backups & Snapshots, Rescue Mode, ISO, rename/labels, and the Danger Zone — everything that acts on the server, grouped.
+- **Analytics tab**: the metrics charts + range picker only.
+- Hero card stays above the segmented control (always visible).
+- Add a **Terminal** button (in Control, near the action row): presents `ServerTerminalView` (SP1) using the server's public IPv4, username root, and a credential resolved from: stored SSH private key for a key on the server if available, else the saved root password from `ServerCredentialsVault`, else prompt. If neither exists, the button explains "No stored credentials — add an SSH key or reset the root password first."
+- Add a **Credentials** section/row in Control: if `ServerCredentialsVault.rootPassword(serverID:)` exists, show it via `SensitiveSecretCard` (biometric-gated reveal), with Delete. Wire vault SAVES at the reset-root-password and enable-rescue result points (both already produce a password in ServerDetailViewModel).
+- Keep every existing action + test working; keep the A1/A2 credential-vault + error-recovery code intact.
+
 ## Verification expected from each worker
 
 - HetznerKit workers: `cd Packages/HetznerKit && swift build && swift test` must pass.

@@ -1,12 +1,23 @@
 import HetznerKit
 import SwiftUI
 
-/// Server Detail: hero card, contextual power actions plus the "More"
-/// management surface (each gated behind a confirmation sheet, sensitive
-/// ones additionally behind Face ID/Touch ID when the user has opted into
-/// that in Settings), PROTECTION row, METRICS charts, a light Resources
-/// summary, BACKUPS & SNAPSHOTS, RESCUE MODE, and the Danger Zone
-/// (Rebuild / Rescale / Delete).
+/// Server Detail: a pinned hero card (status, IP, type, DC, uptime) above a
+/// glass Control/Analytics segmented control.
+///
+/// - **Control** — everything that acts on the server, grouped: the
+///   circular power-action row plus "More" management sheet, a Terminal
+///   entry point, PROTECTION, a light Resources summary, BACKUPS &
+///   SNAPSHOTS, RESCUE MODE, CREDENTIALS (the saved root password, if any),
+///   and the Danger Zone (Rebuild / Rescale / Delete) at the very bottom.
+///   ISO attach/detach lives in the "More" sheet and rename/labels in the
+///   toolbar menu — both already inside this tab's reach, so they aren't
+///   duplicated as standalone cards.
+/// - **Analytics** — METRICS only: the range picker and CPU/network/disk
+///   charts.
+///
+/// Each power/management action is gated behind a confirmation sheet,
+/// sensitive ones additionally behind Face ID/Touch ID when the user has
+/// opted into that in Settings.
 ///
 /// Reads `AppContainer` from the environment and loads the server for
 /// `route.projectID` / `route.serverID` — Worker D's Dashboard declares the
@@ -24,6 +35,11 @@ struct ServerDetailView: View {
     @State private var activeSheet: ManagementSheet?
     @State private var isAuthenticating = false
     @State private var authError: String?
+    /// Control-vs-Analytics segmented selection. Not persisted — every visit
+    /// to a server's detail screen starts on Control, the "everything that
+    /// acts on the server" panel.
+    @State private var selectedTab: ServerDetailTab = .control
+    @State private var isTerminalPresented = false
     /// Biometric failure surfaced outside a confirm sheet (rescale flow).
     @State private var gateError: String?
     @State private var showSuccessToast = false
@@ -80,7 +96,12 @@ struct ServerDetailView: View {
             async let serverLoad: Void = model.load()
             async let metricsLoad: Void = model.loadMetrics()
             async let snapshotsLoad: Void = model.loadSnapshots()
-            _ = await (serverLoad, metricsLoad, snapshotsLoad)
+            // Also needed (not just for the Enable Rescue sheet) to resolve
+            // a Terminal credential: `terminalAvailability` looks for a
+            // locally-generated private key whose name matches one of this
+            // project's registered SSH keys.
+            async let sshKeysLoad: Void = model.loadSSHKeys()
+            _ = await (serverLoad, metricsLoad, snapshotsLoad, sshKeysLoad)
         }
         .sheet(item: $pendingAction) { action in
             ServerActionConfirmSheet(
@@ -124,6 +145,13 @@ struct ServerDetailView: View {
                     viewModel?.clearManagementActionError()
                     Task { await viewModel?.load() }
                 }
+        }
+        .fullScreenCover(isPresented: $isTerminalPresented) {
+            if let server = viewModel?.server,
+                let ipv4 = server.publicNet.ipv4?.ip,
+                case .available(let credential) = terminalAvailability {
+                ServerTerminalView(host: ipv4, credential: credential, serverName: server.name)
+            }
         }
         .alert("Rename Server", isPresented: $isRenamePresented) {
             TextField("hostname", text: $renameText)
@@ -241,95 +269,178 @@ struct ServerDetailView: View {
                 VStack(alignment: .leading, spacing: Spacing.unit * 8) {
                     ServerHeroCard(server: server)
 
-                    VStack(alignment: .leading, spacing: Spacing.unit * 4) {
-                        ServerActionRow(
-                            server: server,
-                            onSelect: { action in pendingAction = action },
-                            onMore: { activeSheet = .more }
-                        )
+                    ServerDetailTabPicker(selection: $selectedTab)
 
-                        if let activeAction = viewModel.activeAction {
-                            ServerActiveActionCard(
-                                activeAction: activeAction,
-                                mascotEnabled: container.settings.mascotEnabled
+                    switch selectedTab {
+                    case .control:
+                        controlTabContent(viewModel, server: server)
+                    case .analytics:
+                        ServerMetricsSection(
+                            metrics: viewModel.metrics,
+                            state: viewModel.metricsState,
+                            range: Binding(
+                                get: { viewModel.selectedRange },
+                                set: { viewModel.selectedRange = $0 }
                             )
-                        }
-
-                        if let managementActiveAction = viewModel.managementActiveAction {
-                            ServerActiveActionCard(
-                                managementActiveAction: managementActiveAction,
-                                mascotEnabled: container.settings.mascotEnabled
-                            )
-                        }
-
-                        ForEach(inlineErrors, id: \.self) { message in
-                            Text(message)
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(HetzlyColors.destructive)
-                        }
-
-                        // A Read-only token hitting a write endpoint (403)
-                        // is recoverable in place — `actionError`/
-                        // `managementActionError` already carry the
-                        // read-only guidance sentence via
-                        // `HetznerAPIError.userMessage`; this adds the fix.
-                        if showActionUpdateTokenButton, let project = actionErrorProject {
-                            Button("Update Token…") {
-                                updateTokenProject = project
-                            }
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(HetzlyColors.accent)
-                        }
-                    }
-
-                    ServerProtectionRow(server: server) { enable in
-                        pendingManagementAction = .changeProtection(delete: enable, rebuild: enable)
-                    }
-
-                    ServerMetricsSection(
-                        metrics: viewModel.metrics,
-                        state: viewModel.metricsState,
-                        range: Binding(
-                            get: { viewModel.selectedRange },
-                            set: { viewModel.selectedRange = $0 }
                         )
-                    )
-
-                    ServerResourcesSection(server: server)
-
-                    ServerBackupsSection(
-                        server: server,
-                        snapshots: viewModel.snapshots,
-                        snapshotsState: viewModel.snapshotsState,
-                        onToggleBackups: {
-                            pendingManagementAction = server.backupWindow != nil ? .disableBackups : .enableBackups
-                        },
-                        onCreateSnapshot: { activeSheet = .createSnapshot },
-                        onDeleteSnapshot: { snapshot in
-                            Task { await viewModel.deleteSnapshot(snapshot) }
-                        },
-                        onRebuildFromSnapshot: { snapshot in
-                            openRebuildSheet(preselected: snapshot)
-                        }
-                    )
-
-                    ServerRescueSection(
-                        server: server,
-                        onEnable: { openEnableRescueSheet() },
-                        onDisable: { pendingManagementAction = .disableRescue }
-                    )
-
-                    ServerDangerZoneSection(
-                        protection: server.protection,
-                        onRebuild: { openRebuildSheet(preselected: nil) },
-                        onRescale: { openRescaleSheet() },
-                        onDelete: { pendingAction = .delete }
-                    )
+                    }
                 }
                 .padding(.horizontal, Spacing.screenMargin)
                 .padding(.vertical, Spacing.unit * 6)
             }
         }
+    }
+
+    /// Control panel: everything that acts on the server, grouped in one
+    /// place per the user's "move the controls together" request — power
+    /// row, Terminal, Protection, Resources, Backups & Snapshots, Rescue
+    /// Mode, Credentials, and the Danger Zone at the very bottom. (ISO
+    /// attach/detach and rename/labels stay reachable via the "More" sheet
+    /// and the toolbar menu respectively — both already live in this tab's
+    /// header area, so they aren't duplicated as separate cards here.)
+    @ViewBuilder
+    private func controlTabContent(_ viewModel: ServerDetailViewModel, server: Server) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.unit * 4) {
+            ServerActionRow(
+                server: server,
+                onSelect: { action in pendingAction = action },
+                onMore: { activeSheet = .more }
+            )
+
+            if let activeAction = viewModel.activeAction {
+                ServerActiveActionCard(
+                    activeAction: activeAction,
+                    mascotEnabled: container.settings.mascotEnabled
+                )
+            }
+
+            if let managementActiveAction = viewModel.managementActiveAction {
+                ServerActiveActionCard(
+                    managementActiveAction: managementActiveAction,
+                    mascotEnabled: container.settings.mascotEnabled
+                )
+            }
+
+            ForEach(inlineErrors, id: \.self) { message in
+                Text(message)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(HetzlyColors.destructive)
+            }
+
+            // A Read-only token hitting a write endpoint (403)
+            // is recoverable in place — `actionError`/
+            // `managementActionError` already carry the
+            // read-only guidance sentence via
+            // `HetznerAPIError.userMessage`; this adds the fix.
+            if showActionUpdateTokenButton, let project = actionErrorProject {
+                Button("Update Token…") {
+                    updateTokenProject = project
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(HetzlyColors.accent)
+            }
+
+            terminalButton
+        }
+
+        ServerProtectionRow(server: server) { enable in
+            pendingManagementAction = .changeProtection(delete: enable, rebuild: enable)
+        }
+
+        ServerResourcesSection(server: server)
+
+        ServerBackupsSection(
+            server: server,
+            snapshots: viewModel.snapshots,
+            snapshotsState: viewModel.snapshotsState,
+            onToggleBackups: {
+                pendingManagementAction = server.backupWindow != nil ? .disableBackups : .enableBackups
+            },
+            onCreateSnapshot: { activeSheet = .createSnapshot },
+            onDeleteSnapshot: { snapshot in
+                Task { await viewModel.deleteSnapshot(snapshot) }
+            },
+            onRebuildFromSnapshot: { snapshot in
+                openRebuildSheet(preselected: snapshot)
+            }
+        )
+
+        ServerRescueSection(
+            server: server,
+            onEnable: { openEnableRescueSheet() },
+            onDisable: { pendingManagementAction = .disableRescue }
+        )
+
+        ServerCredentialsSection(serverID: server.id)
+
+        ServerDangerZoneSection(
+            protection: server.protection,
+            onRebuild: { openRebuildSheet(preselected: nil) },
+            onRescale: { openRescaleSheet() },
+            onDelete: { pendingAction = .delete }
+        )
+    }
+
+    /// Full-width Terminal entry point, disabled with an explanatory caption
+    /// when neither a saved root password nor a locally-stored SSH private
+    /// key registered to this project is available — see
+    /// `terminalAvailability`.
+    @ViewBuilder
+    private var terminalButton: some View {
+        switch terminalAvailability {
+        case .available:
+            Button {
+                isTerminalPresented = true
+            } label: {
+                Label("Terminal", systemImage: "terminal")
+                    .frame(maxWidth: .infinity)
+            }
+            .secondaryCTAStyle()
+        case .unavailable(let reason):
+            VStack(alignment: .leading, spacing: Spacing.unit) {
+                Button {} label: {
+                    Label("Terminal", systemImage: "terminal")
+                        .frame(maxWidth: .infinity)
+                }
+                .secondaryCTAStyle()
+                .disabled(true)
+                Text(reason)
+                    .caption()
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// Whether a Terminal session can be started right now, and with what
+    /// credential:
+    /// 1. A saved root password (`ServerCredentialsVault`) is preferred when
+    ///    present — it's guaranteed valid for THIS exact server, since
+    ///    Hetzner returned it for this server's own reset/rescue call.
+    /// 2. Otherwise, a locally-generated SSH private key (`SSHKeyGenerator`)
+    ///    whose name matches one of this project's registered SSH keys
+    ///    (`viewModel.sshKeys`) — the closest on-device signal to "a key
+    ///    that might be on this server" available, since the binding
+    ///    `Server` model doesn't expose which keys were attached at create
+    ///    time.
+    /// 3. Otherwise unavailable, with copy telling the user how to fix it.
+    private enum TerminalAvailability {
+        case available(SSHCredential)
+        case unavailable(String)
+    }
+
+    private var terminalAvailability: TerminalAvailability {
+        guard viewModel?.server?.publicNet.ipv4?.ip != nil else {
+            return .unavailable("This server has no public IPv4 address.")
+        }
+        if let password = ServerCredentialsVault.rootPassword(serverID: route.serverID) {
+            return .available(.password(password))
+        }
+        for key in viewModel?.sshKeys ?? [] {
+            if let pem = (try? SSHKeyGenerator.loadPrivateKey(name: key.name)) ?? nil {
+                return .available(.privateKeyPEM(pem))
+            }
+        }
+        return .unavailable("Add an SSH key or reset the root password to enable the terminal.")
     }
 
     /// Error strings shown under the action row: power-action errors,

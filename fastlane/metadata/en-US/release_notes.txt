@@ -2,6 +2,9 @@ Initial release of Hetzly.
 
 • Full Hetzner Cloud management: servers, volumes, networks, firewalls, load balancers, DNS, images, snapshots, IPs, placement groups, SSH keys, and a guided create-server wizard.
 • Hetzner Robot dedicated server management and ordering.
-• On-device cost dashboard across Cloud and Robot — nothing sent to a third party.
+• Storage Box management: usage, subaccounts, snapshots, and access settings.
+• Built-in SSH terminal for Cloud and dedicated servers.
+• On-device cost dashboard across Cloud, Robot, and Storage Boxes, with manual price overrides — nothing sent to a third party.
+• Face ID / Touch ID protection for stored tokens and destructive or billable actions.
 • Home Screen widgets and Siri/Shortcuts support.
-• Zero backend, zero telemetry, zero third-party dependencies.
+• Zero backend, zero telemetry, zero third-party tracking.

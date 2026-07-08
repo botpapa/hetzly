@@ -336,14 +336,14 @@ struct SettingsView: View {
             .plainRow()
             .listRowBackground(rowBackground)
 
-            Link(destination: githubURL) {
+            Link(destination: AppLinks.githubURL) {
                 Label("Star Hetzly on GitHub", systemImage: "star.fill")
                     .foregroundStyle(HetzlyColors.accent)
             }
             .plainRow()
             .listRowBackground(rowBackground)
 
-            Link(destination: URL(string: "https://elthen.itch.io/2d-pixel-art-red-panda-sprites") ?? githubURL) {
+            Link(destination: AppLinks.mascotCreditURL) {
                 Label("Mascot sprites by Elthen", systemImage: "paintbrush.pointed")
             }
             .plainRow()
@@ -369,10 +369,6 @@ struct SettingsView: View {
         let shortVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(shortVersion) (\(build))"
-    }
-
-    private var githubURL: URL {
-        URL(string: "https://github.com/hetzly/hetzly") ?? URL(fileURLWithPath: "/")
     }
 
     // MARK: - Rename

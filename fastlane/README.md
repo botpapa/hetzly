@@ -8,21 +8,32 @@ tests and shipping a TestFlight beta.
 
 ```
 fastlane/
-├── Appfile                  # app identifier / Apple ID / team ID (placeholders)
-├── Fastfile                 # lanes: generate_project, test, beta
-├── README.md                 # this file
-└── metadata/en-US/
-    ├── name.txt              # "Hetzly"
-    ├── subtitle.txt          # App Store subtitle (30-char limit)
-    ├── description.txt       # full listing copy
-    ├── keywords.txt          # comma-separated, 100-char limit total
-    ├── privacy_url.txt       # PLACEHOLDER — see below
-    └── release_notes.txt     # "What's New" copy for this version
+├── Appfile                        # app identifier / Apple ID / team ID (placeholders)
+├── Fastfile                       # lanes: generate_project, test, beta, screenshots
+├── README.md                       # this file
+└── metadata/
+    ├── primary_category.txt        # DEVELOPER_TOOLS
+    ├── secondary_category.txt      # UTILITIES
+    └── en-US/
+        ├── name.txt                 # "Hetzly" (≤30 chars)
+        ├── subtitle.txt              # App Store subtitle (≤30 chars)
+        ├── description.txt           # full listing copy (≤4000 chars)
+        ├── keywords.txt               # comma-separated, ≤100 chars total
+        ├── promotional_text.txt        # ≤170 chars, editable without a new review
+        ├── release_notes.txt           # "What's New" copy for this version
+        ├── privacy_url.txt              # PLACEHOLDER — see below
+        ├── support_url.txt               # PLACEHOLDER — see below
+        └── marketing_url.txt              # PLACEHOLDER — see below (optional field)
 ```
 
-`fastlane deliver` reads `metadata/en-US/*.txt` directly and uploads them as
-the App Store Connect listing fields for the `en-US` locale — no extra
-config needed for the metadata itself.
+`fastlane deliver` reads `metadata/*.txt` and `metadata/en-US/*.txt` directly
+and uploads them as the App Store Connect listing fields (category ids are
+top-level/not localized; everything else is per-locale) — no extra config
+needed for the metadata itself. See
+[`docs/app-store/submission-guide.md`](../docs/app-store/submission-guide.md)
+for the full step-by-step submission walkthrough, and
+[`docs/app-store/privacy-nutrition-label.md`](../docs/app-store/privacy-nutrition-label.md)
+for the exact App Store Connect privacy-questionnaire answers.
 
 ## Before you submit: things that need YOUR details
 
@@ -46,16 +57,36 @@ intentional, not a bug. Before running `fastlane beta`:
    `.p8`, and either pass it via `api_key_path:` in the `beta` lane or set
    `APP_STORE_CONNECT_API_KEY_*` environment variables. **Never commit the
    `.p8` file** — `.gitignore` already excludes `fastlane/*.p8`.
-4. **`privacy_url.txt` is a placeholder.** It currently points at this
-   repo's README security section, which is honest about what the app does
-   but isn't a dedicated privacy-policy page. App Store Connect requires a
-   privacy policy URL — replace this with a real hosted page (a GitHub
-   Pages page rendering the same content works fine) before submission.
-5. **Screenshots.** Not included here — see the "Screenshots" section in the
-   top-level [README.md](../README.md#screenshots) for the exact `simctl`
-   commands to generate them. Once captured, drop them under
+4. **TODO — three URL placeholders.** `metadata/en-US/privacy_url.txt`,
+   `support_url.txt`, and `marketing_url.txt` all currently point at real,
+   working GitHub URLs (`github.com/hetzly/hetzly/...`) so `deliver` won't
+   fail on a broken link, but none of them is a dedicated, purpose-built
+   page:
+   - `privacy_url.txt` → README security-model anchor. App Store Connect
+     **requires** a privacy policy URL; a README section is honest but not
+     a proper privacy policy. Replace with a real hosted page before
+     submission — see
+     [`docs/app-store/privacy-nutrition-label.md`](../docs/app-store/privacy-nutrition-label.md)
+     for content you can host as that page (e.g. via GitHub Pages).
+   - `support_url.txt` → GitHub Issues. Fine to keep as-is if you're okay
+     with support requests as public issues; swap for a real support page
+     / email if not.
+   - `marketing_url.txt` → GitHub repo root. Optional field; replace with a
+     real marketing site if/when one exists, or delete the file to omit it.
+5. **Verify `github.com/hetzly/hetzly` is the real repo URL** before relying
+   on the three files above, or update them to match wherever this project
+   is actually hosted.
+6. **Screenshots.** Not included here — see
+   [`docs/app-store/screenshots.md`](../docs/app-store/screenshots.md) for
+   the exact device sizes, fixture-mode launch flags, hero-screen list, and
+   `simctl` commands. Once captured, drop them under
    `fastlane/screenshots/en-US/` (gitignored) for `fastlane deliver` to pick
    up, or upload manually via App Store Connect.
+7. **Categories.** `metadata/primary_category.txt` /
+   `secondary_category.txt` are set to `DEVELOPER_TOOLS` / `UTILITIES`.
+   `deliver`'s category upload can be finicky — treat the App Store Connect
+   web UI (App Information → Category) as the source of truth and verify it
+   matches after any automated upload.
 
 ## Lanes
 
@@ -65,6 +96,7 @@ cd fastlane  # or run `fastlane <lane>` from the repo root — either works
 fastlane generate_project   # xcodegen generate
 fastlane test                # HetznerKit swift test + HetzlyTests/HetzlyUITests
 fastlane beta                # build + upload to TestFlight (needs signing, see above)
+fastlane screenshots          # capture the App Store screenshot set (see docs/app-store/screenshots.md)
 ```
 
 `test` is safe to run with no Apple Developer account at all — it never

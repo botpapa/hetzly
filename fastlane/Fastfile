@@ -10,7 +10,14 @@ default_platform(:ios)
 
 PROJECT = "Hetzly.xcodeproj"
 SCHEME = "Hetzly"
+BUNDLE_ID = "com.hetzly.app"
 SIMULATOR = "iPhone 17 Pro"
+# 6.9" display class — the primary *required* App Store screenshot size as
+# of this app's target (iOS 26 / Xcode 26). See docs/app-store/screenshots.md
+# for the full size matrix and why this is the one that matters most.
+SCREENSHOT_SIMULATOR = "iPhone 17 Pro Max"
+SCREENSHOT_OS = "26.5"
+SCREENSHOT_DIR = "fastlane/screenshots/en-US"
 
 platform :ios do
   desc "Regenerate the Xcode project from project.yml (xcodegen is the source of truth — the .xcodeproj is not committed)."
@@ -76,5 +83,75 @@ platform :ios do
     upload_to_testflight(
       skip_waiting_for_build_processing: true
     )
+  end
+
+  desc "Push App Store metadata + screenshots via `deliver`. Does NOT submit for review or upload a new binary — promote a validated TestFlight build instead (see docs/app-store/submission-guide.md)."
+  lane :release do
+    generate_project
+
+    # `deliver` reads fastlane/metadata/**/*.txt and fastlane/screenshots/en-US/*
+    # directly — nothing else to pass here. `submit_for_review: false` on
+    # purpose: this lane's job is "get the listing content into App Store
+    # Connect for review," not "hit submit." Flip it locally once you've
+    # eyeballed the listing in the web UI and are actually ready — don't
+    # change the default here, since that would make a routine metadata sync
+    # accidentally submit the app.
+    deliver(
+      app_identifier: BUNDLE_ID,
+      skip_binary_upload: true,
+      skip_screenshots: false,
+      submit_for_review: false,
+      force: true # skip the interactive "here's a diff, confirm?" prompt — fine for a metadata-only push
+    )
+  end
+
+  desc "Capture the App Store screenshot set (6.9\" primary size). Auto-captures the fixture-reachable Dashboard shot; Server Detail/Create-Server/Costs/Resources/Dedicated/Terminal still need manual navigation — see docs/app-store/screenshots.md."
+  lane :screenshots do
+    generate_project
+
+    # Plain xcodebuild + simctl, mirroring the already-working
+    # scripts/capture_screenshots.sh — deliberately not using `build_app`
+    # (gym) here since it's built around archiving, not simulator Debug
+    # builds.
+    sh("mkdir -p #{SCREENSHOT_DIR}", chdir: "..")
+
+    sh("xcrun simctl boot \"#{SCREENSHOT_SIMULATOR}\" 2>/dev/null || true", chdir: "..")
+    sh("xcrun simctl bootstatus \"#{SCREENSHOT_SIMULATOR}\" -b", chdir: "..")
+    sh("xcrun simctl ui \"#{SCREENSHOT_SIMULATOR}\" appearance dark", chdir: "..")
+
+    sh(
+      "xcodebuild build " \
+      "-project #{PROJECT} -scheme #{SCHEME} -configuration Debug " \
+      "-destination 'platform=iOS Simulator,name=#{SCREENSHOT_SIMULATOR},OS=#{SCREENSHOT_OS}' " \
+      "-derivedDataPath build",
+      chdir: ".."
+    )
+
+    app_path = "build/Build/Products/Debug-iphonesimulator/Hetzly.app"
+    sh("xcrun simctl install \"#{SCREENSHOT_SIMULATOR}\" #{app_path}", chdir: "..")
+
+    # Same fixture flags HetzlyUITests / scripts/capture_screenshots.sh use —
+    # see Hetzly/App/UITestSupport.swift. SIMCTL_CHILD_ prefix is required
+    # for `simctl launch` to forward the env var into the launched process.
+    capture = lambda do |flag, filename|
+      sh("xcrun simctl terminate \"#{SCREENSHOT_SIMULATOR}\" #{BUNDLE_ID} 2>/dev/null || true", chdir: "..")
+      sh("env SIMCTL_CHILD_#{flag}=1 xcrun simctl launch \"#{SCREENSHOT_SIMULATOR}\" #{BUNDLE_ID}", chdir: "..")
+      sleep(4) # let the fixture-seeded launch build its in-memory store and render
+      sh("xcrun simctl io \"#{SCREENSHOT_SIMULATOR}\" screenshot #{SCREENSHOT_DIR}/#{filename}", chdir: "..")
+    end
+
+    capture.call("HETZLY_UITEST_MULTI", "01-dashboard.png")
+    # Server Detail, Create-Server wizard, Costs, Resources, Dedicated, and
+    # the SSH terminal all need in-app navigation this lane doesn't drive
+    # (no scripted XCUITest wired up here — see docs/app-store/screenshots.md
+    # for the full 8-screen list and captions). This lane leaves the
+    # simulator booted, dark, and with the app installed so the rest can be
+    # captured by hand with the same `xcrun simctl io ... screenshot`
+    # command used above, just without a HETZLY_UITEST* flag (those screens
+    # need real account data).
+
+    sh("xcrun simctl terminate \"#{SCREENSHOT_SIMULATOR}\" #{BUNDLE_ID} 2>/dev/null || true", chdir: "..")
+
+    UI.success("Dashboard screenshot captured to #{SCREENSHOT_DIR}/01-dashboard.png. See docs/app-store/screenshots.md for the remaining manual screens.")
   end
 end

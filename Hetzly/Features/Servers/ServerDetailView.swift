@@ -31,6 +31,10 @@ struct ServerDetailView: View {
     @State private var successHaptic = false
     @State private var isRenamePresented = false
     @State private var renameText = ""
+    /// The project whose token needs replacing — set when a power or
+    /// management action fails with `HetznerAPIError.forbidden` (most
+    /// commonly a Read-only token hitting a write endpoint).
+    @State private var updateTokenProject: ProjectRecord?
 
     /// The parameter-gathering sheets this screen can present. Simple
     /// confirm-only actions go through `pendingManagementAction` instead.
@@ -112,6 +116,14 @@ struct ServerDetailView: View {
             ConsoleCredentialsSheet(credentials: credentials) {
                 viewModel?.dismissConsoleCredentials()
             }
+        }
+        .sheet(item: $updateTokenProject) { project in
+            UpdateTokenSheet(project: project)
+                .onDisappear {
+                    viewModel?.clearActionError()
+                    viewModel?.clearManagementActionError()
+                    Task { await viewModel?.load() }
+                }
         }
         .alert("Rename Server", isPresented: $isRenamePresented) {
             TextField("hostname", text: $renameText)
@@ -255,6 +267,19 @@ struct ServerDetailView: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(HetzlyColors.destructive)
                         }
+
+                        // A Read-only token hitting a write endpoint (403)
+                        // is recoverable in place — `actionError`/
+                        // `managementActionError` already carry the
+                        // read-only guidance sentence via
+                        // `HetznerAPIError.userMessage`; this adds the fix.
+                        if showActionUpdateTokenButton, let project = actionErrorProject {
+                            Button("Update Token…") {
+                                updateTokenProject = project
+                            }
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(HetzlyColors.accent)
+                        }
                     }
 
                     ServerProtectionRow(server: server) { enable in
@@ -317,6 +342,20 @@ struct ServerDetailView: View {
             viewModel?.renameError,
             gateError,
         ].compactMap(\.self)
+    }
+
+    /// `true` when the most recent power or management action failed with
+    /// `HetznerAPIError.forbidden` — the recoverable "Read-only token hit a
+    /// write endpoint" case an "Update Token…" button can actually fix.
+    private var showActionUpdateTokenButton: Bool {
+        (viewModel?.actionErrorIsPermissionError ?? false) || (viewModel?.managementActionErrorIsPermissionError ?? false)
+    }
+
+    /// `route.projectID`'s `ProjectRecord`, resolved for the "Update
+    /// Token…" sheet — `nil` only if the project was removed from Settings
+    /// mid-session, in which case the button simply doesn't render.
+    private var actionErrorProject: ProjectRecord? {
+        container.projectsStore.projects.first { $0.id == route.projectID }
     }
 
     @ViewBuilder

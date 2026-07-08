@@ -13,7 +13,10 @@ final class ResourceListModel<T: Identifiable & Sendable> {
         case idle
         case loading
         case loaded
-        case failed(String)
+        /// Carries a `DisplayableError` (not a bare `String`) so the error
+        /// banner can offer "Update token…" on an auth failure without
+        /// re-parsing the rendered message.
+        case failed(DisplayableError)
     }
 
     private(set) var items: [T] = []
@@ -43,15 +46,8 @@ final class ResourceListModel<T: Identifiable & Sendable> {
             items = try await load()
             state = .loaded
         } catch {
-            state = .failed(ResourceListModel.message(for: error))
+            state = .failed(DisplayableError(error))
         }
         isRefreshing = false
-    }
-
-    static func message(for error: Error) -> String {
-        if let apiError = error as? HetznerAPIError {
-            return apiError.userMessage
-        }
-        return "Something went wrong. Please try again."
     }
 }

@@ -6,6 +6,18 @@ import SwiftUI
 struct ServerRowView: View {
     let item: ServerListItem
     let cpuSamples: [Double]?
+    /// Shown as a small caption under the type/location line when set — used
+    /// by the dashboard's flat search-results list, where rows from every
+    /// project are interleaved and need their origin project spelled out.
+    /// `nil` (the default) in every other context, where the enclosing
+    /// per-project section header already makes that obvious.
+    var projectName: String?
+
+    init(item: ServerListItem, cpuSamples: [Double]?, projectName: String? = nil) {
+        self.item = item
+        self.cpuSamples = cpuSamples
+        self.projectName = projectName
+    }
 
     var body: some View {
         GlassCard(interactive: true) {
@@ -21,6 +33,11 @@ struct ServerRowView: View {
                         GlassChip(item.typeName)
                         Text("\(flagEmoji(countryCode: item.countryCode)) \(item.city)")
                             .bodySecondary()
+                    }
+
+                    if let projectName {
+                        Text(projectName)
+                            .caption()
                     }
                 }
 

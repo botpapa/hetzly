@@ -10,6 +10,9 @@ struct CostProjectSectionView: View {
     let section: CostsViewModel.ProjectSection
     let currency: String
 
+    @Environment(AppContainer.self) private var container
+    @State private var updateTokenProject: ProjectRecord?
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 3) {
             NavigationLink(value: ProjectRoute(projectID: section.projectID)) {
@@ -32,13 +35,29 @@ struct CostProjectSectionView: View {
 
             if let errorMessage = section.errorMessage {
                 GlassCard {
-                    HStack(spacing: Spacing.unit * 2) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(HetzlyColors.statusError)
-                        Text(errorMessage)
-                            .bodySecondary()
-                        Spacer(minLength: 0)
+                    VStack(alignment: .leading, spacing: Spacing.unit * 3) {
+                        HStack(spacing: Spacing.unit * 2) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(HetzlyColors.statusError)
+                            Text(errorMessage)
+                                .bodySecondary()
+                            Spacer(minLength: 0)
+                        }
+                        // Auth failures are recoverable in place: a
+                        // rotated/revoked key just needs replacing, mirroring
+                        // the Dashboard's per-project error row.
+                        if section.isAuthError,
+                           let project = container.projectsStore.projects.first(where: { $0.id == section.projectID }) {
+                            Button("Update token…") {
+                                updateTokenProject = project
+                            }
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(HetzlyColors.accent)
+                        }
                     }
+                }
+                .sheet(item: $updateTokenProject) { project in
+                    UpdateTokenSheet(project: project)
                 }
             } else if section.itemCosts.isEmpty {
                 GlassCard {
@@ -69,7 +88,7 @@ struct CostProjectSectionView: View {
                     .foregroundStyle(subtotal.kind.tintColor)
                 Text(subtotal.kind.displayName.uppercased())
                     .font(.system(size: 11, weight: .semibold))
-                    .tracking(1.2)
+                    .tracking(1.5)
                     .foregroundStyle(HetzlyColors.textTertiary)
                 Spacer()
                 Text(subtotal.projectedTotal, format: .currency(code: currency))

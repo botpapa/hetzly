@@ -57,4 +57,33 @@ final class CreateServerWizardUITests: HetzlyUITestCase {
         XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 10))
         XCTAssertTrue(element(labeled: "Demo Project", in: app).waitForExistence(timeout: 10))
     }
+
+    /// `UITestFixtures`' `/ssh_keys` always returns one key ("uitest-key"),
+    /// so step 4 never renders the "No SSH keys yet" empty state in this
+    /// harness — it renders the populated key list instead, which now ends
+    /// in a secondary "Add another key" row wiring up the shared
+    /// `SSHKeyAddSheet` in-flow. Assert that row exists rather than the
+    /// empty-state's own "Add SSH Key" button, since the fixture data can't
+    /// exercise the zero-keys path.
+    func test_createServerWizard_step4ShowsAddAnotherKeyButton() {
+        let app = launchSeeded()
+
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
+
+        waitAndTap(element(labeled: "New", in: app))
+        waitAndTap(app.collectionViews.buttons["Create Server"])
+
+        waitAndTap(element(identifier: "createServer.locationCard.fsn1", in: app), timeout: 15)
+        waitAndTap(element(identifier: "createServer.footer.primaryCTA", in: app))
+
+        waitAndTap(element(identifier: "createServer.flavorRow.ubuntu", in: app))
+        waitAndTap(element(identifier: "createServer.versionChip.101", in: app))
+        waitAndTap(element(identifier: "createServer.footer.primaryCTA", in: app))
+
+        waitAndTap(element(identifier: "createServer.typeRow.22", in: app))
+        waitAndTap(element(identifier: "createServer.footer.primaryCTA", in: app))
+
+        let addAnotherKeyButton = element(identifier: "createServer.sshKeys.addAnotherButton", in: app)
+        XCTAssertTrue(addAnotherKeyButton.waitForExistence(timeout: 10))
+    }
 }

@@ -1,14 +1,22 @@
 import HetznerKit
 import SwiftUI
 
-/// Step 4: name (with a regenerate button), SSH key / network / firewall
-/// multi-select, public networking toggles, backups, and an optional
-/// cloud-init user-data editor.
+/// Step 4: a summary of the earlier steps' selections, name (with a
+/// regenerate button), SSH key / network / firewall multi-select, public
+/// networking toggles, backups, and an optional cloud-init user-data editor.
 struct ConfigStepView: View {
     @Bindable var viewModel: CreateServerViewModel
 
+    @Environment(AppContainer.self) private var container
+
+    /// Presents the shared `SSHKeyAddSheet` (also used by Resources → SSH
+    /// Keys) in-flow, so a user with no keys yet never has to leave the
+    /// wizard to set up password-less login.
+    @State private var isPresentingAddKeySheet = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 5) {
+            summarySection
             nameSection
             sshKeysSection
             networkingSection
@@ -21,6 +29,79 @@ struct ConfigStepView: View {
             backupsSection
             userDataSection
         }
+        .sheet(isPresented: $isPresentingAddKeySheet) {
+            SSHKeyAddSheet(projectID: viewModel.projectID) {
+                Task { await viewModel.refreshSSHKeys(container: container) }
+            }
+        }
+    }
+
+    // MARK: - Summary
+
+    /// Compact recap of steps 1–3, each row jumping straight back to that
+    /// step on tap. Price is deliberately not repeated here — the footer
+    /// already owns it, and duplicating it invites the two to drift.
+    @ViewBuilder
+    private var summarySection: some View {
+        if viewModel.selectedLocation != nil || viewModel.selectedImage != nil || viewModel.selectedServerType != nil {
+            VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                SectionLabel("Summary")
+                GlassCard {
+                    VStack(spacing: 0) {
+                        if let location = viewModel.selectedLocation {
+                            summaryRow(
+                                label: "Location",
+                                value: "\(flagEmoji(countryCode: location.country)) \(location.city)",
+                                step: .location
+                            )
+                            summaryDivider
+                        }
+                        if let image = viewModel.selectedImage {
+                            summaryRow(label: "Image", value: imageSummary(image), step: .image)
+                            summaryDivider
+                        }
+                        if let type = viewModel.selectedServerType {
+                            summaryRow(label: "Type", value: typeSummary(type), step: .type)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var summaryDivider: some View {
+        Divider().overlay(HetzlyColors.textTertiary.opacity(0.15))
+    }
+
+    private func summaryRow(label: String, value: String, step: CreateServerStep) -> some View {
+        Button {
+            withAnimation(.snappy) { viewModel.step = step }
+        } label: {
+            HStack(spacing: Spacing.unit * 2) {
+                Text(label).bodySecondary()
+                Spacer(minLength: Spacing.unit * 4)
+                Text(value).bodyPrimary()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(HetzlyColors.textTertiary)
+            }
+            .padding(.vertical, Spacing.unit * 2)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("createServer.summary.\(step.title.lowercased())")
+    }
+
+    private func imageSummary(_ image: HetznerImage) -> String {
+        "\(image.osFlavor.capitalized) \(image.osVersion ?? image.name ?? "")"
+    }
+
+    private func typeSummary(_ type: ServerType) -> String {
+        "\(type.name) · \(type.cores) vCPU/\(formattedMemory(type.memory)) GB/\(type.disk) GB"
+    }
+
+    private func formattedMemory(_ memory: Double) -> String {
+        memory.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(memory)) : String(format: "%.1f", memory)
     }
 
     // MARK: - Name
@@ -60,11 +141,12 @@ struct ConfigStepView: View {
             SectionLabel("SSH Keys")
             if viewModel.sshKeys.isEmpty {
                 GlassCard {
-                    VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                    VStack(alignment: .leading, spacing: Spacing.unit * 3) {
                         Label("No SSH keys yet", systemImage: "key.slash")
                             .bodyPrimary()
                         Text("Add keys in Resources → SSH Keys — password login is emailed otherwise.")
                             .caption()
+                        addKeyButton(title: "Add SSH Key", identifier: "createServer.sshKeys.addButton")
                     }
                 }
             } else {
@@ -82,10 +164,28 @@ struct ConfigStepView: View {
                                 Divider().overlay(HetzlyColors.textTertiary.opacity(0.15))
                             }
                         }
+                        Divider().overlay(HetzlyColors.textTertiary.opacity(0.15))
+                        addKeyButton(title: "Add another key", identifier: "createServer.sshKeys.addAnotherButton")
+                            .padding(.top, Spacing.unit * 2)
                     }
                 }
             }
         }
+    }
+
+    /// Small, secondary-weight call to action — deliberately quieter than
+    /// the empty-state's own copy (or the row list above it) since it's a
+    /// convenience shortcut, not the step's primary action.
+    private func addKeyButton(title: String, identifier: String) -> some View {
+        Button {
+            isPresentingAddKeySheet = true
+        } label: {
+            Label(title, systemImage: "plus.circle.fill")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(HetzlyColors.accent)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier)
     }
 
     // MARK: - Public networking
@@ -244,5 +344,6 @@ struct ConfigStepView: View {
                 .padding(Spacing.screenMargin)
         }
     }
+    .environment(AppContainer.makeDefault())
     .preferredColorScheme(.dark)
 }

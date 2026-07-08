@@ -225,24 +225,6 @@ struct FlowLayout: Layout {
     }
 }
 
-extension View {
-    /// Standard row treatment for glass cards hosted inside a `List`: clear
-    /// row background (the canvas shows through), no separators, and the
-    /// app's screen margins as insets. Lists are used (rather than
-    /// `ScrollView`) wherever rows need `.swipeActions`.
-    func plainRow() -> some View {
-        self
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(
-                top: Spacing.unit,
-                leading: Spacing.screenMargin,
-                bottom: Spacing.unit,
-                trailing: Spacing.screenMargin
-            ))
-    }
-}
-
 /// A compact glass segmented control for any small, `Equatable` option set —
 /// the same visual language as `MetricsRangePicker`, generalized so
 /// Firewalls/LoadBalancers/DNS don't each need a bespoke `Picker` (which

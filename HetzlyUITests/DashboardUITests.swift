@@ -133,4 +133,50 @@ final class DashboardUITests: HetzlyUITestCase {
         app.buttons["Cancel"].tap()
         XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 10))
     }
+
+    /// `.searchable`'s query overrides the project-scope filter entirely
+    /// rather than filtering within it: typing "api" against the
+    /// multi-project fixture (Production: web-01/worker-02, Staging:
+    /// api-01/cache-02) surfaces Staging's `api-01` in the flat "Results"
+    /// list while Production's `web-01` drops out — proof search searches
+    /// every project, not just whichever one happens to be scoped.
+    func test_dashboard_search_filtersAcrossProjects() {
+        let app = launchMultiProject()
+
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
+        XCTAssertTrue(element(labeled: "web-01", in: app).waitForExistence(timeout: 10))
+        XCTAssertTrue(element(labeled: "api-01", in: app).waitForExistence(timeout: 10))
+
+        let searchField = app.searchFields.firstMatch
+        waitAndTap(searchField)
+        searchField.typeText("api")
+
+        XCTAssertTrue(element(labeled: "api-01", in: app).waitForExistence(timeout: 10))
+        XCTAssertFalse(element(labeled: "web-01", in: app).waitForExistence(timeout: 3))
+    }
+
+    /// Long-pressing a dashboard row opens its `.contextMenu` with the row
+    /// quick actions — asserting on "Copy IPv4" (present on every row,
+    /// unlike the contextual power actions which depend on server status)
+    /// is enough to prove the menu itself wires up, without needing to fire
+    /// an action (which would hit the fixture's power-action endpoints).
+    func test_dashboard_rowContextMenu_showsQuickActions() {
+        let app = launchSeeded()
+
+        XCTAssertTrue(app.navigationBars["Dashboard"].waitForExistence(timeout: 15))
+        let webRow = element(labeled: "web-01", in: app)
+        XCTAssertTrue(webRow.waitForExistence(timeout: 10))
+
+        // Long-press via the row's center coordinate to open its
+        // `.contextMenu`. The row is a `Button` (not a `NavigationLink`)
+        // precisely so this long-press opens the menu rather than racing a
+        // navigation gesture — see `DashboardView.serverRow`.
+        webRow.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 1.3)
+
+        XCTAssertTrue(app.buttons["Copy IPv4"].waitForExistence(timeout: 8))
+
+        // Dismiss without selecting anything, so the pasteboard/haptic path
+        // never fires — tap a spot away from both the row and the menu.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.05)).tap()
+    }
 }

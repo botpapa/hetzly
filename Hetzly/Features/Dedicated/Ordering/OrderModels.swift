@@ -205,9 +205,16 @@ struct TransactionSummary: Identifiable, Sendable, Hashable {
 /// Why order placement failed, in a shape the result screen can render
 /// distinct copy for — Robot's 403-with-ordering-disabled case gets a full
 /// explainer card rather than a generic error string.
+///
+/// `message`'s `isAmbiguous` flag distinguishes a clean API rejection (the
+/// request definitely reached Hetzner and was definitely refused — safe to
+/// resubmit with the same arming) from a transport-level/timeout failure
+/// (the request may or may not have landed — `OrderFlowViewModel.retryPlacement()`
+/// forces the user to re-arm before resubmitting, and `OrderPlacementResultView`
+/// shows a warning pointing at Order History instead of just "Try Again").
 enum OrderPlacementError: Equatable {
     case orderingDisabled
-    case message(String)
+    case message(String, isAmbiguous: Bool = false)
 }
 
 // MARK: - Market filtering & sorting

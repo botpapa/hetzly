@@ -126,7 +126,7 @@ struct DedicatedView: View {
             } else {
                 serverList
             }
-        case .failed(let message):
+        case .failed(let error):
             if viewModel.servers.isEmpty {
                 VStack(spacing: Spacing.unit * 4) {
                     if container.settings.mascotEnabled {
@@ -136,10 +136,21 @@ struct DedicatedView: View {
                             .font(.system(size: 40))
                             .foregroundStyle(HetzlyColors.statusError)
                     }
-                    Text(message)
+                    Text(error.message)
                         .bodySecondary()
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, Spacing.screenMargin * 2)
+                    // Robot has no per-project token to swap in place like
+                    // Cloud does — the credentials live on the account
+                    // itself, so the honest fix is pointing at where that
+                    // account is managed rather than offering a sheet that
+                    // doesn't exist.
+                    if error.isAuthError {
+                        Text("Update the account in Settings → Robot Accounts.")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(HetzlyColors.textTertiary)
+                            .multilineTextAlignment(.center)
+                    }
                     Button("Try Again") {
                         Task { await viewModel.load(accountID: selectedAccountID, container: container, forceRefresh: true) }
                     }

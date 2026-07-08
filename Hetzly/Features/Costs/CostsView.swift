@@ -90,6 +90,7 @@ struct CostsView: View {
                             DedicatedCostSection(
                                 dedicatedServers: viewModel.dedicatedServers,
                                 dedicatedErrorMessage: viewModel.dedicatedErrorMessage,
+                                dedicatedIsAuthError: viewModel.dedicatedIsAuthError,
                                 manualEntries: manualStore.entries,
                                 currency: viewModel.currency,
                                 onSetPrice: { settingPriceForServer = $0 },
@@ -97,7 +98,16 @@ struct CostsView: View {
                                 onEditManual: { editingManualEntry = $0 },
                                 onDeleteManual: { removeManualEntry($0) }
                             )
+                        } else if hasScopedHiddenCosts {
+                            // Dedicated servers and manual entries aren't tied
+                            // to a project, so scoping hides them entirely —
+                            // a quiet pointer back to "All" keeps that from
+                            // reading as "my costs disappeared."
+                            Text("Dedicated & manual costs are shown under All")
+                                .caption()
                         }
+
+                        invoicesRow
                     }
                     .padding(.horizontal, Spacing.screenMargin)
                     .padding(.vertical, Spacing.screenMargin)
@@ -218,6 +228,39 @@ struct CostsView: View {
     private var visibleKindShares: [CostsViewModel.KindShare] {
         guard scopedProjectID != nil else { return viewModel.kindShares }
         return visibleProjectSections.first?.kindShares ?? []
+    }
+
+    /// Whether `DedicatedCostSection` would have something to show if scope
+    /// weren't hiding it — gates the "shown under All" footnote so it never
+    /// appears for a user who has no dedicated/manual costs to begin with.
+    private var hasScopedHiddenCosts: Bool {
+        !viewModel.dedicatedServers.isEmpty || !manualStore.entries.isEmpty
+    }
+
+    // MARK: - Invoices
+
+    private var invoicesRow: some View {
+        NavigationLink {
+            InvoicesView()
+        } label: {
+            GlassCard(interactive: true) {
+                HStack(spacing: Spacing.unit * 3) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(HetzlyColors.textSecondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Invoices").bodyPrimary()
+                        Text("Official Hetzner portal — opens in secure browser").caption()
+                    }
+                    Spacer(minLength: Spacing.unit * 2)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(HetzlyColors.textTertiary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("costs.invoicesRow")
     }
 
     // MARK: - Empty state

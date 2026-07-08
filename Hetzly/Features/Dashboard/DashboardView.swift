@@ -1,4 +1,6 @@
+import HetznerKit
 import SwiftUI
+import UIKit
 
 /// The app's home screen: cost burn aggregated across every project,
 /// servers needing attention, and a per-project server list. Reads
@@ -51,6 +53,57 @@ struct DashboardView: View {
         return viewModel.attention.filter { $0.projectID == selectedProjectID }
     }
 
+    // MARK: - Server search
+
+    /// `.searchable`-bound query. Deliberately NOT project-scoped: search
+    /// overrides `selectedProjectID` entirely rather than filtering within
+    /// it (see `searchResults`) — typing into search means "I don't know
+    /// which project this server is in," so honoring the current scope
+    /// filter here would actively work against the reason someone reaches
+    /// for search in the first place.
+    @State private var searchText = ""
+
+    private var isSearching: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// Flat, cross-project matches for `searchText` — name (substring,
+    /// case-insensitive) or public IPv4 (substring). Filters the sections
+    /// already held in memory; no network call of its own.
+    private var searchResults: [ServerListItem] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !query.isEmpty else { return [] }
+        return viewModel.projectSections.flatMap(\.servers).filter { item in
+            item.name.lowercased().contains(query) || (item.publicIPv4?.lowercased().contains(query) ?? false)
+        }
+    }
+
+    private func projectName(for projectID: UUID) -> String {
+        viewModel.projectSections.first(where: { $0.projectID == projectID })?.projectName ?? ""
+    }
+
+    // MARK: - Row quick actions
+
+    /// A contextual power action awaiting confirmation from a dashboard
+    /// row's `.contextMenu`, driving the compact `confirmationDialog` below.
+    private struct PendingRowAction: Identifiable {
+        let action: PowerAction
+        let item: ServerListItem
+        var id: String { item.id + action.rawValue }
+    }
+
+    @State private var pendingRowAction: PendingRowAction?
+    @State private var rowActionAuthError: String?
+    @State private var copyHapticTrigger = false
+
+    /// Explicit navigation path so the row context menu's "View Details"
+    /// item can push programmatically. A `NavigationLink` nested inside a
+    /// `.contextMenu` doesn't reliably present the menu (and reads oddly in
+    /// the menu's flat button list), so "View Details" is a plain `Button`
+    /// that appends onto this path instead — the row's own tap-to-navigate
+    /// keeps using value-based links, which drive the same bound path.
+    @State private var navigationPath = NavigationPath()
+
     init() {
         _viewModel = State(initialValue: DashboardViewModel())
     }
@@ -62,7 +115,7 @@ struct DashboardView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack(alignment: .top) {
                 CanvasBackground()
 
@@ -74,32 +127,46 @@ struct DashboardView: View {
                             onAddProject: { isAddProjectPresented = true }
                         )
 
-                        freshnessBanner
+                        if isSearching {
+                            searchResultsSection
+                        } else {
+                            freshnessBanner
 
-                        BurnCardView(
-                            monthToDate: scopedBurn.monthToDate,
-                            projected: scopedBurn.projected,
-                            currency: viewModel.currency,
-                            idleMascotState: idleMascotState
-                        )
-
-                        if !visibleAttention.isEmpty {
-                            AttentionSectionView(
-                                items: visibleAttention,
-                                cpuSamples: viewModel.cpuSparklines,
-                                mascotEnabled: container.settings.mascotEnabled
+                            BurnCardView(
+                                monthToDate: scopedBurn.monthToDate,
+                                projected: scopedBurn.projected,
+                                currency: viewModel.currency,
+                                idleMascotState: idleMascotState
                             )
-                        }
 
-                        ForEach(visibleProjectSections) { section in
-                            projectSection(section)
-                        }
+                            if !visibleAttention.isEmpty {
+                                AttentionSectionView(
+                                    items: visibleAttention,
+                                    cpuSamples: viewModel.cpuSparklines,
+                                    mascotEnabled: container.settings.mascotEnabled
+                                )
+                            }
 
-                        if selectedProjectID == nil, !viewModel.dedicatedServers.isEmpty || viewModel.dedicatedError != nil {
-                            DedicatedSectionView(
-                                servers: viewModel.dedicatedServers,
-                                errorMessage: viewModel.dedicatedError
-                            )
+                            ForEach(visibleProjectSections) { section in
+                                projectSection(section)
+                            }
+
+                            if selectedProjectID == nil {
+                                if !viewModel.dedicatedServers.isEmpty || viewModel.dedicatedError != nil {
+                                    DedicatedSectionView(
+                                        servers: viewModel.dedicatedServers,
+                                        errorMessage: viewModel.dedicatedError,
+                                        isAuthError: viewModel.dedicatedIsAuthError
+                                    )
+                                }
+                            } else if !viewModel.dedicatedServers.isEmpty {
+                                // A project scope is selected but Dedicated
+                                // (Robot) servers aren't project-scoped at
+                                // all — rather than silently omitting them
+                                // (which reads as "no dedicated servers
+                                // exist"), say where they actually are.
+                                GlassChip("Dedicated servers are shown under All", systemImage: "server.rack")
+                            }
                         }
                     }
                     .padding(.horizontal, Spacing.screenMargin)
@@ -109,7 +176,19 @@ struct DashboardView: View {
                     resetIdleTimer()
                     await viewModel.refresh(container: container)
                 }
-                .simultaneousGesture(TapGesture().onEnded { resetIdleTimer() })
+                // No whole-surface tap/gesture recognizer here (there used to
+                // be a `.simultaneousGesture(TapGesture()...)` for idle-timer
+                // resets) — even a `simultaneous` gesture recognizer sitting
+                // over the entire scroll content competes with child
+                // `NavigationLink`/`Button` hit-testing and was intermittently
+                // swallowing row taps. Scroll activity resets the idle timer
+                // instead, via `onScrollGeometryChange`; `.refreshable` above
+                // and the `.task` load below cover pull-to-refresh and
+                // fresh-launch/return-from-navigation resets.
+                .onScrollGeometryChange(for: CGFloat.self, of: { $0.contentOffset.y }) { _, _ in
+                    resetIdleTimer()
+                }
+                .sensoryFeedback(.impact(weight: .light), trigger: copyHapticTrigger)
 
                 // Max one mascot instance on screen at a time: when the
                 // "Attention" section is showing its own alarm mascot, that
@@ -168,6 +247,40 @@ struct DashboardView: View {
             .sheet(isPresented: $isAddProjectPresented) {
                 AddProjectSheet()
             }
+            .confirmationDialog(
+                rowActionDialogTitle,
+                isPresented: rowActionDialogPresented,
+                titleVisibility: .visible
+            ) {
+                if let pendingRowAction {
+                    Button(
+                        pendingRowAction.action.confirmButtonTitle,
+                        role: pendingRowAction.action.isDestructive ? .destructive : nil
+                    ) {
+                        confirmRowAction(pendingRowAction)
+                    }
+                    Button("Cancel", role: .cancel) {
+                        self.pendingRowAction = nil
+                    }
+                }
+            } message: {
+                if let pendingRowAction {
+                    Text(pendingRowAction.action.confirmSubtitle)
+                }
+            }
+            .alert(
+                "Authentication Failed",
+                isPresented: Binding(
+                    get: { rowActionAuthError != nil },
+                    set: { if !$0 { rowActionAuthError = nil } }
+                ),
+                presenting: rowActionAuthError
+            ) { _ in
+                Button("OK", role: .cancel) {}
+            } message: { message in
+                Text(message)
+            }
+            .searchable(text: $searchText, prompt: "Search servers")
         }
         .task {
             await viewModel.load(container: container)
@@ -333,7 +446,7 @@ struct DashboardView: View {
                             }
                             // Auth failures are recoverable in place: a
                             // rotated/revoked key just needs replacing.
-                            if isAuthError(errorMessage),
+                            if section.isAuthError,
                                let project = container.projectsStore.projects.first(
                                 where: { $0.id == section.projectID }
                                ) {
@@ -357,10 +470,7 @@ struct DashboardView: View {
                 } else {
                     VStack(spacing: Spacing.unit * 2) {
                         ForEach(section.servers) { item in
-                            NavigationLink(value: ServerRoute(projectID: item.projectID, serverID: item.serverID)) {
-                                ServerRowView(item: item, cpuSamples: viewModel.cpuSparklines[item.id])
-                            }
-                            .buttonStyle(.plain)
+                            serverRow(item)
                         }
                     }
                 }
@@ -369,12 +479,160 @@ struct DashboardView: View {
         .animation(.snappy, value: collapsed)
     }
 
-    /// A section error is auth-related (revoked/rotated key) when it carries
-    /// the `HetznerAPIError.unauthorized` user message — matched on the
-    /// stable "token was rejected" phrase since `ProjectSection` transports
-    /// only the rendered string, not the typed error.
-    private func isAuthError(_ message: String) -> Bool {
-        message.localizedCaseInsensitiveContains("token was rejected")
+    /// A single dashboard row: tapping navigates into Server Detail, plus the
+    /// row quick-actions `.contextMenu` (Copy IPv4, contextual power actions,
+    /// View Details) and its unobtrusive in-flight spinner. Shared by both
+    /// per-project sections and the flat search-results list below.
+    ///
+    /// Deliberately a plain view with a separate `.onTapGesture` (navigating
+    /// by appending to `navigationPath`) rather than a `NavigationLink` or
+    /// `Button`: both of those win the press outright and fire their
+    /// navigation on release before the long-press context-menu recognizer
+    /// ever engages, so the menu never opens (a real interaction bug, caught
+    /// by `test_dashboard_rowContextMenu_showsQuickActions`). With an
+    /// independent tap gesture the short-tap and the `.contextMenu`
+    /// long-press coexist — SwiftUI routes each to the right recognizer.
+    private func serverRow(_ item: ServerListItem, projectCaption: String? = nil) -> some View {
+        ServerRowView(item: item, cpuSamples: viewModel.cpuSparklines[item.id], projectName: projectCaption)
+            .overlay(alignment: .leading) {
+                if viewModel.rowActionInFlight.contains(item.id) {
+                    ProgressView()
+                        .controlSize(.small)
+                        .padding(.leading, Spacing.unit)
+                        .allowsHitTesting(false)
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                navigationPath.append(ServerRoute(projectID: item.projectID, serverID: item.serverID))
+            }
+            .contextMenu {
+                rowContextMenu(for: item)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+    }
+
+    // MARK: - Row quick actions (context menu + confirm + fire)
+
+    @ViewBuilder
+    private func rowContextMenu(for item: ServerListItem) -> some View {
+        Button {
+            copyIPv4(item)
+        } label: {
+            Label("Copy IPv4", systemImage: "doc.on.doc")
+        }
+        .disabled(item.publicIPv4 == nil)
+
+        Button {
+            navigationPath.append(ServerRoute(projectID: item.projectID, serverID: item.serverID))
+        } label: {
+            Label("View Details", systemImage: "info.circle")
+        }
+
+        switch item.status {
+        case .running:
+            Divider()
+            Button {
+                requestRowAction(.reboot, item: item)
+            } label: {
+                Label("Reboot", systemImage: "arrow.clockwise")
+            }
+            Button {
+                requestRowAction(.shutdown, item: item)
+            } label: {
+                Label("Shut Down", systemImage: "moon")
+            }
+        case .off:
+            Divider()
+            Button {
+                requestRowAction(.powerOn, item: item)
+            } label: {
+                Label("Power On", systemImage: "power")
+            }
+        default:
+            EmptyView()
+        }
+    }
+
+    /// Copies the row's public IPv4 to the pasteboard and fires the same
+    /// light-impact haptic `ServerHeroCard`'s tap-to-copy uses. A no-op when
+    /// the item has no known IPv4 (the menu item is disabled in that case
+    /// too, so this is just defense in depth).
+    private func copyIPv4(_ item: ServerListItem) {
+        guard let ip = item.publicIPv4 else { return }
+        UIPasteboard.general.string = ip
+        copyHapticTrigger.toggle()
+    }
+
+    /// Stages a contextual power action for confirmation — the
+    /// `confirmationDialog` attached to the `NavigationStack` reads
+    /// `pendingRowAction` back out.
+    private func requestRowAction(_ action: PowerAction, item: ServerListItem) {
+        pendingRowAction = PendingRowAction(action: action, item: item)
+    }
+
+    /// Mirrors `ServerDetailView.confirm(_:)`'s gating: destructive actions
+    /// go through `container.biometricGate` first (when the user has opted
+    /// into `requireBiometricsForDestructive`), everything else fires
+    /// immediately. None of the three actions this menu offers
+    /// (reboot/shutdown/power-on) are actually `isDestructive` today, so the
+    /// gate is a no-op in practice — kept here so that stays true by
+    /// contract rather than by accident, and so a future destructive row
+    /// action gets the gate for free.
+    private func confirmRowAction(_ pending: PendingRowAction) {
+        guard pending.action.isDestructive, container.settings.requireBiometricsForDestructive else {
+            fireRowAction(pending)
+            return
+        }
+        Task {
+            let reason = "Confirm \(pending.action.title.lowercased()) for \(pending.item.name)"
+            let approved = await container.biometricGate.authenticate(reason: reason)
+            if approved {
+                fireRowAction(pending)
+            } else {
+                rowActionAuthError = container.biometricGate.lastErrorMessage ?? "Authentication failed. Try again."
+            }
+        }
+    }
+
+    private func fireRowAction(_ pending: PendingRowAction) {
+        pendingRowAction = nil
+        Task { await viewModel.performRowAction(pending.action, item: pending.item, container: container) }
+    }
+
+    private var rowActionDialogTitle: String {
+        guard let pendingRowAction else { return "" }
+        return "\(pendingRowAction.action.title) \(pendingRowAction.item.name)?"
+    }
+
+    private var rowActionDialogPresented: Binding<Bool> {
+        Binding(
+            get: { pendingRowAction != nil },
+            set: { if !$0 { pendingRowAction = nil } }
+        )
+    }
+
+    // MARK: - Search results
+
+    @ViewBuilder
+    private var searchResultsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.unit * 3) {
+            SectionLabel("Results")
+
+            if searchResults.isEmpty {
+                GlassCard {
+                    Text("No servers match \u{201C}\(searchText)\u{201D}")
+                        .bodySecondary()
+                }
+            } else {
+                VStack(spacing: Spacing.unit * 2) {
+                    ForEach(searchResults) { item in
+                        serverRow(item, projectCaption: projectName(for: item.projectID))
+                    }
+                }
+            }
+        }
     }
 
     /// "N servers · M running" summary chip shown in place of the full

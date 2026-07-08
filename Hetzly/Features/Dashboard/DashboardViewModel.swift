@@ -24,6 +24,11 @@ final class DashboardViewModel {
         var servers: [ServerListItem]
         var isStale: Bool
         var errorMessage: String?
+        /// `true` when `errorMessage` came from `HetznerAPIError.unauthorized`
+        /// — the recoverable case an "Update token…" affordance can actually
+        /// fix. Defaulted so every existing `errorMessage:`-only call site
+        /// (previews, tests) keeps compiling unchanged.
+        var isAuthError = false
 
         var id: UUID { projectID }
     }
@@ -74,6 +79,18 @@ final class DashboardViewModel {
     /// fetch time (one bad account doesn't drop another's servers), joined
     /// into a single line since the dashboard shows one inline error row.
     private(set) var dedicatedError: String?
+    /// `true` when at least one of the failed Robot accounts above failed on
+    /// bad credentials specifically — `DedicatedSectionView` uses this to
+    /// point at Settings → Robot Accounts instead of a bare error, since
+    /// Robot has no `UpdateTokenSheet`-style in-place recovery.
+    private(set) var dedicatedIsAuthError = false
+
+    /// `ServerListItem.id`s with a row quick action (from the dashboard's
+    /// `.contextMenu`) currently in flight — driving the unobtrusive in-row
+    /// spinner overlay. A `Set` rather than a per-item progress value: the
+    /// row UI only needs "busy or not", and multiple rows can be busy at
+    /// once (independent per-server actions, no cross-row locking).
+    private(set) var rowActionInFlight: Set<String> = []
 
     /// Full `Server` payloads per project, kept alongside the display-only
     /// `ServerListItem` rows so `CostItemBuilder` has everything it needs
@@ -240,9 +257,9 @@ final class DashboardViewModel {
                         let servers = try await client.listServers()
                         return (target.projectID, .success(servers))
                     } catch let apiError as HetznerAPIError {
-                        return (target.projectID, .failure(.underlying(apiError.userMessage)))
+                        return (target.projectID, .failure(.underlying(DisplayableError(apiError))))
                     } catch {
-                        return (target.projectID, .failure(.underlying(error.localizedDescription)))
+                        return (target.projectID, .failure(.underlying(DisplayableError(message: error.localizedDescription))))
                     }
                 }
             }
@@ -256,13 +273,15 @@ final class DashboardViewModel {
                         section.servers = servers.map { ServerListItem(projectID: projectID, server: $0) }
                         section.isStale = false
                         section.errorMessage = nil
+                        section.isAuthError = false
                     }
                 case .failure(let error):
                     // Per-project isolation: leave any cached (possibly
                     // stale) rows exactly as they are, just surface the
                     // inline error alongside them.
                     updateSection(projectID: projectID) { section in
-                        section.errorMessage = error.userMessage
+                        section.errorMessage = error.userMessage.message
+                        section.isAuthError = error.userMessage.isAuthError
                     }
                 }
             }
@@ -349,13 +368,14 @@ final class DashboardViewModel {
         }
         struct RobotFetchResult: Sendable {
             let items: [DedicatedServerItem]
-            let errorMessage: String?
+            let error: DisplayableError?
         }
 
         let accounts = container.robotAccountsStore.accounts
         guard !accounts.isEmpty else {
             dedicatedServers = []
             dedicatedError = nil
+            dedicatedIsAuthError = false
             return
         }
 
@@ -365,16 +385,16 @@ final class DashboardViewModel {
             for target in targets {
                 group.addTask {
                     guard let client = target.client else {
-                        return RobotFetchResult(items: [], errorMessage: "No credentials configured for this Robot account.")
+                        return RobotFetchResult(items: [], error: DisplayableError(message: "No credentials configured for this Robot account."))
                     }
                     do {
                         let servers = try await client.listServers()
                         let items = servers.map { DedicatedServerItem(accountID: target.accountID, server: $0) }
-                        return RobotFetchResult(items: items, errorMessage: nil)
+                        return RobotFetchResult(items: items, error: nil)
                     } catch let apiError as HetznerAPIError {
-                        return RobotFetchResult(items: [], errorMessage: apiError.userMessage)
+                        return RobotFetchResult(items: [], error: DisplayableError(apiError))
                     } catch {
-                        return RobotFetchResult(items: [], errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
+                        return RobotFetchResult(items: [], error: DisplayableError(message: "Couldn't reach Hetzner Robot right now. Check your connection and try again."))
                     }
                 }
             }
@@ -387,8 +407,9 @@ final class DashboardViewModel {
         }
 
         dedicatedServers = results.flatMap(\.items).sorted { $0.server.serverName < $1.server.serverName }
-        let errors = results.compactMap(\.errorMessage)
-        dedicatedError = errors.isEmpty ? nil : errors.joined(separator: " ")
+        let errors = results.compactMap(\.error)
+        dedicatedError = errors.isEmpty ? nil : errors.map(\.message).joined(separator: " ")
+        dedicatedIsAuthError = errors.contains { $0.isAuthError }
     }
 
     private func pricing(for projectID: UUID, client: CloudClient) async -> Pricing? {
@@ -436,6 +457,15 @@ final class DashboardViewModel {
 
         guard !targets.isEmpty else { return }
 
+        // Collected into a plain local dictionary and merged into
+        // `cpuSparklines` (the @Observable-tracked property) exactly once
+        // at the end, rather than once per server as each fetch resolves.
+        // Assigning per-server here would invalidate every row's identity
+        // repeatedly in the seconds right after a load/refresh — exactly
+        // when a user is most likely to be tapping a row to navigate in —
+        // which was intermittently swallowing that tap. One batched
+        // assignment keeps the post-load view stable.
+        var collected: [String: [Double]] = [:]
         await withTaskGroup(of: (String, [Double]?).self) { group in
             for target in targets {
                 group.addTask {
@@ -458,23 +488,102 @@ final class DashboardViewModel {
 
             for await (key, values) in group {
                 if let values, !values.isEmpty {
-                    cpuSparklines[key] = values
+                    collected[key] = values
                 }
             }
         }
+
+        guard !collected.isEmpty else { return }
+        cpuSparklines.merge(collected) { _, new in new }
+    }
+
+    // MARK: - Row quick actions (dashboard `.contextMenu`)
+
+    /// Fires a contextual power action from a dashboard row's context menu
+    /// directly against `CloudClient` (deliberately not routed through
+    /// `ServerDetailViewModel` — the dashboard has no server-detail view
+    /// model instance for a row it hasn't navigated into), tracks it to
+    /// completion via `ActionTracker`, then refreshes just that one
+    /// project's section so the row reflects the new state. Confirmation and
+    /// the biometric gate happen in `DashboardView` before this is called;
+    /// this method assumes the action has already been approved.
+    func performRowAction(_ action: PowerAction, item: ServerListItem, container: AppContainer) async {
+        guard let client = container.cloudClient(for: item.projectID) else { return }
+        rowActionInFlight.insert(item.id)
+        defer { rowActionInFlight.remove(item.id) }
+
+        do {
+            let started = try await fireRowAction(action, serverID: item.serverID, client: client)
+            let tracker = ActionTracker(client: client)
+            // Drain to a terminal update (finished/failed/timedOut); the row
+            // spinner is unobtrusive by design, so there's no separate
+            // inline error surface here — a failed action just leaves the
+            // row showing its last-known (refreshed below) state.
+            for await update in await tracker.track(actionID: started.id) {
+                if case .progress = update { continue }
+                break
+            }
+        } catch {
+            // Same rationale: no dashboard-row inline error UI. The refresh
+            // below still runs so the row reflects reality either way.
+        }
+
+        await refreshLiveProject(item.projectID, container: container)
+    }
+
+    /// Maps the small set of contextual `PowerAction`s the dashboard's row
+    /// quick-actions menu offers (reboot/shutdown/power-on) onto their
+    /// `CloudClient` calls. Every other `PowerAction` case is Server
+    /// Detail-only and never reaches this method.
+    private func fireRowAction(_ action: PowerAction, serverID: Int, client: CloudClient) async throws -> Action {
+        switch action {
+        case .powerOn: try await client.powerOn(serverID: serverID)
+        case .shutdown: try await client.shutdown(serverID: serverID)
+        case .reboot: try await client.reboot(serverID: serverID)
+        case .reset, .powerOff, .delete:
+            throw DashboardLoadError.underlying(DisplayableError(message: "Unsupported row action."))
+        }
+    }
+
+    /// Refetches a single project's live server list and updates just its
+    /// `ProjectSection` in place — the scoped counterpart to `refreshLive`'s
+    /// all-projects sweep, used after a row quick action so one contextual
+    /// tap doesn't re-fetch every other project too.
+    private func refreshLiveProject(_ projectID: UUID, container: AppContainer) async {
+        guard let client = container.cloudClient(for: projectID) else { return }
+        let snapshotStore = container.snapshotStore()
+        do {
+            let servers = try await client.listServers()
+            snapshotStore.saveServers(servers, projectID: projectID)
+            serversByProject[projectID] = servers
+            updateSection(projectID: projectID) { section in
+                section.servers = servers.map { ServerListItem(projectID: projectID, server: $0) }
+                section.isStale = false
+                section.errorMessage = nil
+                section.isAuthError = false
+            }
+        } catch {
+            let displayable = DisplayableError(error)
+            updateSection(projectID: projectID) { section in
+                section.errorMessage = displayable.message
+                section.isAuthError = displayable.isAuthError
+            }
+        }
+        recomputeAttention()
+        writeWidgetSnapshot()
     }
 }
 
 private enum DashboardLoadError: Error, Sendable {
     case missingToken
-    case underlying(String)
+    case underlying(DisplayableError)
 
-    var userMessage: String {
+    var userMessage: DisplayableError {
         switch self {
         case .missingToken:
-            return "No token configured for this project."
-        case .underlying(let message):
-            return message
+            return DisplayableError(message: "No token configured for this project.")
+        case .underlying(let error):
+            return error
         }
     }
 }

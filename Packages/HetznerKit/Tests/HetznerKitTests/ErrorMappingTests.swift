@@ -109,4 +109,25 @@ struct ErrorMappingTests {
         #expect(HetznerAPIError.notFound.userMessage.contains("could not be found"))
         #expect(HetznerAPIError.http(status: 500).userMessage.contains("500"))
     }
+
+    @Test func forbiddenUserMessageIncludesReadOnlyTokenGuidance() {
+        let withoutMessage = HetznerAPIError.forbidden(message: nil).userMessage
+        #expect(withoutMessage == "You don't have permission for that. If this project uses a Read-only token, replace it with a Read & Write token.")
+
+        let withMessage = HetznerAPIError.forbidden(message: "no access").userMessage
+        #expect(withMessage.contains("no access"))
+        #expect(withMessage.contains("Read-only token"))
+        #expect(withMessage.contains("Read & Write token"))
+    }
+
+    @Test func isAuthErrorAndIsPermissionErrorFlagsAreMutuallyExclusive() {
+        #expect(HetznerAPIError.unauthorized.isAuthError == true)
+        #expect(HetznerAPIError.unauthorized.isPermissionError == false)
+
+        #expect(HetznerAPIError.forbidden(message: nil).isPermissionError == true)
+        #expect(HetznerAPIError.forbidden(message: nil).isAuthError == false)
+
+        #expect(HetznerAPIError.notFound.isAuthError == false)
+        #expect(HetznerAPIError.notFound.isPermissionError == false)
+    }
 }

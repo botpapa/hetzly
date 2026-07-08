@@ -14,6 +14,11 @@ struct ServerListItem: Identifiable, Sendable {
     let typeName: String
     let city: String
     let countryCode: String
+    /// The server's public IPv4 address, when it has one — threaded through
+    /// from `Server.publicNet.ipv4?.ip` so dashboard search can match on IP
+    /// as well as name, and row quick actions can offer "Copy IPv4" without
+    /// a second network round trip.
+    let publicIPv4: String?
 
     /// Primitive init — used by the view model when adapting `Server`
     /// values, and directly by previews so they don't need a live `Server`.
@@ -24,7 +29,8 @@ struct ServerListItem: Identifiable, Sendable {
         status: ServerStatus,
         typeName: String,
         city: String,
-        countryCode: String
+        countryCode: String,
+        publicIPv4: String? = nil
     ) {
         self.projectID = projectID
         self.serverID = serverID
@@ -33,6 +39,7 @@ struct ServerListItem: Identifiable, Sendable {
         self.typeName = typeName
         self.city = city
         self.countryCode = countryCode
+        self.publicIPv4 = publicIPv4
     }
 
     init(projectID: UUID, server: Server) {
@@ -43,7 +50,8 @@ struct ServerListItem: Identifiable, Sendable {
             status: server.status,
             typeName: server.serverType.name,
             city: server.datacenter.location.city,
-            countryCode: server.datacenter.location.country
+            countryCode: server.datacenter.location.country,
+            publicIPv4: server.publicNet.ipv4?.ip
         )
     }
 

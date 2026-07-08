@@ -59,6 +59,12 @@ final class ServerDetailViewModel {
 
     private(set) var activeAction: ActiveAction?
     private(set) var actionError: String?
+    /// `true` when `actionError` came from `HetznerAPIError.forbidden` — most
+    /// commonly a Read-only token hitting a write endpoint. Drives the
+    /// inline error card's "Update Token…" button; `actionError` itself
+    /// already carries the read-only guidance sentence via
+    /// `HetznerAPIError.userMessage`.
+    private(set) var actionErrorIsPermissionError = false
     /// Flips to `true` right after an action finishes successfully, so the
     /// view can fire a one-shot success haptic / mascot celebration. The
     /// view is responsible for resetting it back to `false`.
@@ -74,6 +80,9 @@ final class ServerDetailViewModel {
 
     private(set) var managementActiveAction: ManagementActiveAction?
     private(set) var managementActionError: String?
+    /// Same rationale as `actionErrorIsPermissionError`, for management
+    /// actions (backups, rescue, snapshots, ISO, rescale, ...).
+    private(set) var managementActionErrorIsPermissionError = false
     private(set) var lastManagementActionSucceeded = false
     /// Success copy for the last completed management action or rescale
     /// step chain — read by the view for the success toast. Stays set after
@@ -193,6 +202,7 @@ final class ServerDetailViewModel {
 
     func clearActionError() {
         actionError = nil
+        actionErrorIsPermissionError = false
     }
 
     func acknowledgeSuccess() {
@@ -202,6 +212,7 @@ final class ServerDetailViewModel {
     func runAction(_ kind: PowerAction) {
         guard let client, activeAction == nil else { return }
         actionError = nil
+        actionErrorIsPermissionError = false
         lastActionSucceeded = false
         actionTask?.cancel()
         actionTask = Task { [weak self] in
@@ -235,14 +246,20 @@ final class ServerDetailViewModel {
                     // type ActionTracker settles on.
                     activeAction = nil
                     actionError = Self.message(for: underlying)
+                    // `underlying` is statically `HetznerAPIError` (see the
+                    // comment above), so no conditional cast is needed here
+                    // unlike the generic `Error` catch clauses below.
+                    actionErrorIsPermissionError = underlying.isPermissionError
                 case .timedOut:
                     activeAction = nil
                     actionError = "This is taking longer than expected. Check back shortly."
+                    actionErrorIsPermissionError = false
                 }
             }
         } catch {
             activeAction = nil
             actionError = Self.message(for: error)
+            actionErrorIsPermissionError = (error as? HetznerAPIError)?.isPermissionError ?? false
         }
     }
 
@@ -261,6 +278,7 @@ final class ServerDetailViewModel {
 
     func clearManagementActionError() {
         managementActionError = nil
+        managementActionErrorIsPermissionError = false
     }
 
     func acknowledgeManagementSuccess() {
@@ -282,6 +300,7 @@ final class ServerDetailViewModel {
     func runManagementAction(_ kind: ServerManagementAction) {
         guard let client, managementActiveAction == nil, activeAction == nil else { return }
         managementActionError = nil
+        managementActionErrorIsPermissionError = false
         lastManagementActionSucceeded = false
         managementTask?.cancel()
         managementTask = Task { [weak self] in
@@ -310,6 +329,7 @@ final class ServerDetailViewModel {
         } catch {
             managementActiveAction = nil
             managementActionError = Self.message(for: error)
+            managementActionErrorIsPermissionError = (error as? HetznerAPIError)?.isPermissionError ?? false
         }
     }
 
@@ -381,6 +401,7 @@ final class ServerDetailViewModel {
     func runRescale(serverType: ServerType, upgradeDisk: Bool, powerOnAfter: Bool) {
         guard let client, managementActiveAction == nil, activeAction == nil else { return }
         managementActionError = nil
+        managementActionErrorIsPermissionError = false
         lastManagementActionSucceeded = false
         managementTask?.cancel()
         managementTask = Task { [weak self] in
@@ -422,6 +443,7 @@ final class ServerDetailViewModel {
         } catch {
             managementActiveAction = nil
             managementActionError = Self.message(for: error)
+            managementActionErrorIsPermissionError = (error as? HetznerAPIError)?.isPermissionError ?? false
         }
     }
 

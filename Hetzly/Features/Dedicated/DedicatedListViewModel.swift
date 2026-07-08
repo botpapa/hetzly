@@ -13,7 +13,11 @@ final class DedicatedListViewModel {
         case idle
         case loading
         case loaded
-        case failed(String)
+        /// Carries a `DisplayableError` so the failed state can tell an
+        /// auth failure (bad Robot webservice credentials) apart from any
+        /// other error and point at Settings → Robot Accounts — there's no
+        /// `UpdateTokenSheet` equivalent for Robot, so that's the honest fix.
+        case failed(DisplayableError)
     }
 
     private(set) var servers: [RobotServer] = []
@@ -33,7 +37,7 @@ final class DedicatedListViewModel {
         }
         guard let client = container.robotClient(for: accountID) else {
             servers = []
-            loadState = .failed("No stored credentials for this account.")
+            loadState = .failed(DisplayableError(message: "No stored credentials for this account."))
             return
         }
         if servers.isEmpty { loadState = .loading }
@@ -44,14 +48,7 @@ final class DedicatedListViewModel {
             }
             loadState = .loaded
         } catch {
-            loadState = .failed(Self.message(for: error))
+            loadState = .failed(DisplayableError(error))
         }
-    }
-
-    private static func message(for error: Error) -> String {
-        if let apiError = error as? HetznerAPIError {
-            return apiError.userMessage
-        }
-        return "Something went wrong. Please try again."
     }
 }

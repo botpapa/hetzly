@@ -51,7 +51,7 @@ struct ServerManagementConfirmSheet: View {
         }
         .onChange(of: authError) { _, newValue in
             guard newValue != nil else { return }
-            withAnimation(.default) { shakeCount += 1 }
+            withAnimation(.snappy) { shakeCount += 1 }
         }
     }
 

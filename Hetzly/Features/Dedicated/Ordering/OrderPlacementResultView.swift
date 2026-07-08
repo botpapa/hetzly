@@ -9,6 +9,12 @@ struct OrderPlacementResultView: View {
     var viewModel: OrderFlowViewModel
     var onDone: () -> Void = {}
 
+    /// Shown from the ambiguous-failure warning's "Check Order History"
+    /// button — a modal sheet rather than a push since this view can itself
+    /// be reached mid-`NavigationStack` and a push here would fight with
+    /// `OrderReviewView`'s own title/back button.
+    @State private var isOrderHistoryPresented = false
+
     var body: some View {
         VStack(spacing: Spacing.unit * 6) {
             Spacer(minLength: 0)
@@ -30,6 +36,16 @@ struct OrderPlacementResultView: View {
         }
         .padding(Spacing.screenMargin)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .sheet(isPresented: $isOrderHistoryPresented) {
+            NavigationStack {
+                TransactionsListView(accountID: viewModel.accountID)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { isOrderHistoryPresented = false }
+                        }
+                    }
+            }
+        }
     }
 
     private func statusContent(state: MascotState, title: String) -> some View {
@@ -131,7 +147,7 @@ struct OrderPlacementResultView: View {
         switch error {
         case .orderingDisabled:
             orderingDisabledContent
-        case .message(let message):
+        case .message(let message, let isAmbiguous):
             VStack(spacing: Spacing.unit * 5) {
                 if container.settings.mascotEnabled {
                     MascotView(state: .alarm, scale: 3)
@@ -143,7 +159,30 @@ struct OrderPlacementResultView: View {
                     .bodySecondary()
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Spacing.screenMargin)
+                if isAmbiguous {
+                    ambiguousFailureWarning
+                }
                 PrimaryCTA(title: "Try Again") { viewModel.retryPlacement() }
+            }
+        }
+    }
+
+    /// Shown only for transport-level/timeout failures, where the request
+    /// may have reached Hetzner and been processed even though this device
+    /// never saw a clean response — retrying blind could double-order.
+    private var ambiguousFailureWarning: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                HStack(alignment: .top, spacing: Spacing.unit * 2) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(HetzlyColors.statusError)
+                    Text("Your previous attempt may have gone through — check Order History first.")
+                        .bodySecondary()
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Button("Check Order History") { isOrderHistoryPresented = true }
+                    .secondaryCTAStyle()
+                    .frame(maxWidth: .infinity)
             }
         }
     }
@@ -211,6 +250,19 @@ struct OrderPlacementResultView: View {
         CanvasBackground()
         OrderPlacementResultView(
             viewModel: OrderPreviewFixtures.reviewViewModel(phase: .failed(.message("This product is temporarily out of stock.")))
+        )
+    }
+    .environment(AppContainer.makeDefault())
+    .preferredColorScheme(.dark)
+}
+
+#Preview("Failed — ambiguous") {
+    ZStack {
+        CanvasBackground()
+        OrderPlacementResultView(
+            viewModel: OrderPreviewFixtures.reviewViewModel(
+                phase: .failed(.message("A network error occurred. Please check your connection and try again.", isAmbiguous: true))
+            )
         )
     }
     .environment(AppContainer.makeDefault())

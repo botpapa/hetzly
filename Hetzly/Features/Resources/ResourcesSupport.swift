@@ -235,6 +235,44 @@ private struct ResourceErrorMascot: View {
     }
 }
 
+/// Auth-error recovery for a `resourceListBody` error banner: an "Update
+/// token…" button that opens `UpdateTokenSheet` for the currently scoped
+/// project. Reads `ResourcesProjectSelection`/`AppContainer` from the
+/// environment (mirroring `ResourceErrorMascot`'s wrapper pattern, since
+/// `resourceListBody` is a free function and can't declare `@Environment`
+/// itself) rather than threading a project parameter through every
+/// `resourceListBody` call site — every caller of `resourceListBody` lives
+/// inside `ResourcesHubView`'s `NavigationStack`, which injects
+/// `ResourcesProjectSelection` for exactly this purpose. Renders nothing for
+/// a non-auth error or when no project is scoped.
+private struct ResourceErrorRecovery: View {
+    let error: DisplayableError
+
+    @Environment(AppContainer.self) private var container
+    @Environment(ResourcesProjectSelection.self) private var selection
+    @State private var updateTokenProject: ProjectRecord?
+
+    var body: some View {
+        Group {
+            if error.isAuthError, let project = scopedProject {
+                Button("Update token…") {
+                    updateTokenProject = project
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(HetzlyColors.accent)
+            }
+        }
+        .sheet(item: $updateTokenProject) { project in
+            UpdateTokenSheet(project: project)
+        }
+    }
+
+    private var scopedProject: ProjectRecord? {
+        guard let projectID = selection.projectID else { return nil }
+        return container.projectsStore.projects.first { $0.id == projectID }
+    }
+}
+
 // MARK: - Shared list scaffold
 
 /// Renders a `ResourceListModel.LoadState` + item array as loading / error /
@@ -260,29 +298,30 @@ func resourceListBody<T: Identifiable & Sendable, Row: View>(
         if items.isEmpty {
             ResourceLoadingState()
         } else {
-            resourceList(items: items, bannerMessage: nil, onRefresh: onRefresh, row: row)
+            resourceList(items: items, bannerError: nil, onRefresh: onRefresh, row: row)
         }
-    case .failed(let message):
+    case .failed(let error):
         if items.isEmpty {
             VStack(spacing: Spacing.unit * 4) {
                 ResourceErrorMascot()
-                Text(message)
+                Text(error.message)
                     .bodySecondary()
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Spacing.screenMargin * 2)
+                ResourceErrorRecovery(error: error)
                 Button("Try Again", action: onRetry)
                     .secondaryCTAStyle()
             }
             .frame(maxWidth: .infinity)
             .padding(.top, Spacing.unit * 16)
         } else {
-            resourceList(items: items, bannerMessage: message, onRefresh: onRefresh, row: row)
+            resourceList(items: items, bannerError: error, onRefresh: onRefresh, row: row)
         }
     case .loaded:
         if items.isEmpty {
             ResourceEmptyState(title: emptyTitle, message: emptyMessage, ctaTitle: emptyCTA, onCreate: onCreate)
         } else {
-            resourceList(items: items, bannerMessage: nil, onRefresh: onRefresh, row: row)
+            resourceList(items: items, bannerError: nil, onRefresh: onRefresh, row: row)
         }
     }
 }
@@ -291,15 +330,18 @@ func resourceListBody<T: Identifiable & Sendable, Row: View>(
 @ViewBuilder
 private func resourceList<T: Identifiable & Sendable, Row: View>(
     items: [T],
-    bannerMessage: String?,
+    bannerError: DisplayableError?,
     onRefresh: @escaping @Sendable () async -> Void,
     @ViewBuilder row: @escaping (T) -> Row
 ) -> some View {
     List {
-        if let bannerMessage {
-            ResourceErrorBanner(message: bannerMessage)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
+        if let bannerError {
+            VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                ResourceErrorBanner(message: bannerError.message)
+                ResourceErrorRecovery(error: bannerError)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
         }
         ForEach(items) { item in
             row(item)

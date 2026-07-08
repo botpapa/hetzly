@@ -147,7 +147,10 @@ final class CreateServerViewModel {
     private(set) var phase: Phase = .configuring
     /// Set from `CreateServerResult.rootPassword` when the request completes
     /// with no SSH keys attached. A secret — never logged, only ever shown
-    /// once and copied via `SensitivePasteboard`.
+    /// once and copied via `SensitivePasteboard`. Also durably saved to
+    /// `ServerCredentialsVault` the moment it arrives — see `createServer`
+    /// — so `pendingSecret(forServerID:)` below can recover it even after
+    /// this view model (and the in-memory copy here) no longer exist.
     private(set) var createdRootPassword: String?
 
     init(
@@ -226,6 +229,23 @@ final class CreateServerViewModel {
             catalogState = .loaded
         } catch {
             catalogState = .failed(Self.message(for: error))
+        }
+    }
+
+    /// Re-fetches SSH keys after the wizard's in-flow "Add SSH Key" sheet
+    /// (step 4) creates one. Diffs against the keys already loaded to find
+    /// the newly created key and auto-selects it, so the user doesn't have
+    /// to hunt for the row they just added. Silently no-ops on failure —
+    /// the sheet itself already reported success, and a failed refresh just
+    /// means the new key stays unselected until the wizard's own retry/back
+    /// navigation reloads the catalog.
+    func refreshSSHKeys(container: AppContainer) async {
+        guard let client = container.cloudClient(for: projectID) else { return }
+        let previousIDs = Set(sshKeys.map(\.id))
+        guard let refreshed = try? await client.listSSHKeys() else { return }
+        sshKeys = refreshed
+        if let newKey = refreshed.first(where: { !previousIDs.contains($0.id) }) {
+            sshKeyIDs.insert(newKey.id)
         }
     }
 
@@ -353,6 +373,19 @@ final class CreateServerViewModel {
         do {
             let result = try await client.createServer(request)
             createdRootPassword = result.rootPassword
+            // Persist immediately, not just on-screen: `createdRootPassword`
+            // only lives in memory for as long as this view model does, so
+            // if the app is killed while the result screen is still up
+            // (background jetsam, crash, force-quit) the in-memory copy is
+            // gone — and Hetzner never shows this password again, so the
+            // only recovery would be a rescue-mode password reset. Saving to
+            // `ServerCredentialsVault` the instant it arrives closes that
+            // window; it's a durable save (not cleared on "Done"), so the
+            // user can also come back for it later via the create flow's
+            // "saved on this device" banner.
+            if let password = result.rootPassword {
+                try? ServerCredentialsVault.saveRootPassword(password, serverID: result.server.id)
+            }
             let tracker = ActionTracker(client: client)
             for await update in await tracker.track(actionID: result.action.id) {
                 switch update {
@@ -379,6 +412,17 @@ final class CreateServerViewModel {
     /// failure phase's "Try Again".
     func retryFromFailure() {
         phase = .configuring
+    }
+
+    /// The one blessed access point this feature uses to read back a
+    /// durably-saved root password (e.g. for `CreateServerFlow`'s "saved on
+    /// this device" banner) rather than reaching into `ServerCredentialsVault`
+    /// directly — so a future storage-format change only needs updating
+    /// here. A thin passthrough today; kept as its own method because other
+    /// wizard steps may eventually want their own read path without knowing
+    /// the vault's storage details.
+    static func pendingSecret(forServerID serverID: Int) -> String? {
+        ServerCredentialsVault.rootPassword(serverID: serverID)
     }
 
     private static func message(for error: Error) -> String {

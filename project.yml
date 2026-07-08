@@ -20,8 +20,12 @@ targets:
       - path: HetzlyWidgets/Shared/WidgetSnapshotShared.swift
     dependencies:
       - package: HetznerKit
-      - target: HetzlyWidgets
-        embed: true
+      # TEMPORARY device-build workaround: widgets need the App Groups
+      # capability, which this Apple account can't provision until the
+      # latest Program License Agreement is accepted at developer.apple.com.
+      # Restore before committing / for simulator+CI builds:
+      # - target: HetzlyWidgets
+      #   embed: true
     settings:
       base:
         SWIFT_VERSION: "6.0"
@@ -45,7 +49,8 @@ targets:
         # this setting — no manual plist entries needed.
         ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: "AppIcon-Mono AppIcon-Light AppIcon-Hetzi"
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: true
-        CODE_SIGN_ENTITLEMENTS: Hetzly/Hetzly.entitlements
+        # TEMPORARY: entitlements disabled with the widget embed (see above).
+        # CODE_SIGN_ENTITLEMENTS: Hetzly/Hetzly.entitlements
 
   HetzlyWidgets:
     type: app-extension
@@ -111,7 +116,8 @@ schemes:
     build:
       targets:
         Hetzly: all
-        HetzlyWidgets: all
+        # TEMPORARY (see widget-embed note above):
+        # HetzlyWidgets: all
         HetzlyTests: [test]
         HetzlyUITests: [test]
     test:

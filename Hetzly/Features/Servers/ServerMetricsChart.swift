@@ -51,7 +51,7 @@ struct ServerMetricsChart: View {
             HStack {
                 Text(title.uppercased())
                     .font(.system(size: 12, weight: .semibold))
-                    .tracking(1)
+                    .tracking(1.5)
                     .foregroundStyle(HetzlyColors.textTertiary)
                 Spacer()
                 if series.count > 1 {
@@ -162,7 +162,11 @@ struct ServerMetricsChart: View {
                                 withAnimation(.snappy) { scrubDate = nil }
                             }
                         )
-                        .sensoryFeedback(.selection, trigger: scrubDate != nil)
+                        // Trigger on `scrubDate` itself (not merely whether
+                        // it's non-nil) so every nearest-datapoint change
+                        // during a drag ticks `.selection`, not just the
+                        // start/end of the gesture.
+                        .sensoryFeedback(.selection, trigger: scrubDate)
                     }
 
                     if let scrubDate, let anchor = nearestPoint(to: scrubDate),

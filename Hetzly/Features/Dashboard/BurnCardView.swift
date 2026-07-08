@@ -30,6 +30,8 @@ struct BurnCardView: View {
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
                 .foregroundStyle(HetzlyColors.textPrimary)
+                .contentTransition(.numericText())
+                .animation(.snappy, value: monthToDate)
 
                 if let projected {
                     Text("projected \(projected, format: .currency(code: currency))")

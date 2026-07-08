@@ -12,6 +12,13 @@ import SwiftUI
 struct DedicatedCostSection: View {
     let dedicatedServers: [CostsViewModel.DedicatedServerRow]
     let dedicatedErrorMessage: String?
+    /// `true` when the Robot error above came from bad account credentials.
+    /// Robot has no per-project token to swap in place like Cloud does — the
+    /// credentials live on the account itself — so this shows a hint
+    /// pointing at Settings rather than an "Update token…" sheet that
+    /// doesn't exist for Robot. Defaulted so existing call sites (previews)
+    /// keep compiling unchanged.
+    var dedicatedIsAuthError = false
     let manualEntries: [ManualCostEntry]
     let currency: String
     let onSetPrice: (CostsViewModel.DedicatedServerRow) -> Void
@@ -23,6 +30,9 @@ struct DedicatedCostSection: View {
         VStack(alignment: .leading, spacing: Spacing.unit * 3) {
             HStack(alignment: .firstTextBaseline) {
                 SectionLabel("Dedicated & Manual")
+                if unpricedCount > 0 {
+                    GlassChip("\(unpricedCount) need\(unpricedCount == 1 ? "s" : "") a price", systemImage: "exclamationmark.circle")
+                }
                 Spacer()
                 if total > 0 {
                     Text(total, format: .currency(code: currency))
@@ -40,6 +50,10 @@ struct DedicatedCostSection: View {
                                 .foregroundStyle(HetzlyColors.statusError)
                             Text(dedicatedErrorMessage)
                                 .bodySecondary()
+                        }
+                        if dedicatedIsAuthError {
+                            Text("Update the account in Settings → Robot Accounts.")
+                                .caption()
                         }
                     }
 
@@ -95,6 +109,12 @@ struct DedicatedCostSection: View {
         let dedicatedTotal = dedicatedServers.compactMap(\.monthlyPrice).reduce(Decimal(0), +)
         let manualTotal = manualEntries.reduce(Decimal(0)) { $0 + $1.monthlyPrice }
         return dedicatedTotal + manualTotal
+    }
+
+    /// Robot servers with no manually-entered price yet — these show "Set
+    /// price" instead of an amount below, and don't count toward `total`.
+    private var unpricedCount: Int {
+        dedicatedServers.filter { $0.monthlyPrice == nil }.count
     }
 
     private func dedicatedRow(_ server: CostsViewModel.DedicatedServerRow) -> some View {

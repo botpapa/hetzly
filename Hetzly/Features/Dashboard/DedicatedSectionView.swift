@@ -14,6 +14,12 @@ import SwiftUI
 struct DedicatedSectionView: View {
     let servers: [DashboardViewModel.DedicatedServerItem]
     let errorMessage: String?
+    /// `true` when `errorMessage` came from bad Robot account credentials.
+    /// Robot has no per-project token to swap in place like Cloud does, so
+    /// this shows a hint pointing at Settings rather than an "Update
+    /// token…" sheet that doesn't exist for Robot. Defaulted so existing
+    /// call sites (previews) keep compiling unchanged.
+    var isAuthError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.unit * 3) {
@@ -21,11 +27,17 @@ struct DedicatedSectionView: View {
 
             if let errorMessage {
                 GlassCard {
-                    HStack(spacing: Spacing.unit * 2) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(HetzlyColors.statusError)
-                        Text(errorMessage)
-                            .bodySecondary()
+                    VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                        HStack(spacing: Spacing.unit * 2) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(HetzlyColors.statusError)
+                            Text(errorMessage)
+                                .bodySecondary()
+                        }
+                        if isAuthError {
+                            Text("Update the account in Settings → Robot Accounts.")
+                                .caption()
+                        }
                     }
                 }
             }

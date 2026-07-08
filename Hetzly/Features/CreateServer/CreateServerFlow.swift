@@ -16,6 +16,13 @@ struct CreateServerFlow: View {
 
     @State private var viewModel: CreateServerViewModel
 
+    /// Server IDs with a root password saved in `ServerCredentialsVault` —
+    /// refreshed on every appearance (cheap: a `UserDefaults` array read, no
+    /// Keychain access) so step 1's banner reflects deletions made from its
+    /// own sheet without needing a full flow relaunch.
+    @State private var savedCredentialServerIDs: [Int] = []
+    @State private var isSavedCredentialsSheetPresented = false
+
     init(projectID: UUID, onCreated: @escaping (Server) -> Void) {
         self.projectID = projectID
         self.onCreated = onCreated
@@ -39,6 +46,18 @@ struct CreateServerFlow: View {
         .task {
             guard viewModel.catalogState == .idle else { return }
             await viewModel.loadCatalog(container: container)
+        }
+        .onAppear {
+            savedCredentialServerIDs = ServerCredentialsVault.knownServerIDs()
+        }
+        .sheet(isPresented: $isSavedCredentialsSheetPresented) {
+            SavedCredentialsSheet(serverIDs: savedCredentialServerIDs) { serverID in
+                ServerCredentialsVault.deleteRootPassword(serverID: serverID)
+                savedCredentialServerIDs.removeAll { $0 == serverID }
+                if savedCredentialServerIDs.isEmpty {
+                    isSavedCredentialsSheetPresented = false
+                }
+            }
         }
     }
 
@@ -115,6 +134,12 @@ struct CreateServerFlow: View {
             .padding(.top, Spacing.unit * 3)
             .padding(.bottom, Spacing.unit * 2)
 
+            if viewModel.step == .location, !savedCredentialServerIDs.isEmpty {
+                savedCredentialsBanner
+                    .padding(.horizontal, Spacing.screenMargin)
+                    .padding(.bottom, Spacing.unit * 2)
+            }
+
             ScrollView {
                 stepContent
                     .padding(.horizontal, Spacing.screenMargin)
@@ -130,6 +155,34 @@ struct CreateServerFlow: View {
                 }
             }
         }
+    }
+
+    /// Step-1-only banner surfacing `ServerCredentialsVault`'s durable save:
+    /// since this device stores every root password permanently (not just
+    /// while the create flow's result screen is up), a later launch of this
+    /// same flow is a natural, host-agnostic place to remind the user it's
+    /// there — regardless of whether they ever navigate to that server's
+    /// detail screen afterward.
+    private var savedCredentialsBanner: some View {
+        Button {
+            isSavedCredentialsSheetPresented = true
+        } label: {
+            GlassCard {
+                HStack(spacing: Spacing.unit * 3) {
+                    Image(systemName: "key.fill")
+                        .foregroundStyle(HetzlyColors.accent)
+                    Text("The root password from your last server creation is saved on this device.")
+                        .bodySecondary()
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(HetzlyColors.textTertiary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -149,6 +202,63 @@ struct CreateServerFlow: View {
                 removal: .opacity.combined(with: .move(edge: .leading))
             )
         )
+    }
+}
+
+/// Sheet behind `CreateServerFlow`'s step-1 banner: one `SensitiveSecretCard`
+/// per server id with a durably-saved root password, plus an explicit
+/// "Delete" action per card. Viewing here never deletes anything on its
+/// own — `ServerCredentialsVault` only loses an entry when the user
+/// deliberately asks it to, since these passwords are meant to stay
+/// recoverable on this device indefinitely, not just until the next glance.
+private struct SavedCredentialsSheet: View {
+    let serverIDs: [Int]
+    let onDelete: (Int) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                CanvasBackground()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.unit * 5) {
+                        Text(
+                            "These passwords are saved on this device so you never lose one just because a "
+                                + "creation screen was dismissed. They stay here until you delete them."
+                        )
+                        .bodySecondary()
+
+                        ForEach(serverIDs, id: \.self) { serverID in
+                            if let secret = CreateServerViewModel.pendingSecret(forServerID: serverID) {
+                                VStack(alignment: .leading, spacing: Spacing.unit * 2) {
+                                    SensitiveSecretCard(
+                                        title: "Server #\(serverID) Root Password",
+                                        secret: secret,
+                                        note: "Saved on this device. Hetzner does not store this password — save it now if you haven't."
+                                    )
+                                    Button(role: .destructive) {
+                                        onDelete(serverID)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    .secondaryCTAStyle()
+                                }
+                            }
+                        }
+                    }
+                    .padding(Spacing.screenMargin)
+                }
+            }
+            .navigationTitle("Saved Passwords")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+            }
+        }
     }
 }
 

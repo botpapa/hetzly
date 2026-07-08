@@ -25,25 +25,22 @@ struct CostShareCardView: View {
                 endRadius: 500
             )
 
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: Spacing.unit * 7) {
                 header
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("MONTH TO DATE")
-                        .font(.system(size: 13, weight: .semibold))
-                        .tracking(1.5)
-                        .foregroundStyle(HetzlyColors.textTertiary)
+                VStack(alignment: .leading, spacing: Spacing.unit * 2.5) {
+                    SectionLabel("Month to Date")
 
                     Text(monthToDate, format: .currency(code: currency))
+                        .hetzlyMonoNumbers()
                         .font(.system(size: 56, weight: .bold, design: .monospaced))
-                        .monospacedDigit()
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
                         .foregroundStyle(HetzlyColors.textPrimary)
 
                     Text("projected \(projected, format: .currency(code: currency)) this month")
+                        .hetzlyMonoNumbers()
                         .font(.system(size: 18, design: .monospaced))
-                        .monospacedDigit()
                         .foregroundStyle(HetzlyColors.textSecondary)
                 }
 
@@ -57,7 +54,7 @@ struct CostShareCardView: View {
 
                 footer
             }
-            .padding(44)
+            .padding(Spacing.unit * 11)
         }
         .frame(width: Self.size.width, height: Self.size.height)
     }
@@ -79,11 +76,8 @@ struct CostShareCardView: View {
     }
 
     private var projectList: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("BY PROJECT")
-                .font(.system(size: 13, weight: .semibold))
-                .tracking(1.5)
-                .foregroundStyle(HetzlyColors.textTertiary)
+        VStack(alignment: .leading, spacing: Spacing.unit * 3.5) {
+            SectionLabel("By Project")
 
             ForEach(Array(projectTotals.prefix(6).enumerated()), id: \.offset) { _, project in
                 HStack(alignment: .firstTextBaseline) {
@@ -91,10 +85,10 @@ struct CostShareCardView: View {
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(HetzlyColors.textPrimary)
                         .lineLimit(1)
-                    Spacer(minLength: 12)
+                    Spacer(minLength: Spacing.unit * 3)
                     Text("\(project.projected, format: .currency(code: currency))/mo")
+                        .hetzlyMonoNumbers()
                         .font(.system(size: 17, weight: .semibold, design: .monospaced))
-                        .monospacedDigit()
                         .foregroundStyle(HetzlyColors.textSecondary)
                 }
             }

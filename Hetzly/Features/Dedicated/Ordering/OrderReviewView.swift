@@ -142,9 +142,22 @@ struct OrderReviewView: View {
         VStack(spacing: Spacing.unit * 2) {
             Divider().overlay(HetzlyColors.textTertiary.opacity(0.15))
             PrimaryCTA(title: placeOrderTitle(draft)) {
+                // Belt-and-suspenders against a double-tap firing two
+                // orders: the CTA disables the instant the phase leaves
+                // `.idle` below, and `placeOrder` itself re-checks this
+                // synchronously before its first `await` — the real money
+                // guard lives there, this is just the fast UI-side no-op.
+                guard viewModel.placementPhase == .idle else { return }
                 Task { await viewModel.placeOrder(container: container) }
             }
-            .disabled(!viewModel.isArmed)
+            .disabled(!viewModel.isArmed || viewModel.placementPhase.isInFlight)
+            .overlay(alignment: .trailing) {
+                if viewModel.placementPhase.isInFlight {
+                    ProgressView()
+                        .tint(.white)
+                        .padding(.trailing, Spacing.unit * 4)
+                }
+            }
             .frame(maxWidth: .infinity)
         }
         .padding(.horizontal, Spacing.screenMargin)

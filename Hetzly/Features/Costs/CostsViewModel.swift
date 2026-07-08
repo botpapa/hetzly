@@ -28,6 +28,11 @@ final class CostsViewModel {
         var projectedTotal: Decimal
         var monthToDate: Decimal
         var errorMessage: String?
+        /// `true` when `errorMessage` came from `HetznerAPIError.unauthorized`
+        /// — drives `CostProjectSectionView`'s "Update token…" affordance.
+        /// Defaulted so existing `errorMessage:`-only call sites (previews)
+        /// keep compiling unchanged.
+        var isAuthError = false
 
         var id: UUID { projectID }
 
@@ -107,6 +112,11 @@ final class CostsViewModel {
     /// others), joined into a single line for display since Costs shows one
     /// dedicated-servers section, not one per account.
     private(set) var dedicatedErrorMessage: String?
+    /// `true` when at least one of the failed Robot accounts above failed on
+    /// bad credentials specifically — `DedicatedCostSection` uses this to
+    /// show the "update the account in Settings" hint rather than a bare
+    /// error, mirroring `DedicatedListViewModel`'s Robot-side recovery copy.
+    private(set) var dedicatedIsAuthError = false
 
     /// Per-project pricing memo (TTL 24h), mirroring
     /// `DashboardViewModel.pricingCache`: this view model is its own
@@ -229,7 +239,7 @@ final class CostsViewModel {
         /// pricing (i.e. the cache was cold) — signals the caller to write
         /// it back into `pricingCache`.
         let freshPricing: Pricing?
-        let errorMessage: String?
+        let error: DisplayableError?
     }
 
     /// Fetches every project concurrently with every other project.
@@ -257,7 +267,7 @@ final class CostsViewModel {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
                 items: [], currency: nil, freshPricing: nil,
-                errorMessage: "No token configured for this project."
+                error: DisplayableError(message: "No token configured for this project.")
             )
         }
 
@@ -294,18 +304,18 @@ final class CostsViewModel {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
                 items: items, currency: pricing.currency, freshPricing: freshPricing,
-                errorMessage: nil
+                error: nil
             )
         } catch let apiError as HetznerAPIError {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
-                items: [], currency: nil, freshPricing: nil, errorMessage: apiError.userMessage
+                items: [], currency: nil, freshPricing: nil, error: DisplayableError(apiError)
             )
         } catch {
             return ProjectFetch(
                 projectID: target.projectID, projectName: target.projectName,
                 items: [], currency: nil, freshPricing: nil,
-                errorMessage: "Couldn't reach Hetzner right now. Check your connection and try again."
+                error: DisplayableError(message: "Couldn't reach Hetzner right now. Check your connection and try again.")
             )
         }
     }
@@ -343,7 +353,7 @@ final class CostsViewModel {
     private struct RobotAccountFetch: Sendable {
         let accountID: UUID
         let servers: [RobotServer]
-        let errorMessage: String?
+        let error: DisplayableError?
     }
 
     /// Fetches every Robot account concurrently with every other account
@@ -377,19 +387,19 @@ final class CostsViewModel {
         guard let client = target.client else {
             return RobotAccountFetch(
                 accountID: target.accountID, servers: [],
-                errorMessage: "No credentials configured for this Robot account."
+                error: DisplayableError(message: "No credentials configured for this Robot account.")
             )
         }
 
         do {
             let servers = try await client.listServers()
-            return RobotAccountFetch(accountID: target.accountID, servers: servers, errorMessage: nil)
+            return RobotAccountFetch(accountID: target.accountID, servers: servers, error: nil)
         } catch let apiError as HetznerAPIError {
-            return RobotAccountFetch(accountID: target.accountID, servers: [], errorMessage: apiError.userMessage)
+            return RobotAccountFetch(accountID: target.accountID, servers: [], error: DisplayableError(apiError))
         } catch {
             return RobotAccountFetch(
                 accountID: target.accountID, servers: [],
-                errorMessage: "Couldn't reach Hetzner Robot right now. Check your connection and try again."
+                error: DisplayableError(message: "Couldn't reach Hetzner Robot right now. Check your connection and try again.")
             )
         }
     }
@@ -402,10 +412,12 @@ final class CostsViewModel {
     private func applyRobotFetches(_ robotFetches: [RobotAccountFetch], priceByServerNumber: [Int: DedicatedPriceEntry]) {
         var rows: [DedicatedServerRow] = []
         var errors: [String] = []
+        var isAuthError = false
 
         for fetch in robotFetches {
-            if let errorMessage = fetch.errorMessage {
-                errors.append(errorMessage)
+            if let error = fetch.error {
+                errors.append(error.message)
+                isAuthError = isAuthError || error.isAuthError
             }
             for server in fetch.servers {
                 let priceEntry = priceByServerNumber[server.serverNumber]
@@ -428,6 +440,7 @@ final class CostsViewModel {
 
         dedicatedServers = rows.sorted { $0.name < $1.name }
         dedicatedErrorMessage = errors.isEmpty ? nil : errors.joined(separator: " ")
+        dedicatedIsAuthError = isAuthError
     }
 
     /// Priced dedicated servers, adapted into `CostItem`s the same way
@@ -458,7 +471,8 @@ final class CostsViewModel {
                     ProjectSection(
                         projectID: fetch.projectID, projectName: fetch.projectName,
                         itemCosts: [], projectedTotal: 0, monthToDate: 0,
-                        errorMessage: fetch.errorMessage
+                        errorMessage: fetch.error?.message,
+                        isAuthError: fetch.error?.isAuthError ?? false
                     )
                 )
                 continue
@@ -472,7 +486,8 @@ final class CostsViewModel {
                 ProjectSection(
                     projectID: fetch.projectID, projectName: fetch.projectName,
                     itemCosts: summary.perItem, projectedTotal: summary.projectedMonthTotal,
-                    monthToDate: summary.monthToDate, errorMessage: fetch.errorMessage
+                    monthToDate: summary.monthToDate, errorMessage: fetch.error?.message,
+                    isAuthError: fetch.error?.isAuthError ?? false
                 )
             )
             allItems.append(contentsOf: fetch.items)

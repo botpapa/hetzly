@@ -1,7 +1,11 @@
 import SwiftUI
 
-/// The Settings tab: project management (Accounts), the Face ID gate for
-/// destructive actions, appearance, the mascot toggle, and an About section.
+/// The Settings tab, restructured into four sections: Accounts (Cloud
+/// projects, Robot accounts, and Storage Box accounts merged into one list,
+/// visually subgrouped by a leading kind icon per row, with a single "Add…"
+/// menu replacing three separate add buttons), Security, Appearance (which
+/// now folds in the mascot toggle — a mascot is an appearance choice), and a
+/// tightened About section.
 struct SettingsView: View {
     @Environment(AppContainer.self) private var container
 
@@ -33,14 +37,11 @@ struct SettingsView: View {
 
                 List {
                     accountsSection
-                    robotAccountsSection
-                    storageBoxAccountsSection
                     securitySection(
                         requireBiometrics: $settings.requireBiometricsForDestructive,
                         privacyShield: $settings.privacyShieldEnabled
                     )
-                    appearanceSection(appearance: $settings.appearance)
-                    mascotSection(mascotEnabled: $settings.mascotEnabled)
+                    appearanceSection(appearance: $settings.appearance, mascotEnabled: $settings.mascotEnabled)
                     aboutSection
                 }
                 .scrollContentBackground(.hidden)
@@ -129,8 +130,14 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Accounts
+    // MARK: - Accounts (Cloud projects + Robot accounts + Storage Box accounts)
 
+    /// One merged section: Cloud project rows (the only ones that support
+    /// reordering via `EditButton` — `.onMove` is scoped to just that
+    /// `ForEach`), then Robot account rows, then Storage Box account rows,
+    /// each subgrouped visually by a leading kind icon (folder / server.rack
+    /// / externaldrive), followed by a single "Add…" menu replacing what
+    /// used to be three separate add-account sections/buttons.
     private var accountsSection: some View {
         Section {
             ForEach(container.projectsStore.projects) { project in
@@ -167,33 +174,9 @@ struct SettingsView: View {
                     }
             }
             .onMove(perform: moveProjects)
+            .plainRow()
             .listRowBackground(rowBackground)
 
-            Button {
-                isPresentingAddProject = true
-            } label: {
-                Label("Add Project", systemImage: "plus.circle.fill")
-                    .foregroundStyle(HetzlyColors.accent)
-            }
-            .listRowBackground(rowBackground)
-        } header: {
-            SectionLabel("Accounts")
-        } footer: {
-            if container.projectsStore.projects.count > 1 {
-                Text("Tap Edit to reorder. Touch and hold a project for more options.")
-                    .caption()
-            }
-        }
-    }
-
-    private func moveProjects(from source: IndexSet, to destination: Int) {
-        container.projectsStore.move(fromOffsets: source, toOffset: destination)
-    }
-
-    // MARK: - Robot accounts
-
-    private var robotAccountsSection: some View {
-        Section {
             ForEach(container.robotAccountsStore.accounts) { account in
                 RobotAccountRow(account: account)
                     .swipeActions(edge: .trailing) {
@@ -210,27 +193,9 @@ struct SettingsView: View {
                         .tint(HetzlyColors.textTertiary)
                     }
             }
+            .plainRow()
             .listRowBackground(rowBackground)
 
-            Button {
-                isPresentingAddRobotAccount = true
-            } label: {
-                Label("Add Robot Account", systemImage: "server.rack")
-                    .foregroundStyle(HetzlyColors.accent)
-            }
-            .listRowBackground(rowBackground)
-        } header: {
-            SectionLabel("Robot Accounts")
-        } footer: {
-            Text("For dedicated servers via Hetzner Robot. Uses a separate webservice login, not your main Hetzner account.")
-                .caption()
-        }
-    }
-
-    // MARK: - Storage Box accounts
-
-    private var storageBoxAccountsSection: some View {
-        Section {
             ForEach(container.storageBoxAccountsStore.accounts) { account in
                 StorageBoxAccountRow(account: account)
                     .swipeActions(edge: .trailing) {
@@ -247,21 +212,46 @@ struct SettingsView: View {
                         .tint(HetzlyColors.textTertiary)
                     }
             }
+            .plainRow()
             .listRowBackground(rowBackground)
 
-            Button {
-                isPresentingAddStorageBoxAccount = true
+            Menu {
+                Button {
+                    isPresentingAddProject = true
+                } label: {
+                    Label("Add Project", systemImage: "folder.badge.plus")
+                }
+                Button {
+                    isPresentingAddRobotAccount = true
+                } label: {
+                    Label("Add Robot Account", systemImage: "server.rack")
+                }
+                Button {
+                    isPresentingAddStorageBoxAccount = true
+                } label: {
+                    Label("Add Storage Box Account", systemImage: "externaldrive.badge.plus")
+                }
             } label: {
-                Label("Add Storage Box Account", systemImage: "externaldrive.fill")
+                Label("Add…", systemImage: "plus.circle.fill")
                     .foregroundStyle(HetzlyColors.accent)
             }
+            .plainRow()
             .listRowBackground(rowBackground)
         } header: {
-            SectionLabel("Storage Box Accounts")
+            SectionLabel("Accounts")
         } footer: {
-            Text("For Storage Boxes via Hetzner's new unified API. Uses its own token, separate from Cloud project tokens.")
-                .caption()
+            Text(accountsSectionFooter).caption()
         }
+    }
+
+    private var accountsSectionFooter: String {
+        let holdHint = "Touch and hold an account for more options."
+        guard container.projectsStore.projects.count > 1 else { return holdHint }
+        return "Tap Edit to reorder projects. \(holdHint)"
+    }
+
+    private func moveProjects(from source: IndexSet, to destination: Int) {
+        container.projectsStore.move(fromOffsets: source, toOffset: destination)
     }
 
     // MARK: - Security
@@ -273,6 +263,7 @@ struct SettingsView: View {
                     .foregroundStyle(HetzlyColors.textPrimary)
             }
             .tint(HetzlyColors.accent)
+            .plainRow()
             .listRowBackground(rowBackground)
 
             Toggle(isOn: privacyShield) {
@@ -280,6 +271,7 @@ struct SettingsView: View {
                     .foregroundStyle(HetzlyColors.textPrimary)
             }
             .tint(HetzlyColors.accent)
+            .plainRow()
             .listRowBackground(rowBackground)
         } header: {
             SectionLabel("Security")
@@ -289,9 +281,10 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Appearance
+    // MARK: - Appearance (theme, app icon, and the mascot toggle — a mascot
+    // IS an appearance choice, so it no longer gets its own section)
 
-    private func appearanceSection(appearance: Binding<String>) -> some View {
+    private func appearanceSection(appearance: Binding<String>, mascotEnabled: Binding<Bool>) -> some View {
         Section {
             Picker(selection: appearance) {
                 Text("Dark").tag("dark")
@@ -300,6 +293,7 @@ struct SettingsView: View {
                 Label("Appearance", systemImage: "circle.lefthalf.filled")
                     .foregroundStyle(HetzlyColors.textPrimary)
             }
+            .plainRow()
             .listRowBackground(rowBackground)
 
             Button {
@@ -313,63 +307,52 @@ struct SettingsView: View {
                         .foregroundStyle(HetzlyColors.textPrimary)
                 }
             }
+            .plainRow()
             .listRowBackground(rowBackground)
             .accessibilityHint("Opens the app icon picker")
-        } header: {
-            SectionLabel("Appearance")
-        }
-    }
 
-    // MARK: - Mascot
-
-    private func mascotSection(mascotEnabled: Binding<Bool>) -> some View {
-        Section {
             Toggle(isOn: mascotEnabled) {
                 Label("Show Hetzi", systemImage: "pawprint.fill")
                     .foregroundStyle(HetzlyColors.textPrimary)
             }
             .tint(HetzlyColors.accent)
+            .plainRow()
             .listRowBackground(rowBackground)
         } header: {
-            SectionLabel("Mascot")
+            SectionLabel("Appearance")
         }
     }
 
     // MARK: - About
 
+    /// Tightened to the essentials: version, one GitHub link, the mascot
+    /// artist credit, and a single footnote combining the MIT/non-
+    /// affiliation disclosures that used to be two separate rows.
     private var aboutSection: some View {
         Section {
             LabeledContent("Version") {
                 Text(appVersionString).bodySecondary()
             }
+            .plainRow()
             .listRowBackground(rowBackground)
 
-            Text("Hetzly is open source under the MIT license.")
-                .bodySecondary()
-                .listRowBackground(rowBackground)
+            Link(destination: githubURL) {
+                Label("Star Hetzly on GitHub", systemImage: "star.fill")
+                    .foregroundStyle(HetzlyColors.accent)
+            }
+            .plainRow()
+            .listRowBackground(rowBackground)
 
             Link(destination: URL(string: "https://elthen.itch.io/2d-pixel-art-red-panda-sprites") ?? githubURL) {
                 Label("Mascot sprites by Elthen", systemImage: "paintbrush.pointed")
             }
+            .plainRow()
             .listRowBackground(rowBackground)
 
-            Text(
-                "Hetzly is an independent third-party app. It is not affiliated with, "
-                    + "endorsed by, or sponsored by Hetzner Online GmbH."
-            )
-            .caption()
-            .listRowBackground(rowBackground)
-
-            Link(destination: githubURL) {
-                Label("View on GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
-            }
-            .listRowBackground(rowBackground)
-
-            Link(destination: githubURL) {
-                Label("Star on GitHub", systemImage: "star.fill")
-                    .foregroundStyle(HetzlyColors.accent)
-            }
-            .listRowBackground(rowBackground)
+            Text("Open source under MIT. Independent app — not affiliated with Hetzner Online GmbH.")
+                .caption()
+                .plainRow()
+                .listRowBackground(rowBackground)
         } header: {
             SectionLabel("About")
         }
@@ -543,13 +526,20 @@ struct SettingsView: View {
     }
 }
 
-/// A single project row: name plus the date it was added. Swipe actions for
-/// rename/remove are attached by the caller (`SettingsView.accountsSection`).
+/// A single project row: a leading folder icon (the "this is a Cloud
+/// project" kind marker in the merged Accounts list), name, and the date it
+/// was added. Swipe actions/context menu for rename/remove/update-token are
+/// attached by the caller (`SettingsView.accountsSection`).
 private struct ProjectRow: View {
     let project: ProjectRecord
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.unit * 3) {
+            Image(systemName: "folder.fill")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(HetzlyColors.textTertiary)
+                .frame(width: 20)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.unit) {
                 Text(project.name)
                     .bodyPrimary()
@@ -562,14 +552,20 @@ private struct ProjectRow: View {
     }
 }
 
-/// A single Robot account row: label plus its webservice username. Swipe
+/// A single Robot account row: a leading server.rack icon (the "this is a
+/// Robot account" kind marker), label, and its webservice username. Swipe
 /// actions for rename/remove are attached by the caller
-/// (`SettingsView.robotAccountsSection`).
+/// (`SettingsView.accountsSection`).
 private struct RobotAccountRow: View {
     let account: RobotAccountRecord
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.unit * 3) {
+            Image(systemName: "server.rack")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(HetzlyColors.textTertiary)
+                .frame(width: 20)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.unit) {
                 Text(account.label)
                     .bodyPrimary()
@@ -584,14 +580,20 @@ private struct RobotAccountRow: View {
     }
 }
 
-/// A single Storage Box account row: label plus the date it was added.
-/// Swipe actions for rename/remove are attached by the caller
-/// (`SettingsView.storageBoxAccountsSection`).
+/// A single Storage Box account row: a leading externaldrive icon (the
+/// "this is a Storage Box account" kind marker), label, and the date it was
+/// added. Swipe actions for rename/remove are attached by the caller
+/// (`SettingsView.accountsSection`).
 private struct StorageBoxAccountRow: View {
     let account: StorageBoxAccountRecord
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.unit * 3) {
+            Image(systemName: "externaldrive.fill")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(HetzlyColors.textTertiary)
+                .frame(width: 20)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.unit) {
                 Text(account.label)
                     .bodyPrimary()

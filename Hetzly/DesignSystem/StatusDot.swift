@@ -49,6 +49,7 @@ struct StatusDot: View {
             .fill(status.color)
             .frame(width: diameter, height: diameter)
             .opacity(pulseOpacity)
+            .shadow(color: glowColor, radius: glowRadius)
             .animation(pulseAnimation, value: isPulsing)
             .onAppear { isPulsing = shouldPulse }
             .onChange(of: shouldPulse) { _, newValue in isPulsing = newValue }
@@ -65,6 +66,22 @@ struct StatusDot: View {
 
     private var pulseAnimation: Animation? {
         shouldPulse ? .easeInOut(duration: 0.9).repeatForever(autoreverses: true) : nil
+    }
+
+    /// `.running` gets a subtle, ALWAYS-STATIC ambient glow — a fixed-radius
+    /// accent-tinted shadow, no animation attached to it. `.transitioning`
+    /// deliberately gets NO glow: it already reads as "in motion" via the
+    /// opacity pulse above, and this is the one status this view animates.
+    /// Layering a second (glow) effect on `.transitioning` would compete
+    /// with that pulse rather than reinforce it, so the two ambient
+    /// treatments — pulse for "changing", glow for "healthy" — are
+    /// deliberately mutually exclusive per status rather than combined.
+    private var glowColor: Color {
+        status == .running ? HetzlyColors.statusRunning.opacity(0.5) : .clear
+    }
+
+    private var glowRadius: CGFloat {
+        status == .running ? 4 : 0
     }
 }
 

@@ -26,34 +26,34 @@ import UniformTypeIdentifiers
 let idleFrame0: [String] = [
     "................................",
     "................................",
-    "................kk..kkkk........",
-    "......kk.......krrkkrrrrk.......",
-    ".....krrk.....krrrrkrddrk.......",
-    "....krccrk....krrrrrrddrk.......",
-    "....kcccck....krrrrrrrrrrk......",
-    "...krrccrrk...krrrrrrrrrrrk.....",
-    "....krrrrk....krrrrrrrrrrrk.....",
-    "...krrrrrk...krrrrrrrrrwkrrk....",
-    "...krrrrk....krrrrrrrrrkkrrkk...",
-    "..krrrrrrk...krrrrrrrrrrrrrrrk..",
-    "..krrrrrrk...krrrrrrrrrrrccckk..",
-    "..krrrrrrk..krrrrrrrrrrrcccccck.",
-    "..krrrrrrk.krrrrrrrrrrrrrcccck..",
-    "..krrrrrrk.krrrrrcrrrrrkkkckk...",
-    "...krrrrrrkkrrrrrcccccrk..k.....",
-    "...krrrrdrkrrrrrccccccck........",
-    "....krrdddrrrrrrcccccccrk.......",
-    "...krrrdddrrrrrrccccccck........",
-    "...krrrddrrrddddccccccck........",
-    "...krrrddrrdddddccccccck........",
-    "....krrddrrddddddcccccrk........",
-    "....krrddrrddddddccccck.........",
-    "....krrddrrddddddrrrcrrk........",
-    ".....krrdkrddddddrrrkrrk........",
-    "......kkkkrrddddrrrrkrrk........",
-    "..........krrrrrrrddkddk........",
-    "...........kkkrkkkkk.kk.........",
-    "..............k.................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................kkk....kkk......",
+    "................kwwkkkkwwk......",
+    "................kwmdwrwmwk......",
+    "................kkdrrrrrk.......",
+    "................kdrkwwwkrk......",
+    "..............kkkdrcwwkwrk......",
+    "...........kkkrrrkdccwwck.......",
+    ".........kkrkdrrrrkkkkkk........",
+    ".......kkrmdkddrdrrrrrk.........",
+    "......krmdbkkbddkbmkrkmk........",
+    "......kdbkk.kbbkkbbkkbbk........",
+    ".......kk....kkk.kkk.kkk........",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
+    "................................",
     "................................",
     "................................",
 ]
@@ -80,16 +80,18 @@ struct RGB {
     }
 }
 
-/// Mirrors `MascotPalette.color(for:)`'s rust-on-dark palette.
+/// Mirrors `MascotPalette.color(for:)` (Elthen red panda sheet).
 func rustPixel(_ character: Character) -> RGB? {
     switch character {
     case ".": nil
-    case "k": RGB(0x1B, 0x15, 0x12) // outline
-    case "r": RGB(0xC1, 0x64, 0x3B) // rust
-    case "d": RGB(0x8F, 0x45, 0x27) // dark rust
-    case "c": RGB(0xF2, 0xE3, 0xC6) // cream
-    case "p": RGB(0xE8, 0xA2, 0xA0) // pink
+    case "k": RGB(0x2F, 0x2F, 0x2E) // outline
+    case "r": RGB(0xD6, 0x79, 0x41) // orange
+    case "d": RGB(0x9D, 0x50, 0x21) // dark orange
+    case "c": RGB(0xB8, 0xB8, 0xB8) // light gray
+    case "p": RGB(0xE8, 0xA2, 0xA0) // pink (legacy)
     case "w": RGB(0xFF, 0xFF, 0xFF) // white
+    case "b": RGB(0x69, 0x41, 0x29) // dark brown
+    case "m": RGB(0x82, 0x52, 0x35) // mid brown
     default: nil
     }
 }
@@ -111,7 +113,9 @@ func lightPixel(_ character: Character) -> RGB? {
     case "d": RGB(0x24, 0x1A, 0x14)
     case "c": RGB(0x6E, 0x5A, 0x44)
     case "p": RGB(0x55, 0x38, 0x34)
-    case "w": RGB(0x24, 0x1A, 0x14)
+    case "w": RGB(0x6E, 0x5A, 0x44)
+    case "b": RGB(0x1C, 0x14, 0x10)
+    case "m": RGB(0x2C, 0x20, 0x18)
     default: nil
     }
 }

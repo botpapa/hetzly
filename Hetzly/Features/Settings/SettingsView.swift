@@ -348,6 +348,11 @@ struct SettingsView: View {
                 .bodySecondary()
                 .listRowBackground(rowBackground)
 
+            Link(destination: URL(string: "https://elthen.itch.io/2d-pixel-art-red-panda-sprites") ?? githubURL) {
+                Label("Mascot sprites by Elthen", systemImage: "paintbrush.pointed")
+            }
+            .listRowBackground(rowBackground)
+
             Text(
                 "Hetzly is an independent third-party app. It is not affiliated with, "
                     + "endorsed by, or sponsored by Hetzner Online GmbH."

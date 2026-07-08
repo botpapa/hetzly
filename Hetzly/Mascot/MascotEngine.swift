@@ -38,14 +38,16 @@ struct MascotEngine: Sendable {
     /// calm and slow; walk/work are a brisk everyday pace; run is fast enough
     /// to read as a loopable pull-to-refresh spinner.
     static func frameDuration(for state: MascotState) -> TimeInterval {
+        // Tuned for the Elthen sheet's frame counts (idle 6, movement 8,
+        // sleep 8, attack 8): the sheet was authored at ~100ms/frame.
         switch state {
-        case .idle: return 0.4
-        case .walk: return 0.18
-        case .run: return 0.1
-        case .sleep: return 0.6
-        case .alarm: return 0.25
-        case .celebrate: return 0.15
-        case .work: return 0.2
+        case .idle: return 0.16
+        case .walk: return 0.12
+        case .run: return 0.07
+        case .sleep: return 0.28
+        case .alarm: return 0.3
+        case .celebrate: return 0.12
+        case .work: return 0.1
         case .peek: return 0.5
         }
     }

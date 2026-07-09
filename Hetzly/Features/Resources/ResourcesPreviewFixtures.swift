@@ -3,7 +3,6 @@ import HetznerKit
 
 /// Preview-only fixture data for the Resources feature. No network access —
 /// every `#Preview` in this directory renders from these values.
-#if DEBUG
 enum ResourcesPreviewFixtures {
     static let now = Date()
 
@@ -222,4 +221,3 @@ enum ResourcesPreviewFixtures {
         serverBackupPercentage: "20"
     )
 }
-#endif

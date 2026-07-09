@@ -609,7 +609,6 @@ private enum DashboardLoadError: Error, Sendable {
 
 // MARK: - Preview fixtures
 
-#if DEBUG
 extension DashboardViewModel {
     static var previewHealthy: DashboardViewModel {
         let projectID = UUID()
@@ -757,4 +756,3 @@ extension DashboardViewModel {
         )
     }
 }
-#endif

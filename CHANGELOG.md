@@ -29,10 +29,8 @@ Everything built since the M4 milestone tag, in one multi-project overhaul.
   original dark-first canvas; Appearance in Settings offers Dark/System.
 - **Chart scroll/scrub fix**: a UIKit hold-to-scrub gesture recognizer replaces the earlier
   SwiftUI-only approach so chart-origin scrolling behaves correctly during drag.
-- **Red panda mascot redraw**: Hetzi's sprites were redrawn and then replaced again with converted
-  frame data derived from Elthen's "2D Pixel Art Red Panda Sprites" pack — see
-  [ASSETS-LICENSE.md](ASSETS-LICENSE.md) for the licensing terms that come with that swap (asset
-  redistribution is restricted; resolve before publishing).
+- **Red panda mascot redraw**: Hetzi's sprites were redrawn and then replaced with converted
+  frame data derived from Elthen's "2D Pixel Art Red Panda Sprites" pack, used with permission.
 - **UX polish waves**: Settings simplified into four sections (Accounts, Security, Appearance,
   About) with accounts merged into one kind-subgrouped list; a tightened create-server wizard;
   dashboard search and quick actions.

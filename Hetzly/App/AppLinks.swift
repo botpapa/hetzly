@@ -26,8 +26,9 @@ enum AppLinks {
         fallback: "about:blank"
     )
 
-    /// The mascot artist's storefront page, credited per the terms in
-    /// ASSETS-LICENSE.md.
+    /// The mascot artist's storefront page. The red-panda sprites are by
+    /// Elthen, used with permission; this credit link satisfies the
+    /// attribution their license asks for.
     static let mascotCreditURL: URL = url(
         "https://elthen.itch.io/2d-pixel-art-red-panda-sprites",
         fallback: "about:blank"

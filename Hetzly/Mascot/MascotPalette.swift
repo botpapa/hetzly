@@ -39,8 +39,8 @@ enum MascotPalette {
 
     /// Resolves a palette index to a `Color`. Returns `nil` for `clear`,
     /// meaning the pixel should not be painted (transparent background shows
-    /// through). Values match Elthen's red panda sheet exactly (see
-    /// ASSETS-LICENSE.md).
+    /// through). Values match Elthen's red panda sheet exactly (sprites by
+    /// Elthen, used with permission).
     static func color(for index: UInt8) -> Color? {
         guard let entry = Index(rawValue: index) else { return nil }
         switch entry {

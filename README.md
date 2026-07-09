@@ -112,6 +112,6 @@ xcodebuild test -project Hetzly.xcodeproj -scheme Hetzly \
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Mascot sprites by [Elthen](https://elthen.itch.io/2d-pixel-art-red-panda-sprites) (published here with permission); see [ASSETS-LICENSE.md](ASSETS-LICENSE.md).
+MIT — see [LICENSE](LICENSE). Mascot sprites by [Elthen](https://elthen.itch.io/2d-pixel-art-red-panda-sprites), used with permission.
 
 **Hetzly is an independent third-party app. It is not affiliated with, endorsed by, or sponsored by Hetzner Online GmbH.** "Hetzner" is a trademark of Hetzner Online GmbH.

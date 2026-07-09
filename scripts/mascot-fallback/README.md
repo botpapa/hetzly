@@ -1,6 +1,6 @@
 # Fallback mascot (CC0-equivalent, original art)
 
-The shipped mascot uses Elthen's red panda sprites (see ../../ASSETS-LICENSE.md),
+The shipped mascot uses Elthen's red panda sprites (by Elthen, used with permission),
 which cannot be redistributed. This directory regenerates the original
 hand-drawn marten so the repository can be published without Elthen's assets:
 

@@ -1,1 +1,1 @@
-https://github.com/hetzly/hetzly/blob/main/README.md#security-model
+https://github.com/botpapa/hetzly/blob/main/PRIVACY.md

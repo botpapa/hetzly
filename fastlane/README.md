@@ -59,7 +59,7 @@ intentional, not a bug. Before running `fastlane beta`:
    `.p8` file** — `.gitignore` already excludes `fastlane/*.p8`.
 4. **TODO — three URL placeholders.** `metadata/en-US/privacy_url.txt`,
    `support_url.txt`, and `marketing_url.txt` all currently point at real,
-   working GitHub URLs (`github.com/hetzly/hetzly/...`) so `deliver` won't
+   working GitHub URLs (`github.com/botpapa/hetzly/...`) so `deliver` won't
    fail on a broken link, but none of them is a dedicated, purpose-built
    page:
    - `privacy_url.txt` → README security-model anchor. App Store Connect
@@ -73,7 +73,7 @@ intentional, not a bug. Before running `fastlane beta`:
      / email if not.
    - `marketing_url.txt` → GitHub repo root. Optional field; replace with a
      real marketing site if/when one exists, or delete the file to omit it.
-5. **Verify `github.com/hetzly/hetzly` is the real repo URL** before relying
+5. **Verify `github.com/botpapa/hetzly` is the real repo URL** before relying
    on the three files above, or update them to match wherever this project
    is actually hosted.
 6. **Screenshots.** Not included here — see

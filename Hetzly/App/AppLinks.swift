@@ -4,7 +4,6 @@ import Foundation
 /// sheets, etc.) so there is exactly one place to update them before/after
 /// publishing the repository publicly.
 ///
-/// TODO(release): replace PLACEHOLDER-OWNER with the real GitHub org/user
 /// once this repository has a public home, then update `privacyPolicyURL`
 /// with a real hosted URL (see PUBLICATION-CHECKLIST.md).
 enum AppLinks {
@@ -12,7 +11,7 @@ enum AppLinks {
     /// force-unwrapping if the literal ever fails to parse (it won't, but
     /// this keeps the app-target's "no force unwraps" rule honest).
     static let githubURL: URL = url(
-        "https://github.com/PLACEHOLDER-OWNER/hetzly",
+        "https://github.com/botpapa/hetzly",
         fallback: "about:blank"
     )
 
@@ -23,7 +22,7 @@ enum AppLinks {
     /// TODO(release): point this at a real hosted page before submitting to
     /// the App Store or publishing the repository.
     static let privacyPolicyURL: URL = url(
-        "https://github.com/PLACEHOLDER-OWNER/hetzly/blob/main/SECURITY.md",
+        "https://github.com/botpapa/hetzly/blob/main/SECURITY.md",
         fallback: "about:blank"
     )
 

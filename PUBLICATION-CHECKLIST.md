@@ -39,11 +39,11 @@ sufficient — this one is the actual legal blocker.
 
 ## 1. Replace the GitHub URL placeholder
 
-`PLACEHOLDER-OWNER` is used consistently across the repo so it's a single find-and-replace once the
+`botpapa` is used consistently across the repo so it's a single find-and-replace once the
 real GitHub org/user is known:
 
 ```sh
-grep -rn "PLACEHOLDER-OWNER" .
+grep -rn "botpapa" .
 ```
 
 At minimum this currently appears in:
@@ -126,9 +126,9 @@ post-M4 feature wave, etc.) authored during active development. This is optional
 - [ ] Once the real GitHub owner/repo is known (see §1), add a CI status badge to the top of
       `README.md`:
       ```md
-      [](https://github.com/PLACEHOLDER-OWNER/hetzly/actions/workflows/ci.yml)
+      [](https://github.com/botpapa/hetzly/actions/workflows/ci.yml)
       ```
-      (replace `PLACEHOLDER-OWNER` at the same time as everything else in §1).
+      (replace `botpapa` at the same time as everything else in §1).
 - [ ] Push once, confirm the workflow actually runs and goes green on the `macos-26` runner image
       referenced in `ci.yml` — the workflow has a comment noting `macos-26` may need to fall back to
       `macos-latest` + an explicit Xcode-select step if that image isn't available on the target

@@ -9,8 +9,8 @@ Requirements: macOS with Xcode 26, [XcodeGen](https://github.com/yonaskolb/Xcode
 
 ```sh
 brew install xcodegen
-# TODO(release): replace PLACEHOLDER-OWNER with the real GitHub org/user — see AppLinks.swift
-git clone https://github.com/PLACEHOLDER-OWNER/hetzly.git
+# TODO(release): replace botpapa with the real GitHub org/user — see AppLinks.swift
+git clone https://github.com/botpapa/hetzly.git
 cd hetzly
 xcodegen
 open Hetzly.xcodeproj

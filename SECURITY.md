@@ -64,8 +64,8 @@ security model and how to report problems.
 ## Reporting a vulnerability
 
 Please report security issues privately via
-[GitHub Security Advisories](https://github.com/PLACEHOLDER-OWNER/hetzly/security/advisories/new)
-<!-- TODO(release): replace PLACEHOLDER-OWNER with the real GitHub org/user — see AppLinks.swift -->
+[GitHub Security Advisories](https://github.com/botpapa/hetzly/security/advisories/new)
+<!-- TODO(release): replace botpapa with the real GitHub org/user — see AppLinks.swift -->
 for this repository rather than opening a public issue. Include the affected
 version/commit, reproduction steps, and impact. We aim to acknowledge reports
 within a few days.

@@ -141,6 +141,15 @@ actor SSHConnection {
 
         do {
             let connectedChannel = try await bootstrap.connect(host: configuration.host, port: configuration.port).get()
+
+            // The view may have been dismissed while the TCP connect was in
+            // flight — `disconnect()` would have run teardown and shut the
+            // event-loop group down. Don't keep building on a torn-down
+            // connection; close this channel and bail cleanly.
+            guard case .connecting = state else {
+                try? await connectedChannel.close().get()
+                return
+            }
             rootChannel = connectedChannel
 
             // Everything from here down runs as one NIO future chain on

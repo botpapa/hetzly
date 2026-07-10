@@ -276,6 +276,22 @@ final class DashboardViewModel {
             for await (projectID, result) in group {
                 switch result {
                 case .success(let servers):
+                    // Guard against the blank-on-refresh bug: an empty result
+                    // for a project that currently HAS servers is almost
+                    // always a transient hiccup (partial page, momentary API
+                    // glitch), not a real "you deleted everything". Rather
+                    // than wiping the list to "no servers", keep the
+                    // last-known rows and mark them stale — a real deletion
+                    // still reflects on the next non-empty fetch or cold load.
+                    let hadServers = projectSections.first { $0.projectID == projectID }?.servers.isEmpty == false
+                    if servers.isEmpty && hadServers {
+                        updateSection(projectID: projectID) { section in
+                            section.isStale = true
+                            section.errorMessage = nil
+                            section.isAuthError = false
+                        }
+                        break
+                    }
                     snapshotStore.saveServers(servers, projectID: projectID)
                     serversByProject[projectID] = servers
                     updateSection(projectID: projectID) { section in

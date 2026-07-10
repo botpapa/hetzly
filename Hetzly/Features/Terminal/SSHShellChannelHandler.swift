@@ -37,6 +37,15 @@ final class SSHShellChannelHandler: ChannelDuplexHandler, @unchecked Sendable {
     /// loop, so no locking is needed.
     private var pendingRequestPromises: [EventLoopPromise<Void>] = []
 
+    /// Whether `channelActive` has run and wired the pty→shell cascade into
+    /// `readyPromise`. Until it has, nothing else completes `readyPromise`, so
+    /// if the channel dies first (`channelInactive`/`errorCaught`) we must fail
+    /// it directly — otherwise it deallocs unfulfilled and NIO's debug-only
+    /// `EventLoopFuture.deinit` check traps (a hard crash on close). Guarded so
+    /// it's completed at most once. Only touched on this handler's event loop.
+    private var didArmReadyCascade = false
+    private var didCompleteReadyDirectly = false
+
     init(
         term: String,
         initialCols: Int,
@@ -67,6 +76,7 @@ final class SSHShellChannelHandler: ChannelDuplexHandler, @unchecked Sendable {
         let shellPromise = context.eventLoop.makePromise(of: Void.self)
         pendingRequestPromises = [ptyPromise, shellPromise]
 
+        didArmReadyCascade = true
         ptyPromise.futureResult
             .flatMap { shellPromise.futureResult }
             .cascade(to: readyPromise)
@@ -110,12 +120,14 @@ final class SSHShellChannelHandler: ChannelDuplexHandler, @unchecked Sendable {
 
     func channelInactive(context: ChannelHandlerContext) {
         failPendingPromises(with: SSHConnectionError.channelClosed)
+        failReadyDirectlyIfNeeded(SSHConnectionError.channelClosed)
         onClose(nil)
         context.fireChannelInactive()
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
         failPendingPromises(with: error)
+        failReadyDirectlyIfNeeded(error)
         onClose(error)
         context.fireErrorCaught(error)
     }
@@ -126,6 +138,16 @@ final class SSHShellChannelHandler: ChannelDuplexHandler, @unchecked Sendable {
         for promise in promises {
             promise.fail(error)
         }
+    }
+
+    /// Completes `readyPromise` when the channel died before `channelActive`
+    /// armed the pty→shell cascade — the only path where nothing else would
+    /// ever fulfil it. No-op once the cascade is armed (the cascade completes
+    /// it via `failPendingPromises`) or if already done here.
+    private func failReadyDirectlyIfNeeded(_ error: Error) {
+        guard !didArmReadyCascade, !didCompleteReadyDirectly else { return }
+        didCompleteReadyDirectly = true
+        readyPromise.fail(error)
     }
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {

@@ -466,13 +466,20 @@ struct ServerDetailView: View {
         guard viewModel?.server?.publicNet.ipv4?.ip != nil else {
             return .unavailable("This server has no public IPv4 address.")
         }
-        if let password = ServerCredentialsVault.rootPassword(serverID: route.serverID) {
-            return .available(.password(password))
-        }
+        // Prefer a locally-generated SSH private key over a saved root
+        // password. Hetzner cloud images ship with `PermitRootLogin
+        // prohibit-password`, so root *password* SSH login is refused by
+        // default — the server silently stalls the handshake and the terminal
+        // spins until the connect deadline. Key auth is what actually works on
+        // a standard Hetzner server, so try it first and fall back to the
+        // password only if no on-device key matches this project's keys.
         for key in viewModel?.sshKeys ?? [] {
             if let pem = (try? SSHKeyGenerator.loadPrivateKey(name: key.name)) ?? nil {
                 return .available(.privateKeyPEM(pem))
             }
+        }
+        if let password = ServerCredentialsVault.rootPassword(serverID: route.serverID) {
+            return .available(.password(password))
         }
         return .unavailable("Add an SSH key or reset the root password to enable the terminal.")
     }

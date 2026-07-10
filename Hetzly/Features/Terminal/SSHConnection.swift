@@ -178,6 +178,24 @@ actor SSHConnection {
                         }
                     }
 
+                    // If the `.session` child channel is never created — the SSH
+                    // handshake stalls (e.g. a server that accepts TCP but never
+                    // authenticates) or the connection is torn down mid-connect —
+                    // `childChannelPromise` fails, but the initializer closure
+                    // above (which is what hands `readyPromise` to the shell
+                    // handler that eventually completes it) never runs. Nothing
+                    // else would ever fulfil `readyPromise`, so it would be
+                    // deallocated unfulfilled → NIO's debug-only
+                    // `EventLoopFuture.deinit` "leaking promise" precondition
+                    // traps, which is a HARD CRASH in the Debug/unsigned build
+                    // the app ships to the device — and it fires exactly on
+                    // close of a stuck-connecting terminal. Completing
+                    // `readyPromise` in lockstep with `childChannelPromise`'s
+                    // failure closes that hole. (On success the shell handler
+                    // owns `readyPromise`; `whenFailure` never runs, so there's
+                    // no double-completion.)
+                    childChannelPromise.futureResult.whenFailure { readyPromise.fail($0) }
+
                     return childChannelPromise.futureResult.flatMap { childChannel in
                         readyPromise.futureResult.map { childChannel }
                     }

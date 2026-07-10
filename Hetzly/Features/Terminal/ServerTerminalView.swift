@@ -288,6 +288,13 @@ struct ServerTerminalView: View {
     // MARK: - Actions
 
     private func retry() {
+        // Tear the previous connection down explicitly before replacing it.
+        // Dropping the reference alone would abandon its event-loop group
+        // mid-connect and rely on `SSHConnection.deinit`'s best-effort
+        // shutdown — the exact fragile path we don't want on the hot retry
+        // loop. `disconnect()` is idempotent and safe from any state.
+        let previous = connection
+        Task { await previous.disconnect() }
         connection = SSHConnection()
         state = .idle
         connectionAttempt += 1

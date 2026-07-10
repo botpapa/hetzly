@@ -181,6 +181,15 @@ final class DashboardViewModel {
         isRefreshing = true
         let start = Date()
 
+        // Re-seed from the on-disk snapshot before the live fetch so the
+        // list never blanks to "no servers" mid-refresh — if sections were
+        // ever emptied (e.g. a prior live pass returned nothing transiently)
+        // this repaints the last-known servers immediately, then the live
+        // pass below updates them in place.
+        if projectSections.allSatisfy({ $0.servers.isEmpty }) {
+            loadFromSnapshots(container: container)
+        }
+
         async let liveTask: Void = refreshLive(container: container)
         async let dedicatedTask: Void = loadDedicatedServers(container: container)
         _ = await (liveTask, dedicatedTask)

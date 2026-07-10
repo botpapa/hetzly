@@ -285,11 +285,22 @@ actor SSHConnection {
         rootChannel = nil
         shellChannel = nil
         outputContinuation.finish()
+        stateContinuation.finish()
 
         if let eventLoopGroup {
             try? await eventLoopGroup.shutdownGracefully()
         }
         eventLoopGroup = nil
+    }
+
+    deinit {
+        // NIO traps ("EventLoopGroup was not shut down") if a
+        // MultiThreadedEventLoopGroup is deallocated without being shut
+        // down first. Normal teardown() nils this out, but if the view is
+        // dismissed mid-connect and the actor is released before the
+        // disconnect task finishes, this non-blocking callback shutdown is
+        // the safety net that keeps the app from crashing on close.
+        eventLoopGroup?.shutdownGracefully { _ in }
     }
 }
 
